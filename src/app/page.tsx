@@ -1,3 +1,5 @@
+import MigrateUploads from "@/components/MigrateUploads";
+
 export default function Home() {
   return (
     <div className="space-y-6">
@@ -7,12 +9,9 @@ export default function Home() {
       <section id="migracao" className="scroll-mt-16">
         <details open className="border rounded-md">
           <summary className="cursor-pointer select-none px-4 py-3 font-medium">Painel de Migração</summary>
-          <div className="px-4 pb-4 text-sm text-neutral-700 space-y-2">
+          <div className="px-4 pb-4 text-sm text-neutral-700 space-y-4">
             <div>Importe arquivos CSV/XML do Conexão Educação.</div>
-            <ul className="list-disc pl-5">
-              <li>Ata_resultados_finais.csv</li>
-              <li>RelAcompEnturmacaoPorEscola.csv</li>
-            </ul>
+            <MigrateUploads />
           </div>
         </details>
       </section>

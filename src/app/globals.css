@@ -10,6 +10,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Cores semânticas iniciais */
+  --color-pendente: #ef4444; /* vermelho */
+  --color-resolvendo: #f59e0b; /* laranja */
+  --color-ok: #3b82f6; /* azul */
+  --color-corrigido: #10b981; /* verde */
 }
 
 @media (prefers-color-scheme: dark) {

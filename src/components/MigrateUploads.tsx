@@ -11,11 +11,15 @@ type ParsedCsv = {
 };
 
 type UploadedFile = {
-  id: string; // timestamp
+  id: string;
   fileName: string;
   uploadDate: string;
   data: ParsedCsv;
   dataHash: string;
+  rowCount: number;
+  anos: string[];
+  modalidades: string[];
+  turmas: string[];
 };
 
 const ATA_HEADERS = [
@@ -35,123 +39,28 @@ const ATA_HEADERS = [
   "SITUACAO_FINAL",
 ];
 
-const REL_HEADERS = [
-  "REGIONAL",
-  "MUNIC_ESCOLA",
-  "UA_ANTIGA",
-  "CAMPO_NOVA_UA",
-  "CENSO",
-  "ESCOLA",
-  "ALUNO",
-  "NOME_COMPL1",
-  "PRE_NOME_SOCIAL",
-  "DT_NASC",
-  "SEXO",
-  "TIPO_SANGUINEO",
-  "QT_FILHOS",
-  "NECESSIDADE_ESPECIAL",
-  "ETNIA",
-  "EST_CIVIL",
-  "PAIS_NASC",
-  "NACIONALIDADE",
-  "MUNICIPIO_NASC_COD",
-  "MUNICIPIO_NASC",
-  "CREDO",
-  "NOME_MAE",
-  "MAE_FALECIDA",
-  "MAE_CPF",
-  "MAE_TELEFONE",
-  "NOME_PAI",
-  "PAI_FALECIDO",
-  "PAI_CPF",
-  "PAI_TELEFONE",
-  "RESPONSAVEL_LEGAL",
-  "RESP_NOME_COMPL",
-  "RESP_CPF",
-  "RESP_FONE",
-  "CEP",
-  "ENDERECO",
-  "END_NUM",
-  "END_COMPL",
-  "BAIRRO",
-  "END_MUNICIPIO",
-  "LOCALIZACAO_ZONA",
-  "TELEFONE",
-  "CELULAR",
-  "E_MAIL",
-  "CPF",
-  "RG_TIPO",
-  "RG_NUM",
-  "COMPL_RG",
-  "RG_UF",
-  "RG_EMISSOR",
-  "RG_DTEXP",
-  "INEP",
-  "NIS",
-  "TIPO_CERTIDAO",
-  "MODELO_CERTIDAO",
-  "CERT_NASC_CARTORIO_UF",
-  "MUNICIPIO_CART",
-  "NOME_CARTORIO",
-  "TERMO",
-  "DATA_EMISSAO",
-  "CERT_NASC_FOLHA",
-  "CERT_NASC_LIVRO",
-  "CERT_NUMERO_MATRICULA",
-  "SIT_ALUNO",
-  "ANO_INGRESSO",
-  "Textbox142",
-  "DATA_INCLUSAO",
-  "Textbox146",
-  "REDE_ENSINO_ORIGEM",
-  "UNIDADE_ENSINO",
-  "NOME_UNIDADE",
-  "NIVEL_SEGMENTO",
-  "MODALIDADE",
-  "CURSO",
-  "Textbox156",
-  "TURNO",
-  "SERIE_ANO_ESCOLAR",
-  "RECEBE_ESC_OUTRO_ESPACO",
-  "UTILIZA_TRANSPORTE",
-  "Textbox158",
-  "Textbox160",
-  "CADASTRO_COMPLETO",
-  "MUNICIPIO_BILHETAGEM",
-  "DISTORCAO_IDADE_SERIE",
-  "ATUALIZAR_DADOS_CADASTRAIS1",
-];
-
-// Função para calcular hash dos dados processados
-async function hashData(data: ParsedCsv): Promise<string> {
-  const sortedRows = [...data.rows].sort((a, b) => {
-    const keyA = Object.keys(a).map(k => `${k}:${a[k]}`).join('|');
-    const keyB = Object.keys(b).map(k => `${k}:${b[k]}`).join('|');
-    return keyA.localeCompare(keyB);
-  });
-  const str = JSON.stringify({ headers: data.headers.sort(), rows: sortedRows });
-  const encoder = new TextEncoder();
-  const dataBuffer = encoder.encode(str);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
 export default function MigrateUploads() {
-  const ATA_STORAGE_KEY = "migration_ata_files";
-  const REL_STORAGE_KEY = "migration_rel_acomp_enturmacao";
-
   const [ataFiles, setAtaFiles] = useState<UploadedFile[]>([]);
   const [showFilesModal, setShowFilesModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<'name' | 'date'>('name');
 
+  // Carregar arquivos da API ao montar o componente
   useEffect(() => {
-    try {
-      const rawAta = localStorage.getItem(ATA_STORAGE_KEY);
-      if (rawAta) {
-        const parsed = JSON.parse(rawAta) as UploadedFile[];
-        startTransition(() => setAtaFiles(parsed));
+    const fetchFiles = async () => {
+      try {
+        const response = await fetch('/api/files');
+        if (!response.ok) throw new Error('Erro ao carregar arquivos');
+        const { files } = await response.json();
+        startTransition(() => setAtaFiles(files));
+      } catch (error) {
+        console.error('Erro ao carregar arquivos:', error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch {}
+    };
+
+    fetchFiles();
   }, []);
 
   type TurmaInfo = { turma: string; prefixo: string; parteNumerica: string; serie?: string; turno?: string };
@@ -170,101 +79,133 @@ export default function MigrateUploads() {
 
   // Handler para adicionar novos arquivos
   const handleNewFiles = async (data: ParsedCsv, fileName: string) => {
-    const hash = await hashData(data);
+    try {
+      const response = await fetch('/api/files', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data, fileName })
+      });
 
-    // Usar callback funcional para pegar o estado mais recente
-    setAtaFiles(currentFiles => {
-      // Verificar se já existe arquivo com o mesmo hash
-      if (currentFiles.some(f => f.dataHash === hash)) {
-        console.warn(`Arquivo "${fileName}" com conteúdo idêntico já foi carregado. Upload ignorado.`);
-        return currentFiles; // Retorna estado atual sem modificar
+      if (response.status === 409) {
+        // Arquivo duplicado
+        const { fileId } = await response.json();
+        console.warn(`Arquivo "${fileName}" com conteúdo idêntico já existe (ID: ${fileId}). Upload ignorado.`);
+        return;
       }
 
-      const newFile: UploadedFile = {
-        id: crypto.randomUUID(), // ID único
-        fileName,
-        uploadDate: new Date().toISOString(),
-        data,
-        dataHash: hash
-      };
-
-      const updatedFiles = [...currentFiles, newFile];
-
-      try {
-        localStorage.setItem(ATA_STORAGE_KEY, JSON.stringify(updatedFiles));
-      } catch (e) {
-        console.error('Erro ao salvar no localStorage:', e);
+      if (!response.ok) {
+        throw new Error('Erro ao fazer upload do arquivo');
       }
 
-      return updatedFiles;
-    });
+      const { file } = await response.json();
+      setAtaFiles(currentFiles => [...currentFiles, file]);
+
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      alert('Erro ao fazer upload do arquivo. Verifique o console para mais detalhes.');
+    }
   };
 
   // Handler para remover arquivo individual
-  const removeFile = (fileId: string) => {
-    const updatedFiles = ataFiles.filter(f => f.id !== fileId);
-    setAtaFiles(updatedFiles);
+  const removeFile = async (fileId: string) => {
     try {
-      localStorage.setItem(ATA_STORAGE_KEY, JSON.stringify(updatedFiles));
-    } catch {}
+      const response = await fetch(`/api/files?id=${fileId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao deletar arquivo');
+      }
+
+      setAtaFiles(currentFiles => currentFiles.filter(f => f.id !== fileId));
+    } catch (error) {
+      console.error('Erro ao deletar arquivo:', error);
+      alert('Erro ao deletar arquivo. Verifique o console para mais detalhes.');
+    }
   };
 
   // Handler para remover por período letivo
-  const removeByPeriodo = (periodo: string) => {
+  const removeByPeriodo = async (periodo: string) => {
     if (!confirm(`Tem certeza que deseja remover todos os dados do período ${periodo}?`)) return;
 
-    const updatedFiles = ataFiles.filter(file => {
-      // Verificar se o arquivo contém dados deste período
-      const hasPeriodo = file.data.rows.some(row => {
-        const stripLabelPrefix = (s: string) => {
-          const m = String(s || "").trim().match(/^\s*([\p{L}\s_]+):\s*(.*)$/u);
-          return m ? m[2].trim() : String(s || "").trim();
-        };
-        const ano = stripLabelPrefix(row["Ano"] ?? "");
-        return ano === periodo;
-      });
-      return !hasPeriodo;
-    });
-
-    setAtaFiles(updatedFiles);
     try {
-      localStorage.setItem(ATA_STORAGE_KEY, JSON.stringify(updatedFiles));
-    } catch {}
+      const response = await fetch(`/api/files?periodo=${encodeURIComponent(periodo)}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao deletar arquivos do período');
+      }
+
+      // Remover os arquivos do estado local que correspondem a este período
+      setAtaFiles(currentFiles =>
+        currentFiles.filter(file => !file.anos.includes(periodo))
+      );
+    } catch (error) {
+      console.error('Erro ao deletar período:', error);
+      alert('Erro ao deletar período. Verifique o console para mais detalhes.');
+    }
   };
 
   // Handler para remover por modalidade
-  const removeByModalidade = (modalidade: string, periodo: string) => {
+  const removeByModalidade = async (modalidade: string, periodo: string) => {
     if (!confirm(`Tem certeza que deseja remover todos os dados da modalidade "${modalidade}" do período ${periodo}?`)) return;
 
-    const updatedFiles = ataFiles.filter(file => {
-      // Verificar se o arquivo contém dados desta modalidade e período
-      const hasMatch = file.data.rows.some(row => {
-        const stripLabelPrefix = (s: string) => {
-          const m = String(s || "").trim().match(/^\s*([\p{L}\s_]+):\s*(.*)$/u);
-          return m ? m[2].trim() : String(s || "").trim();
-        };
-        const ano = stripLabelPrefix(row["Ano"] ?? "");
-        const mod = stripLabelPrefix(row["MODALIDADE"] ?? "");
-        return ano === periodo && mod === modalidade;
-      });
-      return !hasMatch;
-    });
-
-    setAtaFiles(updatedFiles);
     try {
-      localStorage.setItem(ATA_STORAGE_KEY, JSON.stringify(updatedFiles));
-    } catch {}
+      const response = await fetch(
+        `/api/files?periodo=${encodeURIComponent(periodo)}&modalidade=${encodeURIComponent(modalidade)}`,
+        { method: 'DELETE' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Erro ao deletar arquivos da modalidade');
+      }
+
+      // Remover os arquivos do estado local que correspondem a este período e modalidade
+      setAtaFiles(currentFiles =>
+        currentFiles.filter(file =>
+          !(file.anos.includes(periodo) && file.modalidades.includes(modalidade))
+        )
+      );
+    } catch (error) {
+      console.error('Erro ao deletar modalidade:', error);
+      alert('Erro ao deletar modalidade. Verifique o console para mais detalhes.');
+    }
   };
 
   // Handler para limpar todos os arquivos
-  const clearAllFiles = () => {
-    if (confirm('Tem certeza que deseja remover todos os arquivos carregados?')) {
+  const clearAllFiles = async () => {
+    if (!confirm('Tem certeza que deseja remover todos os arquivos carregados?')) return;
+
+    try {
+      // Deletar todos os arquivos
+      const deletePromises = ataFiles.map(file =>
+        fetch(`/api/files?id=${file.id}`, { method: 'DELETE' })
+      );
+
+      await Promise.all(deletePromises);
       setAtaFiles([]);
-      try {
-        localStorage.removeItem(ATA_STORAGE_KEY);
-      } catch {}
+    } catch (error) {
+      console.error('Erro ao limpar arquivos:', error);
+      alert('Erro ao limpar arquivos. Verifique o console para mais detalhes.');
     }
   };
+
+  // Ordenar arquivos conforme seleção
+  const sortedFiles = useMemo(() => {
+    const files = [...ataFiles];
+    if (sortBy === 'name') {
+      // Ordenação natural/alfanumérica
+      return files.sort((a, b) =>
+        a.fileName.localeCompare(b.fileName, undefined, {
+          numeric: true,
+          sensitivity: 'base'
+        })
+      );
+    } else {
+      return files.sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
+    }
+  }, [ataFiles, sortBy]);
 
   const estrutura = useMemo(() => {
     if (ataFiles.length === 0) {
@@ -275,10 +216,6 @@ export default function MigrateUploads() {
       const m = String(s || "").trim().match(/^\s*([\p{L}\s_]+):\s*(.*)$/u);
       return m ? m[2].trim() : String(s || "").trim();
     };
-
-    const normalize = (s: string) => stripLabelPrefix(s)
-      .normalize("NFD").replace(/\p{Diacritic}/gu, "")
-      .toUpperCase().trim();
 
     const extrairPartesTurma = (turma: string): { prefixo: string; parteNumerica: string } => {
       // Procura pela primeira sequência de dígitos
@@ -343,8 +280,7 @@ export default function MigrateUploads() {
   }, [ataFiles]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div className="space-y-2">
+    <div className="space-y-2">
         <DropCsv
           title="Ata de Resultados Finais"
           requiredHeaders={ATA_HEADERS}
@@ -389,20 +325,47 @@ export default function MigrateUploads() {
               <div className="text-sm text-neutral-600">
                 Total: {ataFiles.length} {ataFiles.length === 1 ? 'arquivo' : 'arquivos'}
               </div>
-              <button
-                onClick={() => {
-                  clearAllFiles();
-                  setShowFilesModal(false);
-                }}
-                className="text-xs text-red-600 hover:underline"
-                type="button"
-              >
-                Limpar todos
-              </button>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-neutral-500">Ordenar:</span>
+                  <button
+                    onClick={() => setSortBy('name')}
+                    className={`text-xs px-2 py-1 rounded ${
+                      sortBy === 'name'
+                        ? 'bg-blue-100 text-blue-700 font-medium'
+                        : 'text-neutral-600 hover:bg-neutral-100'
+                    }`}
+                    type="button"
+                  >
+                    Nome
+                  </button>
+                  <button
+                    onClick={() => setSortBy('date')}
+                    className={`text-xs px-2 py-1 rounded ${
+                      sortBy === 'date'
+                        ? 'bg-blue-100 text-blue-700 font-medium'
+                        : 'text-neutral-600 hover:bg-neutral-100'
+                    }`}
+                    type="button"
+                  >
+                    Data
+                  </button>
+                </div>
+                <button
+                  onClick={() => {
+                    clearAllFiles();
+                    setShowFilesModal(false);
+                  }}
+                  className="text-xs text-red-600 hover:underline"
+                  type="button"
+                >
+                  Limpar todos
+                </button>
+              </div>
             </div>
 
             <ul className="space-y-2">
-              {ataFiles.map((file) => (
+              {sortedFiles.map((file) => (
                 <li key={file.id} className="flex items-start justify-between p-3 border rounded-md hover:bg-neutral-50">
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm mb-1">{file.fileName}</div>
@@ -425,7 +388,9 @@ export default function MigrateUploads() {
           </div>
         </Modal>
         <div className="text-xs text-neutral-700 border rounded-md p-3">
-          {ataFiles.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-4 text-neutral-500">Carregando arquivos...</div>
+          ) : ataFiles.length === 0 ? (
             <div>Nenhum arquivo carregado ainda.</div>
           ) : estrutura.size === 0 ? (
             <div className="text-xs text-neutral-500 py-3">Nenhum dado encontrado nos arquivos carregados.</div>
@@ -488,30 +453,6 @@ export default function MigrateUploads() {
             </Tabs>
           )}
         </div>
-      </div>
-
-      <div>
-        <DropCsv
-          title="Relatório de Acompanhamento de Enturmação"
-          requiredHeaders={REL_HEADERS}
-          duplicateKey="ALUNO"
-          showPreview={false}
-          onParsed={(d, fileName) => {
-            try {
-              localStorage.setItem(REL_STORAGE_KEY, JSON.stringify({ data: d, fileName, uploadDate: new Date().toISOString() }));
-            } catch {}
-          }}
-        />
-        <div className="mt-2">
-          <button
-            type="button"
-            className="border rounded px-2 py-1 text-[11px] hover:bg-neutral-50"
-            onClick={() => { try { localStorage.removeItem(REL_STORAGE_KEY); } catch {} }}
-          >
-            Limpar dados salvos (Rel)
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

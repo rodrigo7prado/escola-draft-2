@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Arquivo CSV importado
+model UploadedFile {
+  id           String   @id @default(uuid())
+  fileName     String
+  uploadDate   DateTime @default(now())
+  dataHash     String   @unique
+
+  // Dados do CSV em formato JSONB
+  // Estrutura: { headers: string[], rows: Record<string, string>[] }
+  data         Json
+
+  // Metadados para consultas rápidas
+  rowCount     Int
+  anos         String[] // Anos encontrados neste arquivo
+  modalidades  String[] // Modalidades encontradas
+  turmas       String[] // Turmas encontradas
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([dataHash])
+  @@index([uploadDate])
+  @@index([anos])
+  @@index([modalidades])
+}

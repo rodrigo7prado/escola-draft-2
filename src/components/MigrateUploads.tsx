@@ -152,10 +152,19 @@ export default function MigrateUploads() {
     } catch {}
   }, []);
 
-  type TurmaInfo = { turma: string; serie?: string; turno?: string };
+  type TurmaInfo = { turma: string; prefixo: string; parteNumerica: string; serie?: string; turno?: string };
   type Registro = { ano: string; modalidade: string; turma: string; serie: string; turno: string };
 
   const pluralTurmas = (count: number) => `${count} ${count === 1 ? "turma" : "turmas"}`;
+
+  // Função para ordenar turmas pela parte numérica
+  const ordenarTurmas = (turmas: Map<string, TurmaInfo>): [string, TurmaInfo][] => {
+    return Array.from(turmas.entries()).sort((a, b) => {
+      const numA = a[1].parteNumerica;
+      const numB = b[1].parteNumerica;
+      return numA.localeCompare(numB, undefined, { numeric: true, sensitivity: 'base' });
+    });
+  };
 
   // Handler para adicionar novos arquivos
   const handleNewFiles = async (data: ParsedCsv, fileName: string) => {
@@ -269,6 +278,22 @@ export default function MigrateUploads() {
       .normalize("NFD").replace(/\p{Diacritic}/gu, "")
       .toUpperCase().trim();
 
+    const extrairPartesTurma = (turma: string): { prefixo: string; parteNumerica: string } => {
+      // Procura pela primeira sequência de dígitos
+      const match = turma.match(/^([^\d]*)(\d.*)$/);
+      if (match) {
+        return {
+          prefixo: match[1],
+          parteNumerica: match[2]
+        };
+      }
+      // Se não encontrar dígitos, considera tudo como numérico
+      return {
+        prefixo: "",
+        parteNumerica: turma
+      };
+    };
+
     const registros: Registro[] = [];
 
     // Processar todos os arquivos carregados
@@ -302,7 +327,14 @@ export default function MigrateUploads() {
       if (!periodoMap.has(reg.modalidade)) periodoMap.set(reg.modalidade, new Map());
       const modMap = periodoMap.get(reg.modalidade)!;
 
-      modMap.set(reg.turma, { turma: reg.turma, serie: reg.serie, turno: reg.turno });
+      const { prefixo, parteNumerica } = extrairPartesTurma(reg.turma);
+      modMap.set(reg.turma, {
+        turma: reg.turma,
+        prefixo,
+        parteNumerica,
+        serie: reg.serie,
+        turno: reg.turno
+      });
     }
 
     return estrutura;
@@ -404,9 +436,10 @@ export default function MigrateUploads() {
                             </button>
                           </div>
                           <ul className="divide-y max-h-60 overflow-auto border rounded">
-                            {Array.from(turmasMap.keys()).sort().map((turma) => (
+                            {ordenarTurmas(turmasMap).map(([turma, info]) => (
                               <li key={turma} className="py-1.5 px-2 text-xs hover:bg-neutral-50">
-                                {turma}
+                                {info.prefixo && <span className="text-neutral-500">{info.prefixo}</span>}
+                                <span>{info.parteNumerica}</span>
                               </li>
                             ))}
                           </ul>

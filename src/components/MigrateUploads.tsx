@@ -1,7 +1,8 @@
 "use client";
 
 import DropCsv from "@/components/DropCsv";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/Tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
+import { Modal } from "@/components/ui/Modal";
 import { useEffect, useMemo, useState, startTransition } from "react";
 
 type ParsedCsv = {
@@ -141,6 +142,7 @@ export default function MigrateUploads() {
   const REL_STORAGE_KEY = "migration_rel_acomp_enturmacao";
 
   const [ataFiles, setAtaFiles] = useState<UploadedFile[]>([]);
+  const [showFilesModal, setShowFilesModal] = useState(false);
 
   useEffect(() => {
     try {
@@ -352,42 +354,76 @@ export default function MigrateUploads() {
           multiple={true}
         />
 
-        {/* Lista de arquivos carregados */}
+        {/* Resumo de arquivos carregados */}
         {ataFiles.length > 0 && (
-          <div className="border rounded-md p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-xs font-medium">
-                Arquivos carregados ({ataFiles.length})
+          <button
+            onClick={() => setShowFilesModal(true)}
+            className="w-full border rounded-md p-3 text-left hover:bg-neutral-50 transition-colors"
+            type="button"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs font-medium text-neutral-900">
+                  {ataFiles.length} {ataFiles.length === 1 ? 'arquivo carregado' : 'arquivos carregados'}
+                </div>
+                <div className="text-[10px] text-neutral-500 mt-0.5">
+                  {ataFiles.reduce((sum, f) => sum + f.data.rows.length, 0)} registros totais
+                </div>
+              </div>
+              <div className="text-xs text-neutral-400">
+                Clique para ver detalhes →
+              </div>
+            </div>
+          </button>
+        )}
+
+        {/* Modal com lista completa de arquivos */}
+        <Modal
+          open={showFilesModal}
+          onClose={() => setShowFilesModal(false)}
+          title="Arquivos Carregados"
+          size="lg"
+        >
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b">
+              <div className="text-sm text-neutral-600">
+                Total: {ataFiles.length} {ataFiles.length === 1 ? 'arquivo' : 'arquivos'}
               </div>
               <button
-                onClick={clearAllFiles}
-                className="text-[10px] text-red-600 hover:underline"
+                onClick={() => {
+                  clearAllFiles();
+                  setShowFilesModal(false);
+                }}
+                className="text-xs text-red-600 hover:underline"
                 type="button"
               >
                 Limpar todos
               </button>
             </div>
-            <ul className="space-y-1.5 max-h-40 overflow-auto">
+
+            <ul className="space-y-2">
               {ataFiles.map((file) => (
-                <li key={file.id} className="flex items-center justify-between text-xs border-b pb-1.5">
+                <li key={file.id} className="flex items-start justify-between p-3 border rounded-md hover:bg-neutral-50">
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{file.fileName}</div>
-                    <div className="text-[10px] text-neutral-500">
-                      {new Date(file.uploadDate).toLocaleString('pt-BR')} • {file.data.rows.length} registros
+                    <div className="font-medium text-sm mb-1">{file.fileName}</div>
+                    <div className="text-xs text-neutral-500 space-y-0.5">
+                      <div>📅 {new Date(file.uploadDate).toLocaleString('pt-BR')}</div>
+                      <div>📊 {file.data.rows.length} registros</div>
+                      <div className="text-[10px] text-neutral-400 font-mono">ID: {file.id.slice(0, 8)}...</div>
                     </div>
                   </div>
                   <button
                     onClick={() => removeFile(file.id)}
-                    className="ml-2 text-red-600 hover:bg-red-50 rounded px-1.5 py-0.5 text-[10px]"
+                    className="ml-3 text-red-600 hover:bg-red-50 rounded px-2 py-1 text-xs font-medium"
                     type="button"
                   >
-                    ✕
+                    Remover
                   </button>
                 </li>
               ))}
             </ul>
           </div>
-        )}
+        </Modal>
         <div className="text-xs text-neutral-700 border rounded-md p-3">
           {ataFiles.length === 0 ? (
             <div>Nenhum arquivo carregado ainda.</div>

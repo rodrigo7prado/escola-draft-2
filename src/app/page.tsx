@@ -1,4 +1,5 @@
 import MigrateUploads from "@/components/MigrateUploads";
+import CentralAlunos from "@/components/CentralAlunos";
 
 export default function Home() {
   return (
@@ -52,7 +53,7 @@ export default function Home() {
         <details className="border rounded-md">
           <summary className="cursor-pointer select-none px-4 py-3 font-medium">Central de Alunos</summary>
           <div className="px-4 pb-4 text-sm text-neutral-700">
-            Mock inicial da central. Integração completa será evoluída aqui.
+            <CentralAlunos />
           </div>
         </details>
       </section>

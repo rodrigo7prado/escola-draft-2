@@ -35,3 +35,22 @@ model UploadedFile {
   @@index([anos])
   @@index([modalidades])
 }
+
+// Edições granulares de campos de alunos
+// Cada registro representa uma edição individual de um campo específico
+model AlunoEdit {
+  id             String   @id @default(uuid())
+  matricula      String   // Número de matrícula do aluno (referência)
+  campo          String   // Nome do campo editado (ex: "NOME_COMPL", "CPF", "RG_NUM")
+  valorOriginal  String?  // Valor original do CSV (null se campo não existia)
+  valorEditado   String   // Novo valor após edição
+  motivo         String?  // Motivo da edição (opcional)
+  editadoPor     String?  // Usuário que fez a edição (opcional por enquanto)
+  editadoEm      DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([matricula])
+  @@index([editadoEm])
+  @@index([matricula, campo]) // Para buscar edições de um campo específico de um aluno
+}

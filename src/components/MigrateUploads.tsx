@@ -4,6 +4,19 @@ import DropCsv from "@/components/DropCsv";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/Tabs";
 import { useEffect, useMemo, useState, startTransition } from "react";
 
+type ParsedCsv = {
+  headers: string[];
+  rows: Record<string, string>[];
+};
+
+type UploadedFile = {
+  id: string; // timestamp
+  fileName: string;
+  uploadDate: string;
+  data: ParsedCsv;
+  dataHash: string;
+};
+
 const ATA_HEADERS = [
   "Ano",
   "CENSO",
@@ -108,18 +121,33 @@ const REL_HEADERS = [
   "ATUALIZAR_DADOS_CADASTRAIS1",
 ];
 
+// Função para calcular hash dos dados processados
+async function hashData(data: ParsedCsv): Promise<string> {
+  const sortedRows = [...data.rows].sort((a, b) => {
+    const keyA = Object.keys(a).map(k => `${k}:${a[k]}`).join('|');
+    const keyB = Object.keys(b).map(k => `${k}:${b[k]}`).join('|');
+    return keyA.localeCompare(keyB);
+  });
+  const str = JSON.stringify({ headers: data.headers.sort(), rows: sortedRows });
+  const encoder = new TextEncoder();
+  const dataBuffer = encoder.encode(str);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 export default function MigrateUploads() {
-  const ATA_STORAGE_KEY = "migration_ata_resultados_finais";
+  const ATA_STORAGE_KEY = "migration_ata_files";
   const REL_STORAGE_KEY = "migration_rel_acomp_enturmacao";
 
-  const [ataData, setAtaData] = useState<{ headers: string[]; rows: Record<string, string>[] } | null>(null);
+  const [ataFiles, setAtaFiles] = useState<UploadedFile[]>([]);
 
   useEffect(() => {
     try {
       const rawAta = localStorage.getItem(ATA_STORAGE_KEY);
       if (rawAta) {
-        const parsed = JSON.parse(rawAta);
-        startTransition(() => setAtaData(parsed));
+        const parsed = JSON.parse(rawAta) as UploadedFile[];
+        startTransition(() => setAtaFiles(parsed));
       }
     } catch {}
   }, []);
@@ -129,8 +157,106 @@ export default function MigrateUploads() {
 
   const pluralTurmas = (count: number) => `${count} ${count === 1 ? "turma" : "turmas"}`;
 
+  // Handler para adicionar novos arquivos
+  const handleNewFiles = async (data: ParsedCsv, fileName: string) => {
+    const hash = await hashData(data);
+
+    // Usar callback funcional para pegar o estado mais recente
+    setAtaFiles(currentFiles => {
+      // Verificar se já existe arquivo com o mesmo hash
+      if (currentFiles.some(f => f.dataHash === hash)) {
+        console.warn(`Arquivo "${fileName}" com conteúdo idêntico já foi carregado. Upload ignorado.`);
+        return currentFiles; // Retorna estado atual sem modificar
+      }
+
+      const newFile: UploadedFile = {
+        id: crypto.randomUUID(), // ID único
+        fileName,
+        uploadDate: new Date().toISOString(),
+        data,
+        dataHash: hash
+      };
+
+      const updatedFiles = [...currentFiles, newFile];
+
+      try {
+        localStorage.setItem(ATA_STORAGE_KEY, JSON.stringify(updatedFiles));
+      } catch (e) {
+        console.error('Erro ao salvar no localStorage:', e);
+      }
+
+      return updatedFiles;
+    });
+  };
+
+  // Handler para remover arquivo individual
+  const removeFile = (fileId: string) => {
+    const updatedFiles = ataFiles.filter(f => f.id !== fileId);
+    setAtaFiles(updatedFiles);
+    try {
+      localStorage.setItem(ATA_STORAGE_KEY, JSON.stringify(updatedFiles));
+    } catch {}
+  };
+
+  // Handler para remover por período letivo
+  const removeByPeriodo = (periodo: string) => {
+    if (!confirm(`Tem certeza que deseja remover todos os dados do período ${periodo}?`)) return;
+
+    const updatedFiles = ataFiles.filter(file => {
+      // Verificar se o arquivo contém dados deste período
+      const hasPeriodo = file.data.rows.some(row => {
+        const stripLabelPrefix = (s: string) => {
+          const m = String(s || "").trim().match(/^\s*([\p{L}\s_]+):\s*(.*)$/u);
+          return m ? m[2].trim() : String(s || "").trim();
+        };
+        const ano = stripLabelPrefix(row["Ano"] ?? "");
+        return ano === periodo;
+      });
+      return !hasPeriodo;
+    });
+
+    setAtaFiles(updatedFiles);
+    try {
+      localStorage.setItem(ATA_STORAGE_KEY, JSON.stringify(updatedFiles));
+    } catch {}
+  };
+
+  // Handler para remover por modalidade
+  const removeByModalidade = (modalidade: string, periodo: string) => {
+    if (!confirm(`Tem certeza que deseja remover todos os dados da modalidade "${modalidade}" do período ${periodo}?`)) return;
+
+    const updatedFiles = ataFiles.filter(file => {
+      // Verificar se o arquivo contém dados desta modalidade e período
+      const hasMatch = file.data.rows.some(row => {
+        const stripLabelPrefix = (s: string) => {
+          const m = String(s || "").trim().match(/^\s*([\p{L}\s_]+):\s*(.*)$/u);
+          return m ? m[2].trim() : String(s || "").trim();
+        };
+        const ano = stripLabelPrefix(row["Ano"] ?? "");
+        const mod = stripLabelPrefix(row["MODALIDADE"] ?? "");
+        return ano === periodo && mod === modalidade;
+      });
+      return !hasMatch;
+    });
+
+    setAtaFiles(updatedFiles);
+    try {
+      localStorage.setItem(ATA_STORAGE_KEY, JSON.stringify(updatedFiles));
+    } catch {}
+  };
+
+  // Handler para limpar todos os arquivos
+  const clearAllFiles = () => {
+    if (confirm('Tem certeza que deseja remover todos os arquivos carregados?')) {
+      setAtaFiles([]);
+      try {
+        localStorage.removeItem(ATA_STORAGE_KEY);
+      } catch {}
+    }
+  };
+
   const estrutura = useMemo(() => {
-    if (!ataData) {
+    if (ataFiles.length === 0) {
       return new Map<string, Map<string, Map<string, TurmaInfo>>>();
     }
 
@@ -145,25 +271,25 @@ export default function MigrateUploads() {
 
     const registros: Registro[] = [];
 
-    for (const r of ataData.rows) {
-      const cursoNorm = normalize(r["CURSO"] ?? "");
-      if (cursoNorm !== "ENSINO MEDIO") continue;
+    // Processar todos os arquivos carregados
+    for (const file of ataFiles) {
+      for (const r of file.data.rows) {
+        const ano = stripLabelPrefix(r["Ano"] ?? "") || "(sem ano)";
+        const modalidade = stripLabelPrefix(r["MODALIDADE"] ?? "") || "(sem modalidade)";
+        const turma = stripLabelPrefix(r["TURMA"] ?? "");
+        const serieRaw = stripLabelPrefix(r["SERIE"] ?? "");
+        const serie = serieRaw || "(sem série)";
+        const turno = stripLabelPrefix(r["TURNO"] ?? "");
+        if (!turma) continue;
 
-      const ano = stripLabelPrefix(r["Ano"] ?? "") || "(sem ano)";
-      const modalidade = stripLabelPrefix(r["MODALIDADE"] ?? "") || "(sem modalidade)";
-      const turma = stripLabelPrefix(r["TURMA"] ?? "");
-      const serieRaw = stripLabelPrefix(r["SERIE"] ?? "");
-      const serie = serieRaw || "(sem série)";
-      const turno = stripLabelPrefix(r["TURNO"] ?? "");
-      if (!turma) continue;
+        // Alerta se encontrar série com valor 0
+        const serieNum = parseInt(serie, 10);
+        if (serieNum === 0) {
+          console.warn(`Encontrada SERIE com valor 0 para turma ${turma} no ano ${ano} (arquivo: ${file.fileName})`);
+        }
 
-      // Alerta se encontrar série com valor 0
-      const serieNum = parseInt(serie, 10);
-      if (serieNum === 0) {
-        console.warn(`Encontrada SERIE com valor 0 para turma ${turma} no ano ${ano}`);
+        registros.push({ ano, modalidade, turma, serie, turno });
       }
-
-      registros.push({ ano, modalidade, turma, serie, turno });
     }
 
     // Estrutura: Período Letivo -> Modalidade -> Turmas
@@ -180,26 +306,61 @@ export default function MigrateUploads() {
     }
 
     return estrutura;
-  }, [ataData]);
+  }, [ataFiles]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
         <DropCsv
-          title="Ata_resultados_finais.csv"
+          title="Ata de Resultados Finais"
           requiredHeaders={ATA_HEADERS}
           duplicateKey="ALUNO"
-          onParsed={(d) => {
-            setAtaData(d);
-            try { localStorage.setItem(ATA_STORAGE_KEY, JSON.stringify(d)); } catch {}
-          }}
+          onParsed={handleNewFiles}
           showPreview={false}
+          multiple={true}
         />
+
+        {/* Lista de arquivos carregados */}
+        {ataFiles.length > 0 && (
+          <div className="border rounded-md p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs font-medium">
+                Arquivos carregados ({ataFiles.length})
+              </div>
+              <button
+                onClick={clearAllFiles}
+                className="text-[10px] text-red-600 hover:underline"
+                type="button"
+              >
+                Limpar todos
+              </button>
+            </div>
+            <ul className="space-y-1.5 max-h-40 overflow-auto">
+              {ataFiles.map((file) => (
+                <li key={file.id} className="flex items-center justify-between text-xs border-b pb-1.5">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{file.fileName}</div>
+                    <div className="text-[10px] text-neutral-500">
+                      {new Date(file.uploadDate).toLocaleString('pt-BR')} • {file.data.rows.length} registros
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => removeFile(file.id)}
+                    className="ml-2 text-red-600 hover:bg-red-50 rounded px-1.5 py-0.5 text-[10px]"
+                    type="button"
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div className="text-xs text-neutral-700 border rounded-md p-3">
-          {!ataData ? (
-            <div>Nenhum upload válido de Ata_resultados_finais.csv realizado ainda.</div>
+          {ataFiles.length === 0 ? (
+            <div>Nenhum arquivo carregado ainda.</div>
           ) : estrutura.size === 0 ? (
-            <div className="text-xs text-neutral-500 py-3">Nenhum dado de Ensino Médio encontrado.</div>
+            <div className="text-xs text-neutral-500 py-3">Nenhum dado encontrado nos arquivos carregados.</div>
           ) : (
             <Tabs defaultValue={Array.from(estrutura.keys()).sort()[0]} variant="default">
               <TabsList variant="default">
@@ -211,6 +372,18 @@ export default function MigrateUploads() {
               </TabsList>
               {Array.from(estrutura.entries()).sort().map(([periodoLetivo, modMap]) => (
                 <TabsContent key={periodoLetivo} value={periodoLetivo}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="text-xs text-neutral-600">
+                      Modalidades: {modMap.size}
+                    </div>
+                    <button
+                      onClick={() => removeByPeriodo(periodoLetivo)}
+                      className="text-[10px] text-red-600 hover:underline"
+                      type="button"
+                    >
+                      Excluir período
+                    </button>
+                  </div>
                   <Tabs defaultValue={Array.from(modMap.keys()).sort()[0]} variant="tertiary">
                     <TabsList variant="tertiary">
                       {Array.from(modMap.keys()).sort().map((mod) => (
@@ -220,7 +393,16 @@ export default function MigrateUploads() {
                     {Array.from(modMap.entries()).sort().map(([mod, turmasMap]) => (
                       <TabsContent key={mod} value={mod}>
                         <div className="pt-2">
-                          <div className="text-xs text-neutral-600 mb-2">Total: {pluralTurmas(turmasMap.size)}</div>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-xs text-neutral-600">Total: {pluralTurmas(turmasMap.size)}</div>
+                            <button
+                              onClick={() => removeByModalidade(mod, periodoLetivo)}
+                              className="text-[10px] text-red-600 hover:underline"
+                              type="button"
+                            >
+                              Excluir modalidade
+                            </button>
+                          </div>
                           <ul className="divide-y max-h-60 overflow-auto border rounded">
                             {Array.from(turmasMap.keys()).sort().map((turma) => (
                               <li key={turma} className="py-1.5 px-2 text-xs hover:bg-neutral-50">
@@ -241,11 +423,15 @@ export default function MigrateUploads() {
 
       <div>
         <DropCsv
-          title="RelAcompEnturmacaoPorEscola.csv"
+          title="Relatório de Acompanhamento de Enturmação"
           requiredHeaders={REL_HEADERS}
           duplicateKey="ALUNO"
           showPreview={false}
-          onParsed={(d) => { try { localStorage.setItem(REL_STORAGE_KEY, JSON.stringify(d)); } catch {} }}
+          onParsed={(d, fileName) => {
+            try {
+              localStorage.setItem(REL_STORAGE_KEY, JSON.stringify({ data: d, fileName, uploadDate: new Date().toISOString() }));
+            } catch {}
+          }}
         />
         <div className="mt-2">
           <button

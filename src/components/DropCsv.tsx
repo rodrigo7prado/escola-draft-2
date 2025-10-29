@@ -11,8 +11,9 @@ type DropCsvProps = {
   title: string;
   requiredHeaders: string[];
   duplicateKey: string; // column name to check duplicates (e.g., "ALUNO")
-  onParsed?: (data: ParsedCsv) => void;
+  onParsed?: (data: ParsedCsv, fileName: string) => void;
   showPreview?: boolean; // controls preview/stats rendering
+  multiple?: boolean; // allow multiple file upload
 };
 
 function splitCsvLine(line: string): string[] {
@@ -74,37 +75,54 @@ function parseCsvLoose(text: string, requiredHeaders: string[]): ParsedCsv {
   return { headers, rows };
 }
 
-export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed, showPreview = true }: DropCsvProps) {
+export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed, showPreview = true, multiple = false }: DropCsvProps) {
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<ParsedCsv | null>(null);
+  const [lastUploadInfo, setLastUploadInfo] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    const file = files[0];
-    const text = await file.text();
 
-    const parsed = parseCsvLoose(text, requiredHeaders);
-    if (parsed.headers.length === 0) {
-      setError("CSV vazio ou inválido.");
-      setData(null);
-      return;
+    const filesToProcess = multiple ? Array.from(files) : [files[0]];
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const file of filesToProcess) {
+      try {
+        const text = await file.text();
+
+        const parsed = parseCsvLoose(text, requiredHeaders);
+        if (parsed.headers.length === 0) {
+          setError(`${file.name}: CSV vazio ou inválido.`);
+          errorCount++;
+          continue;
+        }
+
+        // validação de cabeçalho: todos os requiredHeaders precisam estar presentes
+        const headerSet = new Set(parsed.headers);
+        const missing = requiredHeaders.filter((h) => !headerSet.has(h));
+        if (missing.length > 0) {
+          setError(`${file.name}: Cabeçalho inválido. Faltando: ${missing.join(", ")}`);
+          errorCount++;
+          continue;
+        }
+
+        setError(null);
+        setData(parsed);
+        onParsed?.(parsed, file.name);
+        successCount++;
+      } catch (e) {
+        console.error(`Erro ao processar ${file.name}:`, e);
+        errorCount++;
+      }
     }
 
-    // validação de cabeçalho: todos os requiredHeaders precisam estar presentes
-    const headerSet = new Set(parsed.headers);
-    const missing = requiredHeaders.filter((h) => !headerSet.has(h));
-    if (missing.length > 0) {
-      setError(`Cabeçalho inválido. Faltando: ${missing.join(", ")}`);
-      setData(null);
-      return;
+    if (multiple) {
+      setLastUploadInfo(`${successCount} arquivo(s) processado(s)${errorCount > 0 ? `, ${errorCount} com erro` : ''}`);
     }
-
-    setError(null);
-    setData(parsed);
-    onParsed?.(parsed);
-  }, [onParsed, requiredHeaders]);
+  }, [onParsed, requiredHeaders, multiple]);
 
   const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -185,14 +203,16 @@ export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="font-medium">{title}</div>
-            <div className="text-neutral-600 text-xs">Arraste e solte um .csv aqui ou selecione um arquivo</div>
+            <div className="text-neutral-600 text-xs">
+              Arraste e solte {multiple ? 'arquivos .csv' : 'um .csv'} aqui ou selecione {multiple ? 'arquivos' : 'um arquivo'}
+            </div>
           </div>
           <button
             className="border rounded px-2 py-1 text-xs hover:bg-neutral-50"
             onClick={() => fileInputRef.current?.click()}
             type="button"
           >
-            Selecionar arquivo
+            Selecionar arquivo{multiple ? 's' : ''}
           </button>
           <input
             ref={fileInputRef}
@@ -200,8 +220,12 @@ export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed
             accept=".csv,text/csv"
             className="hidden"
             onChange={onChange}
+            multiple={multiple}
           />
         </div>
+        {lastUploadInfo && (
+          <div className="mt-2 text-xs text-green-700">{lastUploadInfo}</div>
+        )}
         {error && (
           <div className="mt-2 text-xs text-(--color-pendente)">{error}</div>
         )}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Modal } from "@/components/ui/Modal";
+import FiltrosHierarquicos from "@/components/FiltrosHierarquicos";
 
 type Aluno = {
   id: string;
@@ -13,6 +14,20 @@ type Aluno = {
   linhaOrigem?: {
     dadosOriginais: Record<string, any>;
   };
+  enturmacoes?: Array<{
+    anoLetivo: string;
+    regime: number;
+    modalidade: string;
+    turma: string;
+    serie: string;
+  }>;
+};
+
+type FiltrosState = {
+  anoLetivo: string;
+  regime: string;
+  modalidade: string;
+  turma: string;
 };
 
 export default function CentralAlunosSimplified() {
@@ -26,15 +41,35 @@ export default function CentralAlunosSimplified() {
   const [editingField, setEditingField] = useState<{campo: string; valorAtual: string | null; valorOriginal: string | null} | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Carregar alunos da API
+  // Estado dos filtros hierárquicos
+  const [filtros, setFiltros] = useState<FiltrosState>({
+    anoLetivo: '',
+    regime: '',
+    modalidade: '',
+    turma: ''
+  });
+
+  // Carregar alunos da API (com filtros)
   useEffect(() => {
     const fetchAlunos = async () => {
+      setIsLoading(true);
       try {
-        const response = await fetch('/api/alunos');
+        // Construir query string com filtros
+        const params = new URLSearchParams();
+        if (filtros.anoLetivo) params.append('anoLetivo', filtros.anoLetivo);
+        if (filtros.regime) params.append('regime', filtros.regime);
+        if (filtros.modalidade) params.append('modalidade', filtros.modalidade);
+        if (filtros.turma) params.append('turma', filtros.turma);
+
+        const queryString = params.toString();
+        const url = queryString ? `/api/alunos?${queryString}` : '/api/alunos';
+
+        const response = await fetch(url);
         if (!response.ok) throw new Error('Erro ao carregar alunos');
 
         const { alunos } = await response.json();
         setAlunos(alunos);
+        setCurrentIndex(0); // Reset para primeiro aluno quando filtrar
       } catch (error) {
         console.error('Erro ao carregar alunos:', error);
       } finally {
@@ -43,7 +78,7 @@ export default function CentralAlunosSimplified() {
     };
 
     fetchAlunos();
-  }, []);
+  }, [filtros]);
 
   // Normalizar texto (remover acentos)
   const normalize = (text: string): string => {
@@ -178,6 +213,12 @@ export default function CentralAlunosSimplified() {
 
   return (
     <div className="space-y-4">
+      {/* Filtros Hierárquicos */}
+      <FiltrosHierarquicos
+        filtros={filtros}
+        onFiltrosChange={setFiltros}
+      />
+
       {/* Campo de Pesquisa */}
       <div className="relative">
         <input

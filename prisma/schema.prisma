@@ -54,6 +54,7 @@ model LinhaImportada {
   // Relacionamentos
   arquivo             ArquivoImportado @relation(fields: [arquivoId], references: [id], onDelete: Cascade)
   alunos              Aluno[]
+  enturmacoes         Enturmacao[]
 
   // Timestamps
   createdAt           DateTime @default(now())
@@ -112,6 +113,7 @@ model Aluno {
 
   // Relacionamentos
   linhaOrigem           LinhaImportada? @relation(fields: [linhaOrigemId], references: [id], onDelete: SetNull)
+  enturmacoes           Enturmacao[]
 
   // Auditoria
   criadoEm              DateTime @default(now())
@@ -124,6 +126,38 @@ model Aluno {
   @@index([origemTipo])
   @@index([fonteAusente])
   @@map("alunos")
+}
+
+// Enturmação - Registros dos períodos letivos estudados pelo aluno na escola
+model Enturmacao {
+  id                String   @id @default(uuid())
+  alunoId           String
+
+  // Identificação do período letivo estudado na escola
+  anoLetivo         String   @db.VarChar(10)
+  regime            Int      @default(0) // 0=anual, 1=1º semestre, 2=2º semestre
+  modalidade        String   @db.VarChar(100)
+  turma             String   @db.VarChar(50)
+  serie             String   @db.VarChar(10)
+  turno             String?  @db.VarChar(20)
+
+  // Metadados de origem
+  origemTipo        String   // 'csv' ou 'manual'
+  linhaOrigemId     String?
+
+  // Relacionamentos
+  aluno             Aluno              @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  linhaOrigem       LinhaImportada?    @relation(fields: [linhaOrigemId], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  criadoEm          DateTime @default(now())
+  atualizadoEm      DateTime @updatedAt
+
+  @@index([alunoId])
+  @@index([anoLetivo])
+  @@index([modalidade])
+  @@index([turma])
+  @@map("enturmacoes")
 }
 
 // ============================================================================

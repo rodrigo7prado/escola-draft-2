@@ -85,17 +85,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Criar ou atualizar alunos
+    // Criar ou atualizar alunos e suas enturmações
     let alunosNovos = 0;
     let alunosAtualizados = 0;
+    let enturmacoesNovas = 0;
 
     for (const [matricula, info] of alunosMap) {
       const alunoExistente = await prisma.aluno.findUnique({
         where: { matricula }
       });
 
+      let alunoId: string;
+
       if (!alunoExistente) {
-        await prisma.aluno.create({
+        const novoAluno = await prisma.aluno.create({
           data: {
             matricula,
             nome: info.dados.NOME_COMPL || null,
@@ -104,6 +107,7 @@ export async function POST(request: NextRequest) {
           }
         });
         alunosNovos++;
+        alunoId = novoAluno.id;
       } else {
         // Atualiza linha de origem se for mais recente
         await prisma.aluno.update({
@@ -111,6 +115,54 @@ export async function POST(request: NextRequest) {
           data: { linhaOrigemId: info.linha.id }
         });
         alunosAtualizados++;
+        alunoId = alunoExistente.id;
+      }
+
+      // Função helper para remover prefixos
+      const limparValor = (valor: string | undefined, prefixo: string): string => {
+        if (!valor) return '';
+        const str = valor.toString().trim();
+        if (str.startsWith(prefixo)) {
+          return str.substring(prefixo.length).trim();
+        }
+        return str;
+      };
+
+      // Criar registro de enturmação (se não existir)
+      const anoLetivo = limparValor(info.dados.Ano, 'Ano Letivo:') || limparValor(info.dados.Ano, 'Ano:');
+      const modalidade = limparValor(info.dados.MODALIDADE, 'Modalidade:');
+      const turma = limparValor(info.dados.TURMA, 'Turma:');
+      const serie = limparValor(info.dados.SERIE, 'Série:');
+      const turno = limparValor(info.dados.TURNO, 'Turno:') || null;
+
+      if (anoLetivo && modalidade && turma && serie) {
+        // Verificar se já existe essa enturmação
+        const enturmacaoExistente = await prisma.enturmacao.findFirst({
+          where: {
+            alunoId,
+            anoLetivo,
+            modalidade,
+            turma,
+            serie
+          }
+        });
+
+        if (!enturmacaoExistente) {
+          await prisma.enturmacao.create({
+            data: {
+              alunoId,
+              anoLetivo,
+              regime: 0, // Por padrão anual
+              modalidade,
+              turma,
+              serie,
+              turno,
+              origemTipo: 'csv',
+              linhaOrigemId: info.linha.id
+            }
+          });
+          enturmacoesNovas++;
+        }
       }
     }
 
@@ -118,7 +170,8 @@ export async function POST(request: NextRequest) {
       arquivo,
       linhasImportadas: data.rows.length,
       alunosNovos,
-      alunosAtualizados
+      alunosAtualizados,
+      enturmacoesNovas
     }, { status: 201 });
 
   } catch (error) {

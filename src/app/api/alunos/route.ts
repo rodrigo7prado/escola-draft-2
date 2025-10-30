@@ -3,10 +3,15 @@ import { prisma } from '@/lib/prisma';
 
 // GET /api/alunos - Buscar todos os alunos
 // GET /api/alunos?matricula=xxx - Buscar aluno específico
+// GET /api/alunos?anoLetivo=xxx&regime=x&modalidade=xxx&turma=xxx - Filtrar por enturmação
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const matricula = searchParams.get('matricula');
+    const anoLetivo = searchParams.get('anoLetivo');
+    const regime = searchParams.get('regime');
+    const modalidade = searchParams.get('modalidade');
+    const turma = searchParams.get('turma');
 
     if (matricula) {
       // Buscar aluno específico com dados originais
@@ -17,6 +22,9 @@ export async function GET(request: NextRequest) {
             include: {
               arquivo: true
             }
+          },
+          enturmacoes: {
+            orderBy: { anoLetivo: 'desc' }
           }
         }
       });
@@ -57,8 +65,24 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Buscar todos os alunos
+    // Construir filtro de enturmação
+    const filtroEnturmacao: any = {};
+    if (anoLetivo) filtroEnturmacao.anoLetivo = anoLetivo;
+    if (regime) filtroEnturmacao.regime = parseInt(regime);
+    if (modalidade) filtroEnturmacao.modalidade = modalidade;
+    if (turma) filtroEnturmacao.turma = turma;
+
+    // Buscar alunos (filtrados por enturmação se houver filtros)
+    const whereClause: any = {};
+
+    if (Object.keys(filtroEnturmacao).length > 0) {
+      whereClause.enturmacoes = {
+        some: filtroEnturmacao
+      };
+    }
+
     const alunos = await prisma.aluno.findMany({
+      where: whereClause,
       orderBy: [
         { nome: 'asc' }
       ],
@@ -67,6 +91,10 @@ export async function GET(request: NextRequest) {
           select: {
             dadosOriginais: true
           }
+        },
+        enturmacoes: {
+          where: Object.keys(filtroEnturmacao).length > 0 ? filtroEnturmacao : undefined,
+          orderBy: { anoLetivo: 'desc' }
         }
       }
     });

@@ -18,35 +18,6 @@ async function hashData(data: ParsedCsv): Promise<string> {
   return crypto.createHash('sha256').update(str).digest('hex');
 }
 
-// Helper para extrair metadados
-function extractMetadata(data: ParsedCsv) {
-  const stripLabelPrefix = (s: string) => {
-    const m = String(s || "").trim().match(/^\s*([\p{L}\s_]+):\s*(.*)$/u);
-    return m ? m[2].trim() : String(s || "").trim();
-  };
-
-  const anosSet = new Set<string>();
-  const modalidadesSet = new Set<string>();
-  const turmasSet = new Set<string>();
-
-  for (const row of data.rows) {
-    const ano = stripLabelPrefix(row["Ano"] ?? "");
-    const modalidade = stripLabelPrefix(row["MODALIDADE"] ?? "");
-    const turma = stripLabelPrefix(row["TURMA"] ?? "");
-
-    if (ano) anosSet.add(ano);
-    if (modalidade) modalidadesSet.add(modalidade);
-    if (turma) turmasSet.add(turma);
-  }
-
-  return {
-    anos: Array.from(anosSet),
-    modalidades: Array.from(modalidadesSet),
-    turmas: Array.from(turmasSet),
-    rowCount: data.rows.length
-  };
-}
-
 // POST /api/files - Upload de arquivo
 export async function POST(request: NextRequest) {
   try {
@@ -64,8 +35,8 @@ export async function POST(request: NextRequest) {
     const dataHash = await hashData(data);
 
     // Verificar se já existe
-    const existing = await prisma.uploadedFile.findUnique({
-      where: { dataHash }
+    const existing = await prisma.arquivoImportado.findUnique({
+      where: { hashArquivo: dataHash }
     });
 
     if (existing) {
@@ -75,23 +46,80 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extrair metadados
-    const metadata = extractMetadata(data);
-
-    // Criar no banco
-    const file = await prisma.uploadedFile.create({
+    // Criar arquivo importado
+    const arquivo = await prisma.arquivoImportado.create({
       data: {
-        fileName,
-        dataHash,
-        data: data as any, // Prisma armazena como Json
-        rowCount: metadata.rowCount,
-        anos: metadata.anos,
-        modalidades: metadata.modalidades,
-        turmas: metadata.turmas
+        nomeArquivo: fileName,
+        hashArquivo: dataHash,
+        tipo: 'alunos',
+        status: 'ativo'
       }
     });
 
-    return NextResponse.json({ file }, { status: 201 });
+    // Criar linhas importadas e processar alunos
+    const alunosMap = new Map<string, any>();
+
+    for (let i = 0; i < data.rows.length; i++) {
+      const row = data.rows[i];
+      const matricula = row.ALUNO?.trim();
+
+      if (!matricula) continue;
+
+      // Criar linha importada
+      const linha = await prisma.linhaImportada.create({
+        data: {
+          arquivoId: arquivo.id,
+          numeroLinha: i,
+          dadosOriginais: row as any,
+          identificadorChave: matricula,
+          tipoEntidade: 'aluno'
+        }
+      });
+
+      // Guardar para processar alunos depois
+      if (!alunosMap.has(matricula)) {
+        alunosMap.set(matricula, {
+          linha,
+          dados: row
+        });
+      }
+    }
+
+    // Criar ou atualizar alunos
+    let alunosNovos = 0;
+    let alunosAtualizados = 0;
+
+    for (const [matricula, info] of alunosMap) {
+      const alunoExistente = await prisma.aluno.findUnique({
+        where: { matricula }
+      });
+
+      if (!alunoExistente) {
+        await prisma.aluno.create({
+          data: {
+            matricula,
+            nome: info.dados.NOME_COMPL || null,
+            origemTipo: 'csv',
+            linhaOrigemId: info.linha.id
+          }
+        });
+        alunosNovos++;
+      } else {
+        // Atualiza linha de origem se for mais recente
+        await prisma.aluno.update({
+          where: { matricula },
+          data: { linhaOrigemId: info.linha.id }
+        });
+        alunosAtualizados++;
+      }
+    }
+
+    return NextResponse.json({
+      arquivo,
+      linhasImportadas: data.rows.length,
+      alunosNovos,
+      alunosAtualizados
+    }, { status: 201 });
 
   } catch (error) {
     console.error('Erro ao fazer upload:', error);
@@ -102,25 +130,50 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET /api/files - Listar arquivos
+// GET /api/files - Listar arquivos importados
 export async function GET() {
   try {
-    const files = await prisma.uploadedFile.findMany({
-      orderBy: { uploadDate: 'desc' },
-      select: {
-        id: true,
-        fileName: true,
-        uploadDate: true,
-        dataHash: true,
-        rowCount: true,
-        anos: true,
-        modalidades: true,
-        turmas: true,
-        data: true
+    const arquivos = await prisma.arquivoImportado.findMany({
+      where: { status: 'ativo' },
+      orderBy: { dataUpload: 'desc' },
+      include: {
+        linhas: {
+          select: {
+            dadosOriginais: true
+          }
+        },
+        _count: {
+          select: { linhas: true }
+        }
       }
     });
 
-    return NextResponse.json({ files });
+    // Adicionar metadados extraídos das linhas
+    const arquivosComMetadados = arquivos.map(arquivo => {
+      const anosSet = new Set<string>();
+      const modalidadesSet = new Set<string>();
+      const turmasSet = new Set<string>();
+
+      for (const linha of arquivo.linhas) {
+        const dados = linha.dadosOriginais as any;
+        if (dados.Ano) anosSet.add(dados.Ano);
+        if (dados.MODALIDADE) modalidadesSet.add(dados.MODALIDADE);
+        if (dados.TURMA) turmasSet.add(dados.TURMA);
+      }
+
+      return {
+        id: arquivo.id,
+        nomeArquivo: arquivo.nomeArquivo,
+        dataUpload: arquivo.dataUpload,
+        hashArquivo: arquivo.hashArquivo,
+        anos: Array.from(anosSet),
+        modalidades: Array.from(modalidadesSet),
+        turmas: Array.from(turmasSet),
+        _count: arquivo._count
+      };
+    });
+
+    return NextResponse.json({ arquivos: arquivosComMetadados });
 
   } catch (error) {
     console.error('Erro ao listar arquivos:', error);
@@ -131,49 +184,36 @@ export async function GET() {
   }
 }
 
-// DELETE /api/files - Deletar arquivos
-// Aceita query params: ?id=xxx ou ?periodo=2022 ou ?periodo=2022&modalidade=XXX
+// DELETE /api/files - Marcar arquivo como excluído
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const periodo = searchParams.get('periodo');
-    const modalidade = searchParams.get('modalidade');
 
-    if (id) {
-      // Deletar arquivo específico por ID
-      await prisma.uploadedFile.delete({
-        where: { id }
-      });
-      return NextResponse.json({ message: 'Arquivo deletado com sucesso' });
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Parâmetro id é obrigatório' },
+        { status: 400 }
+      );
     }
 
-    if (periodo) {
-      // Deletar por período (e opcionalmente modalidade)
-      const where: any = {
-        anos: { has: periodo }
-      };
-
-      if (modalidade) {
-        where.modalidades = { has: modalidade };
+    // Marcar como excluído (não deleta fisicamente)
+    await prisma.arquivoImportado.update({
+      where: { id },
+      data: {
+        status: 'excluido',
+        excluidoEm: new Date()
       }
+    });
 
-      const result = await prisma.uploadedFile.deleteMany({ where });
+    // O trigger fn_marcar_fonte_ausente vai marcar alunos como fonteAusente=true
 
-      return NextResponse.json({
-        message: `${result.count} arquivo(s) deletado(s) com sucesso`
-      });
-    }
-
-    return NextResponse.json(
-      { error: 'Parâmetros inválidos. Use ?id=xxx ou ?periodo=2022 ou ?periodo=2022&modalidade=XXX' },
-      { status: 400 }
-    );
+    return NextResponse.json({ message: 'Arquivo marcado como excluído' });
 
   } catch (error) {
-    console.error('Erro ao deletar arquivo(s):', error);
+    console.error('Erro ao excluir arquivo:', error);
     return NextResponse.json(
-      { error: 'Erro ao deletar arquivo(s)' },
+      { error: 'Erro ao excluir arquivo' },
       { status: 500 }
     );
   }

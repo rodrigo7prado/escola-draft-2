@@ -47,6 +47,15 @@ type AlunoEdit = {
 };
 
 export default function CentralAlunos() {
+  // COMPONENTE OBSOLETO - Use CentralAlunosSimplified
+  return (
+    <div className="border rounded-md p-4 text-sm text-red-600">
+      Este componente está obsoleto. Use CentralAlunosSimplified ao invés.
+    </div>
+  );
+}
+
+function CentralAlunosOLD() {
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
@@ -65,12 +74,12 @@ export default function CentralAlunos() {
         const response = await fetch('/api/files');
         if (!response.ok) throw new Error('Erro ao carregar dados');
 
-        const { files } = await response.json();
+        const { arquivos } = await response.json();
 
         // Processar todos os arquivos e extrair alunos
         const alunosMap = new Map<string, Aluno>();
 
-        for (const file of files) {
+        for (const file of (arquivos || [])) {
           const rows = file.data.rows as AlunoRaw[];
 
           for (const row of rows) {

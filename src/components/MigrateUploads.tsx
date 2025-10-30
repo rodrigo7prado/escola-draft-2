@@ -51,8 +51,22 @@ export default function MigrateUploads() {
       try {
         const response = await fetch('/api/files');
         if (!response.ok) throw new Error('Erro ao carregar arquivos');
-        const { files } = await response.json();
-        startTransition(() => setAtaFiles(files));
+        const { arquivos } = await response.json();
+
+        // Adaptar estrutura nova para antiga temporariamente
+        const arquivosAdaptados = arquivos.map((arq: any) => ({
+          id: arq.id,
+          fileName: arq.nomeArquivo,
+          uploadDate: arq.dataUpload,
+          dataHash: arq.hashArquivo,
+          rowCount: arq._count?.linhas || 0,
+          anos: [],
+          modalidades: [],
+          turmas: [],
+          data: { headers: [], rows: [] }
+        }));
+
+        startTransition(() => setAtaFiles(arquivosAdaptados));
       } catch (error) {
         console.error('Erro ao carregar arquivos:', error);
       } finally {
@@ -97,8 +111,22 @@ export default function MigrateUploads() {
         throw new Error('Erro ao fazer upload do arquivo');
       }
 
-      const { file } = await response.json();
-      setAtaFiles(currentFiles => [...currentFiles, file]);
+      const { arquivo } = await response.json();
+
+      // Adaptar estrutura nova para antiga
+      const arquivoAdaptado = {
+        id: arquivo.id,
+        fileName: arquivo.nomeArquivo,
+        uploadDate: arquivo.dataUpload,
+        dataHash: arquivo.hashArquivo,
+        rowCount: 0,
+        anos: [],
+        modalidades: [],
+        turmas: [],
+        data: { headers: [], rows: [] }
+      };
+
+      setAtaFiles(currentFiles => [...currentFiles, arquivoAdaptado]);
 
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
@@ -303,7 +331,7 @@ export default function MigrateUploads() {
                   {ataFiles.length} {ataFiles.length === 1 ? 'arquivo carregado' : 'arquivos carregados'}
                 </div>
                 <div className="text-[10px] text-neutral-500 mt-0.5">
-                  {ataFiles.reduce((sum, f) => sum + f.data.rows.length, 0)} registros totais
+                  {ataFiles.reduce((sum, f) => sum + f.rowCount, 0)} registros totais
                 </div>
               </div>
               <div className="text-xs text-neutral-400">

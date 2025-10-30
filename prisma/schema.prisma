@@ -10,47 +10,140 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Arquivo CSV importado
-model UploadedFile {
-  id           String   @id @default(uuid())
-  fileName     String
-  uploadDate   DateTime @default(now())
-  dataHash     String   @unique
+// ============================================================================
+// CAMADA 1: ORIGEM DOS DADOS (Imutável)
+// ============================================================================
 
-  // Dados do CSV em formato JSONB
-  // Estrutura: { headers: string[], rows: Record<string, string>[] }
-  data         Json
+// Metadados dos arquivos CSV importados
+model ArquivoImportado {
+  id            String   @id @default(uuid())
+  nomeArquivo   String
+  tipo          String   // 'alunos', 'notas', etc
+  dataDownload  DateTime? // Data de download do sistema original (se disponível)
+  dataUpload    DateTime @default(now())
+  hashArquivo   String   @unique // Para detectar duplicatas
+  status        String   @default("ativo") // 'ativo', 'excluido', 'substituido'
 
-  // Metadados para consultas rápidas
-  rowCount     Int
-  anos         String[] // Anos encontrados neste arquivo
-  modalidades  String[] // Modalidades encontradas
-  turmas       String[] // Turmas encontradas
+  // Metadados de exclusão
+  excluidoEm    DateTime?
+  excluidoPor   String?
+  observacao    String?  @db.Text
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  // Relacionamentos
+  linhas        LinhaImportada[]
 
-  @@index([dataHash])
-  @@index([uploadDate])
-  @@index([anos])
-  @@index([modalidades])
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([hashArquivo])
+  @@index([dataUpload])
+  @@index([status])
+  @@map("arquivos_importados")
 }
 
-// Edições granulares de campos de alunos
-// Cada registro representa uma edição individual de um campo específico
-model AlunoEdit {
-  id             String   @id @default(uuid())
-  matricula      String   // Número de matrícula do aluno (referência)
-  campo          String   // Nome do campo editado (ex: "NOME_COMPL", "CPF", "RG_NUM")
-  valorOriginal  String?  // Valor original do CSV (null se campo não existia)
-  valorEditado   String   // Novo valor após edição
-  motivo         String?  // Motivo da edição (opcional)
-  editadoPor     String?  // Usuário que fez a edição (opcional por enquanto)
-  editadoEm      DateTime @default(now())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+// Cada linha de CSV importada (JSONB imutável)
+model LinhaImportada {
+  id                  String   @id @default(uuid())
+  arquivoId           String
+  numeroLinha         Int
+  dadosOriginais      Json     // JSONB com todos os campos como vieram do CSV
+  identificadorChave  String?  // Matrícula, código da turma, etc
+  tipoEntidade        String   // 'aluno', 'turma', 'nota', etc
+
+  // Relacionamentos
+  arquivo             ArquivoImportado @relation(fields: [arquivoId], references: [id], onDelete: Cascade)
+  alunos              Aluno[]
+
+  // Timestamps
+  createdAt           DateTime @default(now())
+
+  @@index([arquivoId])
+  @@index([identificadorChave])
+  @@index([tipoEntidade])
+  @@map("linhas_importadas")
+}
+
+// ============================================================================
+// CAMADA 2: ENTIDADES ESTRUTURADAS (Editáveis)
+// ============================================================================
+
+// Aluno - Tabela principal estruturada
+model Aluno {
+  id                    String   @id @default(uuid())
+  matricula             String   @unique @db.VarChar(15)
+
+  // Dados cadastrais
+  nome                  String?  @db.VarChar(200)
+  sexo                  String?  @db.VarChar(1)
+  dataNascimento        DateTime? @db.Date
+  nacionalidade         String?  @db.VarChar(50)
+  naturalidade          String?  @db.VarChar(100)
+  uf                    String?  @db.VarChar(2)
+  rg                    String?  @db.VarChar(20)
+  rgOrgaoEmissor        String?  @db.VarChar(20)
+  rgDataEmissao         DateTime? @db.Date
+  cpf                   String?  @db.VarChar(14)
+  nomeMae               String?  @db.VarChar(200)
+  nomePai               String?  @db.VarChar(200)
+
+  // Dados escolares
+  dataConclusaoEnsinoMedio  DateTime? @db.Date
+
+  // Dados do Ensino Fundamental
+  efInstituicao         String?  @db.VarChar(200)
+  efMunicipioEstado     String?  @db.VarChar(100)
+  efAnoConclusao        Int?
+  efNumeroPagina        String?  @db.VarChar(20)
+  efDataEmissao         DateTime? @db.Date
+
+  // Campos adicionais (não vêm do CSV)
+  dadosConferidos       Boolean  @default(false)
+  conferidoEm           DateTime?
+  conferidoPor          String?
+  certificacao          Boolean  @default(false)
+  observacoes           String?  @db.VarChar(1000)
+
+  // Metadados de origem
+  origemTipo            String   // 'csv' ou 'manual'
+  linhaOrigemId         String?  // FK para LinhaImportada (null se manual)
+  fonteAusente          Boolean  @default(false)
+  fonteAusenteCiente    Boolean  @default(false)
+
+  // Relacionamentos
+  linhaOrigem           LinhaImportada? @relation(fields: [linhaOrigemId], references: [id], onDelete: SetNull)
+
+  // Auditoria
+  criadoEm              DateTime @default(now())
+  criadoPor             String?
+  atualizadoEm          DateTime @updatedAt
+  atualizadoPor         String?
 
   @@index([matricula])
-  @@index([editadoEm])
-  @@index([matricula, campo]) // Para buscar edições de um campo específico de um aluno
+  @@index([nome])
+  @@index([origemTipo])
+  @@index([fonteAusente])
+  @@map("alunos")
+}
+
+// ============================================================================
+// CAMADA 3: AUDITORIA
+// ============================================================================
+
+// Registro automático de todas as mudanças
+model Auditoria {
+  id              String   @id @default(uuid())
+  tabela          String   @db.VarChar(50)
+  registroId      String
+  operacao        String   @db.VarChar(10) // 'INSERT', 'UPDATE', 'DELETE'
+  dadosAntes      Json?
+  dadosDepois     Json?
+  camposAlterados String[] // Array com nomes dos campos que mudaram
+  usuarioId       String?
+  timestamp       DateTime @default(now())
+
+  @@index([tabela, registroId])
+  @@index([timestamp])
+  @@index([usuarioId])
+  @@map("auditoria")
 }

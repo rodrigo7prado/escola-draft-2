@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // GET /api/filtros - Buscar opções de filtros hierárquicos
-// Query params: anoLetivo?, regime?, modalidade?
+// Query params: anoLetivo?, regime?, modalidade?, serie?
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const anoLetivo = searchParams.get('anoLetivo');
     const regime = searchParams.get('regime');
     const modalidade = searchParams.get('modalidade');
+    const serie = searchParams.get('serie');
 
     // Se não tem nenhum filtro, retorna anos letivos
     if (!anoLetivo) {
@@ -57,25 +58,42 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Se tem ano, regime e modalidade, retorna turmas
-    if (anoLetivo && regime && modalidade) {
-      const turmas = await prisma.enturmacao.findMany({
+    // Se tem ano, regime e modalidade, mas não série, retorna séries
+    if (anoLetivo && regime && modalidade && !serie) {
+      const series = await prisma.enturmacao.findMany({
         where: {
           anoLetivo,
           regime: parseInt(regime),
           modalidade
         },
-        select: { turma: true, serie: true },
+        select: { serie: true },
+        distinct: ['serie'],
+        orderBy: { serie: 'asc' }
+      });
+
+      return NextResponse.json({
+        tipo: 'series',
+        dados: series.map(s => s.serie)
+      });
+    }
+
+    // Se tem ano, regime, modalidade e série, retorna turmas
+    if (anoLetivo && regime && modalidade && serie) {
+      const turmas = await prisma.enturmacao.findMany({
+        where: {
+          anoLetivo,
+          regime: parseInt(regime),
+          modalidade,
+          serie
+        },
+        select: { turma: true },
         distinct: ['turma'],
         orderBy: { turma: 'asc' }
       });
 
       return NextResponse.json({
         tipo: 'turmas',
-        dados: turmas.map(t => ({
-          turma: t.turma,
-          serie: t.serie
-        }))
+        dados: turmas.map(t => t.turma)
       });
     }
 

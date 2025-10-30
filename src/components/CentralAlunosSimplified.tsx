@@ -27,6 +27,7 @@ type FiltrosState = {
   anoLetivo: string;
   regime: string;
   modalidade: string;
+  serie: string;
   turma: string;
 };
 
@@ -46,6 +47,7 @@ export default function CentralAlunosSimplified() {
     anoLetivo: '',
     regime: '',
     modalidade: '',
+    serie: '',
     turma: ''
   });
 
@@ -59,6 +61,7 @@ export default function CentralAlunosSimplified() {
         if (filtros.anoLetivo) params.append('anoLetivo', filtros.anoLetivo);
         if (filtros.regime) params.append('regime', filtros.regime);
         if (filtros.modalidade) params.append('modalidade', filtros.modalidade);
+        if (filtros.serie) params.append('serie', filtros.serie);
         if (filtros.turma) params.append('turma', filtros.turma);
 
         const queryString = params.toString();

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 
 // GET /api/alunos - Buscar todos os alunos
 // GET /api/alunos?matricula=xxx - Buscar aluno específico
-// GET /api/alunos?anoLetivo=xxx&regime=x&modalidade=xxx&turma=xxx - Filtrar por enturmação
+// GET /api/alunos?anoLetivo=xxx&regime=x&modalidade=xxx&serie=x&turma=xxx - Filtrar por enturmação
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const anoLetivo = searchParams.get('anoLetivo');
     const regime = searchParams.get('regime');
     const modalidade = searchParams.get('modalidade');
+    const serie = searchParams.get('serie');
     const turma = searchParams.get('turma');
 
     if (matricula) {
@@ -70,6 +71,7 @@ export async function GET(request: NextRequest) {
     if (anoLetivo) filtroEnturmacao.anoLetivo = anoLetivo;
     if (regime) filtroEnturmacao.regime = parseInt(regime);
     if (modalidade) filtroEnturmacao.modalidade = modalidade;
+    if (serie) filtroEnturmacao.serie = serie;
     if (turma) filtroEnturmacao.turma = turma;
 
     // Buscar alunos (filtrados por enturmação se houver filtros)

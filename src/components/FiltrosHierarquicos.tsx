@@ -6,6 +6,7 @@ type FiltrosState = {
   anoLetivo: string;
   regime: string;
   modalidade: string;
+  serie: string;
   turma: string;
 };
 
@@ -25,7 +26,8 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
   const [anosDisponiveis, setAnosDisponiveis] = useState<string[]>([]);
   const [regimesDisponiveis, setRegimesDisponiveis] = useState<number[]>([]);
   const [modalidadesDisponiveis, setModalidadesDisponiveis] = useState<string[]>([]);
-  const [turmasDisponiveis, setTurmasDisponiveis] = useState<Array<{turma: string; serie: string}>>([]);
+  const [seriesDisponiveis, setSeriesDisponiveis] = useState<string[]>([]);
+  const [turmasDisponiveis, setTurmasDisponiveis] = useState<string[]>([]);
 
   // Carregar anos letivos disponíveis
   useEffect(() => {
@@ -85,16 +87,37 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
     fetchModalidades();
   }, [filtros.anoLetivo, filtros.regime]);
 
-  // Carregar turmas quando modalidade é selecionada
+  // Carregar séries quando modalidade é selecionada
   useEffect(() => {
     if (!filtros.anoLetivo || !filtros.regime || !filtros.modalidade) {
+      setSeriesDisponiveis([]);
+      return;
+    }
+
+    const fetchSeries = async () => {
+      try {
+        const response = await fetch(`/api/filtros?anoLetivo=${filtros.anoLetivo}&regime=${filtros.regime}&modalidade=${encodeURIComponent(filtros.modalidade)}`);
+        const data = await response.json();
+        if (data.tipo === 'series') {
+          setSeriesDisponiveis(data.dados);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar séries:', error);
+      }
+    };
+    fetchSeries();
+  }, [filtros.anoLetivo, filtros.regime, filtros.modalidade]);
+
+  // Carregar turmas quando série é selecionada
+  useEffect(() => {
+    if (!filtros.anoLetivo || !filtros.regime || !filtros.modalidade || !filtros.serie) {
       setTurmasDisponiveis([]);
       return;
     }
 
     const fetchTurmas = async () => {
       try {
-        const response = await fetch(`/api/filtros?anoLetivo=${filtros.anoLetivo}&regime=${filtros.regime}&modalidade=${encodeURIComponent(filtros.modalidade)}`);
+        const response = await fetch(`/api/filtros?anoLetivo=${filtros.anoLetivo}&regime=${filtros.regime}&modalidade=${encodeURIComponent(filtros.modalidade)}&serie=${filtros.serie}`);
         const data = await response.json();
         if (data.tipo === 'turmas') {
           setTurmasDisponiveis(data.dados);
@@ -104,7 +127,7 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
       }
     };
     fetchTurmas();
-  }, [filtros.anoLetivo, filtros.regime, filtros.modalidade]);
+  }, [filtros.anoLetivo, filtros.regime, filtros.modalidade, filtros.serie]);
 
   // Handler para mudança de filtro
   const handleFiltroChange = (campo: keyof FiltrosState, valor: string) => {
@@ -115,13 +138,19 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
       novosFiltros.anoLetivo = valor;
       novosFiltros.regime = '';
       novosFiltros.modalidade = '';
+      novosFiltros.serie = '';
       novosFiltros.turma = '';
     } else if (campo === 'regime') {
       novosFiltros.regime = valor;
       novosFiltros.modalidade = '';
+      novosFiltros.serie = '';
       novosFiltros.turma = '';
     } else if (campo === 'modalidade') {
       novosFiltros.modalidade = valor;
+      novosFiltros.serie = '';
+      novosFiltros.turma = '';
+    } else if (campo === 'serie') {
+      novosFiltros.serie = valor;
       novosFiltros.turma = '';
     } else if (campo === 'turma') {
       novosFiltros.turma = valor;
@@ -136,11 +165,12 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
       anoLetivo: '',
       regime: '',
       modalidade: '',
+      serie: '',
       turma: ''
     });
   };
 
-  const hasFiltrosAtivos = filtros.anoLetivo || filtros.regime || filtros.modalidade || filtros.turma;
+  const hasFiltrosAtivos = filtros.anoLetivo || filtros.regime || filtros.modalidade || filtros.serie || filtros.turma;
 
   return (
     <div className="border rounded-md p-4 bg-neutral-50">
@@ -157,7 +187,7 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
         )}
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-5 gap-3">
         {/* Período Letivo */}
         <div>
           <label className="text-[10px] text-neutral-600 block mb-1">Período Letivo</label>
@@ -207,20 +237,34 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
           </select>
         </div>
 
+        {/* Série */}
+        <div>
+          <label className="text-[10px] text-neutral-600 block mb-1">Série</label>
+          <select
+            value={filtros.serie}
+            onChange={(e) => handleFiltroChange('serie', e.target.value)}
+            disabled={!filtros.modalidade}
+            className="w-full text-xs border rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
+          >
+            <option value="">Todas</option>
+            {seriesDisponiveis.map(serie => (
+              <option key={serie} value={serie}>{serie}ª série</option>
+            ))}
+          </select>
+        </div>
+
         {/* Turma */}
         <div>
           <label className="text-[10px] text-neutral-600 block mb-1">Turma</label>
           <select
             value={filtros.turma}
             onChange={(e) => handleFiltroChange('turma', e.target.value)}
-            disabled={!filtros.modalidade}
+            disabled={!filtros.serie}
             className="w-full text-xs border rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
           >
             <option value="">Todas</option>
-            {turmasDisponiveis.map(t => (
-              <option key={t.turma} value={t.turma}>
-                {t.turma} ({t.serie}ª série)
-              </option>
+            {turmasDisponiveis.map(turma => (
+              <option key={turma} value={turma}>{turma}</option>
             ))}
           </select>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ButtonGroup } from '@/components/ui/ButtonGroup';
+import { ScrollableButtonGroup } from '@/components/ui/ScrollableButtonGroup';
 
 type FiltrosCertificacaoProps = {
   anoLetivo: string;
@@ -29,81 +29,76 @@ export function FiltrosCertificacao({
 }: FiltrosCertificacaoProps) {
 
   return (
-    <div className="space-y-4 border rounded-md p-4 bg-neutral-50">
-      {/* Header */}
+    <div className="space-y-2 border rounded-md p-3 bg-neutral-50">
+      {/* Header compacto com informação de série */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-neutral-700">Filtros de Certificação</h3>
+        <h3 className="text-xs font-semibold text-neutral-700">
+          Seleção de Turma <span className="text-blue-600">(3ª Série)</span>
+        </h3>
         {hasFiltrosAtivos && (
           <button
             onClick={onLimparFiltros}
-            className="text-xs text-red-600 hover:underline"
+            className="text-[10px] text-red-600 hover:underline"
             type="button"
           >
-            Limpar filtros
+            Limpar
           </button>
         )}
       </div>
 
-      {/* Período Letivo */}
-      <div>
-        <label className="text-xs font-medium text-neutral-600 block mb-2">
-          Período Letivo
-        </label>
-        {isLoadingAnos ? (
-          <div className="text-xs text-neutral-500">Carregando anos...</div>
-        ) : (
-          <ButtonGroup
-            options={[...anosDisponiveis].sort((a, b) => b.localeCompare(a))} // Ordem decrescente
-            value={anoLetivo}
-            onChange={onAnoChange}
-            buttonClassName="min-w-[80px]"
-          />
-        )}
-      </div>
-
-      {/* Série (fixo em 3ª série) */}
-      <div>
-        <label className="text-xs font-medium text-neutral-600 block mb-2">
-          Série
-        </label>
-        <div className="inline-block px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-md font-medium">
-          3ª Série
-        </div>
-        <p className="text-[10px] text-neutral-500 mt-1">
-          Certificação disponível apenas para concluintes (3ª série)
-        </p>
-      </div>
-
-      {/* Turmas */}
-      {anoLetivo && (
-        <div>
-          <label className="text-xs font-medium text-neutral-600 block mb-2">
-            Turmas
+      {/* Layout compacto em linha */}
+      <div className="space-y-2">
+        {/* Período Letivo */}
+        <div className="flex items-center gap-2">
+          <label className="text-[10px] font-medium text-neutral-600 w-20 flex-shrink-0">
+            Período:
           </label>
-          {isLoadingTurmas ? (
-            <div className="text-xs text-neutral-500">Carregando turmas...</div>
-          ) : turmasDisponiveis.length > 0 ? (
-            <div className="overflow-x-auto">
-              <ButtonGroup
-                options={turmasDisponiveis}
-                value={turma}
-                onChange={onTurmaChange}
-                buttonClassName="min-w-[100px]"
-              />
-            </div>
+          {isLoadingAnos ? (
+            <div className="text-[10px] text-neutral-500">Carregando...</div>
           ) : (
-            <div className="text-xs text-neutral-500">
-              Nenhuma turma de 3ª série encontrada para este ano
+            <div className="flex-1 min-w-0">
+              <ScrollableButtonGroup
+                options={[...anosDisponiveis].sort((a, b) => b.localeCompare(a))}
+                value={anoLetivo}
+                onChange={onAnoChange}
+                buttonClassName="min-w-[60px]"
+                maxVisibleItems={2}
+              />
             </div>
           )}
         </div>
-      )}
 
-      {/* Resumo dos filtros ativos */}
+        {/* Turmas */}
+        {anoLetivo && (
+          <div className="flex items-start gap-2">
+            <label className="text-[10px] font-medium text-neutral-600 w-20 flex-shrink-0 pt-1">
+              Turmas:
+            </label>
+            {isLoadingTurmas ? (
+              <div className="text-[10px] text-neutral-500">Carregando...</div>
+            ) : turmasDisponiveis.length > 0 ? (
+              <div className="flex-1 min-w-0">
+                <ScrollableButtonGroup
+                  options={turmasDisponiveis}
+                  value={turma}
+                  onChange={onTurmaChange}
+                  buttonClassName="min-w-[70px]"
+                  maxVisibleItems={3}
+                />
+              </div>
+            ) : (
+              <div className="text-[10px] text-neutral-500">
+                Nenhuma turma encontrada
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Resumo compacto */}
       {hasFiltrosAtivos && (
-        <div className="pt-3 border-t text-xs text-neutral-600">
-          <strong>Filtros ativos:</strong>
-          {anoLetivo && <span className="ml-2">Ano: {anoLetivo}</span>}
+        <div className="pt-2 border-t text-[10px] text-neutral-600">
+          {anoLetivo && <span>Ano: {anoLetivo}</span>}
           {turma && <span className="ml-2">| Turma: {turma}</span>}
         </div>
       )}

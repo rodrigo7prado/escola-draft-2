@@ -310,6 +310,17 @@ function FiltrosCertificacao() {
 - Máximo 200 linhas por componente
 - Se ultrapassar: quebrar em sub-componentes
 
+**IMPORTANTE - Campos de Formulário:**
+- ❌ NUNCA criar campos inline (CampoTexto, CampoData, etc) dentro de componentes
+- ✅ SEMPRE criar componentes genéricos em `src/components/ui/`:
+  - `FormField.tsx` - Container genérico com label
+  - `Input.tsx` - Input de texto genérico
+  - `DateInput.tsx` - Input de data genérico
+  - `Checkbox.tsx` - Checkbox genérico
+  - `Textarea.tsx` - Textarea genérico
+- ✅ Componentes devem aceitar `className` para customização
+- ✅ Props bem tipadas com TypeScript
+
 ### 3. CUSTOM HOOKS
 - Toda lógica reutilizável vira hook
 - Nomenclatura: `use[Nome].ts`
@@ -334,6 +345,77 @@ function FiltrosCertificacao() {
 
 ### 6. PACKAGE MANAGER
 **SEMPRE usar `pnpx` ao invés de `npx`**
+
+### 7. PARSING DE CSV - FUNÇÃO CRÍTICA
+**IMPORTANTE:** Arquivos CSV do sistema Conexão Educação vêm com PREFIXOS nos valores.
+
+**Problema:**
+- Valores vêm como: "Ano Letivo: 2024", "Modalidade: REGULAR", "Turma: 3001", etc.
+- Isso causava erros de "value too long for column" no banco de dados
+
+**Solução - Função `limparValor`:**
+```typescript
+const limparValor = (valor: string | undefined, prefixo: string): string => {
+  if (!valor) return '';
+  const str = valor.toString().trim();
+  if (str.startsWith(prefixo)) {
+    return str.substring(prefixo.length).trim();
+  }
+  return str;
+};
+
+// Uso:
+const anoLetivo = limparValor(csvData.Ano, 'Ano Letivo:');
+const modalidade = limparValor(csvData.MODALIDADE, 'Modalidade:');
+const turma = limparValor(csvData.TURMA, 'Turma:');
+const serie = limparValor(csvData.SERIE, 'Série:');
+```
+
+**Onde usar:**
+- ✅ API de upload (`src/app/api/files/route.ts`)
+- ✅ Scripts de migração (`scripts/migrar-enturmacoes.ts`)
+- ✅ Qualquer código que processe dados de CSV
+
+### 8. CONCEITO DE ENTURMAÇÕES MÚLTIPLAS
+**IMPORTANTE:** Um aluno pode ter MÚLTIPLAS enturmações ao longo dos anos.
+
+**Cenário:**
+- Aluno estuda em 2022 (1ª série), 2023 (2ª série), 2024 (3ª série)
+- Cada ano = uma enturmação diferente
+- Relacionamento: `Aluno` 1-N `Enturmacao`
+
+**Implicações:**
+- ❌ NÃO assumir que aluno tem apenas 1 turma
+- ✅ SEMPRE filtrar enturmações por `anoLetivo` quando necessário
+- ✅ Ao buscar alunos, fazer JOIN com enturmações e filtrar
+- ✅ Migração de dados precisa criar TODAS as enturmações de um aluno
+
+### 9. AUTO-INICIALIZAÇÃO DE FILTROS
+**PADRÃO:** Filtros devem iniciar com valores padrão, não vazios.
+
+**Implementação em hooks:**
+```typescript
+// No useEffect após carregar opções
+useEffect(() => {
+  if (anosData.length > 0 && !anoLetivo) {
+    // Selecionar ano mais recente
+    const anoMaisRecente = [...anosData].sort((a, b) => b.localeCompare(a))[0];
+    setAnoLetivo(anoMaisRecente);
+  }
+}, [anosData]);
+
+useEffect(() => {
+  if (turmasData.length > 0 && !turma) {
+    // Selecionar primeira turma
+    setTurma(turmasData[0]);
+  }
+}, [turmasData]);
+```
+
+**Benefícios:**
+- UX melhor - usuário vê dados imediatamente
+- Menos cliques necessários
+- Estado sempre válido
 
 ## PADRÕES DE UI
 
@@ -372,3 +454,135 @@ function FiltrosCertificacao() {
 ### Variáveis de Estado
 - Descritivas: `anosDisponiveis`, `isLoadingTurmas`
 - Booleanos: prefixo `is`, `has`, `should`
+
+---------------------------------------------------------------------------------------------------------------
+
+# ESTADO ATUAL DA IMPLEMENTAÇÃO (atualizado em 2025-01-31)
+
+## ✅ FUNCIONALIDADES IMPLEMENTADAS
+
+### 1. FLUXO DE CERTIFICAÇÃO (Aba na página inicial)
+**Status:** ✅ Pronto e funcional
+
+**Layout:** Grid 2 colunas
+- **Esquerda (300px fixo):** Lista de alunos em sidebar
+  - Exibe matrícula, nome, indicador de fonte ausente
+  - Seleção visual (fundo azul + borda esquerda)
+  - Scroll vertical para lista longa
+  - Contador de total de alunos
+
+- **Direita (flex):** Dividida em 2 seções
+  - **Topo:** "Seleção de Turma" (FiltrosCertificacao)
+    - Período Letivo (botões em ordem decrescente)
+    - Série (fixo: 3ª série)
+    - Turmas (botões horizontais)
+    - Botão "Limpar filtros"
+    - Resumo de filtros ativos
+  - **Base:** Dados do aluno (DadosAlunoEditavel)
+    - 7 seções: Identificação, Documentos, Naturalidade, Filiação, Ensino Médio, Ensino Fundamental, Observações
+    - Todos os campos exibidos (read-only por enquanto)
+    - Layout compacto com grid de 2-3 colunas conforme necessário
+    - Aviso visual para fonte ausente
+
+**Componentes:**
+- ✅ `FluxoCertificacao.tsx` - Container principal
+- ✅ `FiltrosCertificacao.tsx` - Seleção de turma
+- ✅ `ListaAlunosCertificacao.tsx` - Lista lateral de alunos
+- ✅ `DadosAlunoEditavel.tsx` - Painel de dados (atualmente read-only)
+
+**Hooks:**
+- ✅ `useFiltrosCertificacao.ts` - Gerencia filtros (ano, turma)
+- ✅ `useAlunosCertificacao.ts` - Busca alunos filtrados
+- ✅ `useAlunoSelecionado.ts` - Gerencia seleção de aluno
+
+**Componentes UI genéricos criados:**
+- ✅ `FormField.tsx` - Container de campo com label
+- ✅ `Input.tsx` - Input de texto genérico
+- ✅ `DateInput.tsx` - Input de data (aceita Date | null)
+- ✅ `Checkbox.tsx` - Checkbox com label opcional
+- ✅ `Textarea.tsx` - Textarea genérico
+- ✅ `ButtonGroup.tsx` - Grupo de botões para seleção única
+
+**Regras aplicadas:**
+- ✅ Auto-seleção do ano mais recente ao carregar
+- ✅ Auto-seleção da primeira turma ao trocar ano
+- ✅ Filtro fixo: série = "3" (concluintes)
+- ✅ Filtro fixo: regime = 0 (anual)
+- ✅ Limpeza de filtros em cascata
+
+### 2. CENTRAL DE ALUNOS (Aba na página inicial)
+**Status:** ✅ Básico implementado (navegação pendente)
+
+**Componentes:**
+- ✅ `CentralAlunosSimplified.tsx` - Container principal
+- ✅ `FiltrosHierarquicos.tsx` - Filtros completos (5 níveis)
+
+**Funcionalidades:**
+- ✅ Filtros hierárquicos: Período → Regime → Modalidade → Série → Turma
+- ✅ Exibição e edição de dados do aluno
+- ✅ Comparação valor original vs editado (indicador visual)
+- ⚠️ **PENDENTE:** Navegação Anterior/Próximo
+- ⚠️ **PENDENTE:** Campo de pesquisa com autocomplete
+- ⚠️ **PENDENTE:** Salvar edições no banco de dados
+
+### 3. SISTEMA DE ENTURMAÇÕES
+**Status:** ✅ Implementado e migrado
+
+- ✅ Model `Enturmacao` no Prisma
+- ✅ Relacionamento 1-N com Aluno
+- ✅ API `/api/filtros` - retorna opções hierárquicas
+- ✅ API `/api/alunos` - busca com filtros
+- ✅ Parsing de CSV com remoção de prefixos (`limparValor`)
+- ✅ Script de migração executado (831 enturmações criadas)
+
+### 4. UPLOAD E MIGRAÇÃO DE CSV
+**Status:** ✅ Funcional
+
+- ✅ Upload via interface na página inicial
+- ✅ Detecção de duplicatas por hash
+- ✅ Criação de `ArquivoImportado` e `LinhaImportada`
+- ✅ Criação/atualização de `Aluno`
+- ✅ Criação automática de `Enturmacao`
+- ✅ Função `limparValor` aplicada corretamente
+
+## ⚠️ FUNCIONALIDADES PENDENTES
+
+### Prioridade Alta
+- [ ] Tornar campos editáveis em `DadosAlunoEditavel`
+- [ ] Implementar salvamento de edições (API + auditoria)
+- [ ] Campo de pesquisa com autocomplete na Central de Alunos
+- [ ] Navegação Anterior/Próximo na Central de Alunos
+- [ ] Histórico Escolar (componente + dados)
+
+### Prioridade Média
+- [ ] Painel de Solução de Inconsistências
+- [ ] Validações de dados (nível 3)
+- [ ] Validações de histórico escolar (nível 4)
+- [ ] Sistema de verificação de pendências
+
+### Prioridade Baixa
+- [ ] Impressão de certificados
+- [ ] Impressão de certidões
+- [ ] Geração de relatórios
+- [ ] Sistema de entregas de documentos
+
+## 🗂️ ESTRUTURA DE BANCO DE DADOS
+
+**Modelos principais:**
+- ✅ `ArquivoImportado` - Metadados dos arquivos CSV
+- ✅ `LinhaImportada` - Linhas individuais (JSONB com dados originais)
+- ✅ `Aluno` - Dados estruturados do aluno
+- ✅ `Enturmacao` - Múltiplas enturmações por aluno
+- ✅ `Auditoria` - Registro de alterações
+
+**Total de registros (última contagem):**
+- Alunos: 831
+- Enturmações: 831 (pode aumentar se houver alunos com múltiplos anos)
+
+## 📝 PRÓXIMOS PASSOS SUGERIDOS
+
+1. **Edição de dados:** Tornar `DadosAlunoEditavel` realmente editável
+2. **Persistência:** Criar API para salvar edições com auditoria
+3. **Navegação:** Implementar Anterior/Próximo na Central de Alunos
+4. **Pesquisa:** Campo de busca com autocomplete
+5. **Histórico Escolar:** Modelar dados e criar componente de visualização

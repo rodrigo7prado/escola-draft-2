@@ -3,11 +3,29 @@
 import { useAlunosCertificacao } from '@/hooks/useAlunosCertificacao';
 import type { FiltrosCertificacaoState } from '@/hooks/useFiltrosCertificacao';
 
-type ListaAlunosCertificacaoProps = {
-  filtros: FiltrosCertificacaoState;
+type Aluno = {
+  id: string;
+  matricula: string;
+  nome: string | null;
+  cpf: string | null;
+  origemTipo: string;
+  fonteAusente: boolean;
+  enturmacoes?: Array<{
+    anoLetivo: string;
+    regime: number;
+    modalidade: string;
+    turma: string;
+    serie: string;
+  }>;
 };
 
-export function ListaAlunosCertificacao({ filtros }: ListaAlunosCertificacaoProps) {
+type ListaAlunosCertificacaoProps = {
+  filtros: FiltrosCertificacaoState;
+  alunoSelecionadoId: string | null;
+  onSelecionarAluno: (aluno: any) => void;
+};
+
+export function ListaAlunosCertificacao({ filtros, alunoSelecionadoId, onSelecionarAluno }: ListaAlunosCertificacaoProps) {
   const { alunos, isLoading, error, totalAlunos } = useAlunosCertificacao(filtros);
 
   if (isLoading) {
@@ -43,55 +61,35 @@ export function ListaAlunosCertificacao({ filtros }: ListaAlunosCertificacaoProp
   }
 
   return (
-    <div className="border rounded-md overflow-hidden">
+    <div className="border rounded-md overflow-hidden flex flex-col h-full">
       {/* Header */}
-      <div className="bg-neutral-100 px-4 py-2 border-b">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-neutral-700">
-            Alunos Concluintes - 3ª Série
-          </h3>
-          <span className="text-xs text-neutral-600">
-            {totalAlunos} {totalAlunos === 1 ? 'aluno' : 'alunos'}
-          </span>
-        </div>
+      <div className="bg-neutral-100 px-3 py-2 border-b">
+        <h3 className="text-xs font-semibold text-neutral-700">
+          Alunos ({totalAlunos})
+        </h3>
       </div>
 
-      {/* Tabela */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead className="bg-neutral-50 border-b">
-            <tr>
-              <th className="px-3 py-2 text-left font-medium text-neutral-600">Matrícula</th>
-              <th className="px-3 py-2 text-left font-medium text-neutral-600">Nome</th>
-              <th className="px-3 py-2 text-left font-medium text-neutral-600">CPF</th>
-              <th className="px-3 py-2 text-left font-medium text-neutral-600">Turma</th>
-              <th className="px-3 py-2 text-left font-medium text-neutral-600">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {alunos.map((aluno) => (
-              <tr key={aluno.id} className="border-b hover:bg-neutral-50">
-                <td className="px-3 py-2 font-mono">{aluno.matricula}</td>
-                <td className="px-3 py-2">{aluno.nome || <span className="text-neutral-400">Não informado</span>}</td>
-                <td className="px-3 py-2 font-mono">{aluno.cpf || <span className="text-neutral-400">-</span>}</td>
-                <td className="px-3 py-2">
-                  {aluno.enturmacoes?.[0]?.turma || <span className="text-neutral-400">-</span>}
-                </td>
-                <td className="px-3 py-2">
-                  {aluno.fonteAusente ? (
-                    <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">
-                      Fonte ausente
-                    </span>
-                  ) : (
-                    <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
-                      OK
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Lista */}
+      <div className="overflow-y-auto flex-1">
+        {alunos.map((aluno) => {
+          const isSelected = alunoSelecionadoId === aluno.id;
+          return (
+            <button
+              key={aluno.id}
+              type="button"
+              onClick={() => onSelecionarAluno(aluno)}
+              className={`w-full text-left px-3 py-2 border-b hover:bg-blue-50 transition-colors ${
+                isSelected ? 'bg-blue-100 border-l-4 border-l-blue-600' : ''
+              }`}
+            >
+              <div className="text-xs font-medium truncate">{aluno.nome || 'Sem nome'}</div>
+              <div className="text-[10px] text-neutral-500 font-mono">{aluno.matricula}</div>
+              {aluno.fonteAusente && (
+                <div className="text-[9px] text-yellow-600 mt-0.5">⚠️ Fonte ausente</div>
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

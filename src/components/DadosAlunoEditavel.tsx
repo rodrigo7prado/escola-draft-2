@@ -2,6 +2,7 @@
 
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
+import { InputWithCopy } from '@/components/ui/InputWithCopy';
 import { DateInput } from '@/components/ui/DateInput';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Textarea } from '@/components/ui/Textarea';
@@ -61,7 +62,7 @@ export function DadosAlunoEditavel({ aluno }: DadosAlunoEditavelProps) {
         <h3 className="text-xs font-semibold text-neutral-700 mb-2 pb-1 border-b">Identificação</h3>
         <div className="grid grid-cols-3 gap-2">
           <FormField label="Matrícula">
-            <Input value={aluno.matricula} readOnly />
+            <InputWithCopy value={aluno.matricula} label="Copiar matrícula" />
           </FormField>
           <FormField label="Nome Completo" className="col-span-2">
             <Input value={aluno.nome || ''} readOnly />

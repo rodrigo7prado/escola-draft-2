@@ -56,7 +56,7 @@ export function FluxoCertificacao() {
         </div>
 
         {/* Dados do Aluno - Ocupa o espaço restante com overflow interno */}
-        <div className="flex-1 border rounded-md overflow-hidden min-h-0">
+        <div className="flex-1 border rounded-sm overflow-hidden min-h-0">
           <DadosAlunoEditavel aluno={alunoSelecionado} />
         </div>
       </div>

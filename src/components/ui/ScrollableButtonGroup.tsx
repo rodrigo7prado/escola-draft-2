@@ -63,7 +63,7 @@ export function ScrollableButtonGroup({
       {canScrollLeft && (
         <button
           onClick={() => scroll('left')}
-          className="flex-shrink-0 w-6 h-8 flex items-center justify-center bg-neutral-200 hover:bg-neutral-300 rounded text-neutral-700"
+          className="flex-shrink-0 w-6 h-8 flex items-center justify-center bg-neutral-200 hover:bg-neutral-300 rounded-sm text-neutral-700"
           type="button"
           aria-label="Rolar para esquerda"
         >
@@ -85,7 +85,7 @@ export function ScrollableButtonGroup({
             key={option}
             onClick={() => onChange(option)}
             className={`
-              flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded transition-colors
+              flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded-sm transition-colors
               ${value === option
                 ? 'bg-blue-600 text-white'
                 : 'bg-white text-neutral-700 border border-neutral-300 hover:bg-neutral-100'
@@ -103,7 +103,7 @@ export function ScrollableButtonGroup({
       {canScrollRight && (
         <button
           onClick={() => scroll('right')}
-          className="flex-shrink-0 w-6 h-8 flex items-center justify-center bg-neutral-200 hover:bg-neutral-300 rounded text-neutral-700"
+          className="flex-shrink-0 w-6 h-8 flex items-center justify-center bg-neutral-200 hover:bg-neutral-300 rounded-sm text-neutral-700"
           type="button"
           aria-label="Rolar para direita"
         >

@@ -49,7 +49,7 @@ type AlunoEdit = {
 export default function CentralAlunos() {
   // COMPONENTE OBSOLETO - Use CentralAlunosSimplified
   return (
-    <div className="border rounded-md p-4 text-sm text-red-600">
+    <div className="border rounded-sm p-4 text-sm text-red-600">
       Este componente está obsoleto. Use CentralAlunosSimplified ao invés.
     </div>
   );
@@ -328,12 +328,12 @@ function CentralAlunosOLD() {
           onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
           onKeyDown={handleSearchKeyDown}
           placeholder="Pesquisar por nome ou matrícula (use * como coringa)"
-          className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border rounded-sm px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
         {/* Dropdown de resultados */}
         {showDropdown && searchTerm && filteredAlunos.length > 0 && (
-          <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-10 w-full mt-1 bg-white border rounded-sm shadow-lg max-h-60 overflow-auto">
             {filteredAlunos.slice(0, 20).map((aluno, index) => (
               <button
                 key={aluno.matricula}
@@ -363,7 +363,7 @@ function CentralAlunosOLD() {
           <button
             onClick={handlePrevious}
             disabled={currentIndex === 0}
-            className="px-3 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
+            className="px-3 py-1 text-xs border rounded-smdisabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
             type="button"
           >
             ← Anterior
@@ -371,7 +371,7 @@ function CentralAlunosOLD() {
           <button
             onClick={handleNext}
             disabled={currentIndex === filteredAlunos.length - 1}
-            className="px-3 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
+            className="px-3 py-1 text-xs border rounded-smdisabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
             type="button"
           >
             Próximo →
@@ -385,7 +385,7 @@ function CentralAlunosOLD() {
 
       {/* Dados do Aluno */}
       {currentAluno && (
-        <div className="border rounded-md p-4 space-y-4">
+        <div className="border rounded-sm p-4 space-y-4">
           {/* Identificação */}
           <div className="grid grid-cols-3 gap-3">
             <div>
@@ -445,7 +445,7 @@ function CentralAlunosOLD() {
           {/* Histórico Escolar */}
           <div>
             <h3 className="text-xs font-medium mb-2">Histórico Escolar</h3>
-            <div className="border rounded overflow-hidden">
+            <div className="border rounded-smoverflow-hidden">
               <table className="w-full text-[10px]">
                 <thead className="bg-neutral-50">
                   <tr>
@@ -475,7 +475,7 @@ function CentralAlunosOLD() {
               <h3 className="text-xs font-medium mb-2">Histórico de Edições</h3>
               <div className="space-y-2">
                 {edits.map((edit) => (
-                  <div key={edit.id} className="bg-neutral-50 border rounded p-2 text-[10px]">
+                  <div key={edit.id} className="bg-neutral-50 border rounded-smp-2 text-[10px]">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1">
                         <div className="font-medium text-neutral-900">{edit.campo}</div>
@@ -554,7 +554,7 @@ function EditFieldForm({
     <div className="space-y-4">
       {/* Comparação Original vs Editado */}
       {valorOriginal && valorOriginal !== valorAtual && (
-        <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs">
+        <div className="bg-blue-50 border border-blue-200 rounded-smp-3 text-xs">
           <div className="font-medium text-blue-900 mb-1">Valor Original (do CSV)</div>
           <div className="text-blue-700">{valorOriginal}</div>
         </div>
@@ -567,7 +567,7 @@ function EditFieldForm({
           type="text"
           value={valor}
           onChange={(e) => setValor(e.target.value)}
-          className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border rounded-smpx-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           autoFocus
         />
       </div>
@@ -578,7 +578,7 @@ function EditFieldForm({
         <textarea
           value={motivo}
           onChange={(e) => setMotivo(e.target.value)}
-          className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border rounded-smpx-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           rows={3}
           placeholder="Ex: Correção de sobrenome incompleto"
         />
@@ -588,14 +588,14 @@ function EditFieldForm({
       <div className="flex justify-end gap-2">
         <button
           onClick={onCancel}
-          className="px-3 py-1.5 text-xs border rounded hover:bg-neutral-50"
+          className="px-3 py-1.5 text-xs border rounded-smhover:bg-neutral-50"
           type="button"
         >
           Cancelar
         </button>
         <button
           onClick={() => onSave(valor, motivo || undefined)}
-          className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-smhover:bg-blue-700"
           type="button"
           disabled={valor === valorAtual}
         >

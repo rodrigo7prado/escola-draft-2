@@ -15,7 +15,7 @@ export function DateInput({ value, className = '', ...props }: DateInputProps) {
     <input
       type="date"
       value={dateValue}
-      className={`w-full text-xs border rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+      className={`w-full text-xs border rounded-smpx-2 px-1 py-0.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
       {...props}
     />
   );

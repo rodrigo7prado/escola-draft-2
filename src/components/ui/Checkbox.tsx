@@ -11,7 +11,7 @@ export function Checkbox({ label, className = '', ...props }: CheckboxProps) {
       <div className={`flex items-center gap-2 ${className}`}>
         <input
           type="checkbox"
-          className="w-4 h-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+          className="w-4 h-4 rounded-sm border border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
           {...props}
         />
         <label className="text-xs text-neutral-700 cursor-pointer select-none">
@@ -24,7 +24,7 @@ export function Checkbox({ label, className = '', ...props }: CheckboxProps) {
   return (
     <input
       type="checkbox"
-      className={`w-4 h-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500 ${className}`}
+      className={`w-4 h-4 rounded-sm border border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500 ${className}`}
       {...props}
     />
   );

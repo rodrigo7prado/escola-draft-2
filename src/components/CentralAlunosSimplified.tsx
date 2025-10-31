@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Modal } from "@/components/ui/Modal";
 import FiltrosHierarquicos from "@/components/FiltrosHierarquicos";
+import { Button } from "@/components/ui/Button";
 
 type Aluno = {
   id: string;
@@ -237,30 +238,32 @@ export default function CentralAlunosSimplified() {
           onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
           onKeyDown={handleSearchKeyDown}
           placeholder="Pesquisar por nome ou matrícula (use * como coringa)"
-          className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border rounded-sm px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
         {/* Dropdown de resultados */}
         {showDropdown && searchTerm && filteredAlunos.length > 0 && (
-          <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-10 w-full mt-1 bg-white border rounded-sm shadow-lg max-h-60 overflow-auto">
             {filteredAlunos.slice(0, 20).map((aluno, index) => (
-              <button
+              <Button
                 key={aluno.matricula}
-                type="button"
                 onClick={() => {
                   setCurrentIndex(index);
                   setShowDropdown(false);
                   setSearchTerm('');
                 }}
-                className={`w-full text-left px-3 py-2 text-xs hover:bg-blue-50 ${
+                variant="ghost"
+                className={`w-full text-left px-3 py-2 text-xs hover:bg-blue-50 rounded-none justify-start h-auto ${
                   index === highlightedIndex ? 'bg-blue-100' : ''
                 }`}
               >
-                <div className="font-medium">{aluno.nome || 'Nome não disponível'}</div>
-                <div className="text-neutral-500">
-                  Mat: {aluno.matricula}
+                <div className="flex flex-col items-start w-full">
+                  <div className="font-medium">{aluno.nome || 'Nome não disponível'}</div>
+                  <div className="text-neutral-500">
+                    Mat: {aluno.matricula}
+                  </div>
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
         )}
@@ -269,22 +272,22 @@ export default function CentralAlunosSimplified() {
       {/* Controles de Navegação */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={handlePrevious}
             disabled={currentIndex === 0}
-            className="px-3 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
-            type="button"
+            variant="outline"
+            size="sm"
           >
             Anterior
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleNext}
             disabled={currentIndex === filteredAlunos.length - 1}
-            className="px-3 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
-            type="button"
+            variant="outline"
+            size="sm"
           >
             Próximo
-          </button>
+          </Button>
         </div>
 
         <div className="text-xs text-neutral-600">
@@ -294,10 +297,10 @@ export default function CentralAlunosSimplified() {
 
       {/* Dados do Aluno */}
       {currentAluno && (
-        <div className="border rounded-md p-4 space-y-4">
+        <div className="border rounded-sm p-4 space-y-4">
           {/* Avisos */}
           {currentAluno.fonteAusente && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-xs text-yellow-800">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-smp-3 text-xs text-yellow-800">
               Atenção: Arquivo de origem foi excluído. Este aluno está sem fonte original.
             </div>
           )}
@@ -312,14 +315,15 @@ export default function CentralAlunosSimplified() {
               <label className="text-[10px] text-neutral-500 block">Nome Completo</label>
               <div className="flex items-center gap-2">
                 <div className="text-xs font-medium flex-1">{currentAluno.nome || 'Não informado'}</div>
-                <button
+                <Button
                   onClick={() => handleEditField('NOME_COMPL', currentAluno.nome)}
-                  className="text-[10px] text-blue-600 hover:underline"
-                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-[10px] text-blue-600 hover:underline h-auto px-0 py-0"
                   title="Editar nome"
                 >
                   Editar
-                </button>
+                </Button>
                 {currentAluno.nome !== currentAluno.linhaOrigem?.dadosOriginais?.NOME_COMPL && (
                   <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Editado</span>
                 )}
@@ -333,14 +337,15 @@ export default function CentralAlunosSimplified() {
               <label className="text-[10px] text-neutral-500 block">CPF</label>
               <div className="flex items-center gap-2">
                 <div className="text-xs flex-1">{currentAluno.cpf || 'Não informado'}</div>
-                <button
+                <Button
                   onClick={() => handleEditField('CPF', currentAluno.cpf)}
-                  className="text-[10px] text-blue-600 hover:underline"
-                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-[10px] text-blue-600 hover:underline h-auto px-0 py-0"
                   title="Editar CPF"
                 >
                   Editar
-                </button>
+                </Button>
                 {currentAluno.cpf !== currentAluno.linhaOrigem?.dadosOriginais?.CPF && (
                   <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Editado</span>
                 )}
@@ -402,7 +407,7 @@ function EditFieldForm({
     <div className="space-y-4">
       {/* Comparação Original vs Editado */}
       {valorOriginal && valorOriginal !== valorAtual && (
-        <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs">
+        <div className="bg-blue-50 border border-blue-200 rounded-smp-3 text-xs">
           <div className="font-medium text-blue-900 mb-1">Valor Original (do CSV)</div>
           <div className="text-blue-700">{valorOriginal}</div>
         </div>
@@ -415,28 +420,28 @@ function EditFieldForm({
           type="text"
           value={valor}
           onChange={(e) => setValor(e.target.value)}
-          className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border rounded-smpx-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           autoFocus
         />
       </div>
 
       {/* Botões */}
       <div className="flex justify-end gap-2">
-        <button
+        <Button
           onClick={onCancel}
-          className="px-3 py-1.5 text-xs border rounded hover:bg-neutral-50"
-          type="button"
+          variant="outline"
+          size="sm"
         >
           Cancelar
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => onSave(valor)}
-          className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-          type="button"
+          variant="primary"
+          size="sm"
           disabled={valor === valorAtual}
         >
           Salvar
-        </button>
+        </Button>
       </div>
     </div>
   );

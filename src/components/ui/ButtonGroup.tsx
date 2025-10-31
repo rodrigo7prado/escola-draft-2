@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from './Button';
+
 type ButtonGroupProps<T extends string> = {
   options: readonly T[];
   value: T | '';
@@ -22,21 +24,15 @@ export function ButtonGroup<T extends string>({
       {options.map((option) => {
         const isActive = value === option;
         return (
-          <button
+          <Button
             key={option}
-            type="button"
             onClick={() => onChange(option)}
-            className={`
-              px-4 py-2 text-sm rounded-md transition-all
-              ${isActive
-                ? 'bg-blue-600 text-white font-medium shadow-sm'
-                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-              }
-              ${buttonClassName}
-            `}
+            variant={isActive ? 'primary' : 'secondary'}
+            size="md"
+            className={buttonClassName}
           >
             {renderLabel ? renderLabel(option) : option}
-          </button>
+          </Button>
         );
       })}
     </div>

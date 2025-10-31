@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { Input } from './Input';
+import { Button } from './Button';
 
 type InputWithCopyProps = {
   value: string;
@@ -38,19 +39,19 @@ export function InputWithCopy({
         readOnly={readOnly}
         className={`pr-8 ${className}`}
       />
-      <button
+      <Button
         onClick={copiar}
-        className="absolute right-1 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-100 rounded transition-colors"
-        type="button"
+        variant="ghost"
+        size="sm"
+        className="absolute right-1 top-1/2 -translate-y-1/2 p-1 h-auto"
         title={copiado ? "Copiado!" : label}
         aria-label={copiado ? "Copiado!" : label}
-      >
-        {copiado ? (
+        icon={copiado ? (
           <Check size={14} className="text-green-600" />
         ) : (
           <Copy size={14} className="text-neutral-500" />
         )}
-      </button>
+      />
     </div>
   );
 }

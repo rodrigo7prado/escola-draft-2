@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 type ParsedCsv = {
   headers: string[];
@@ -153,7 +154,7 @@ export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed
     const rows = data.rows.slice(0, maxRows);
     const dupSet = new Set(duplicates.keys);
     return (
-      <div className="mt-3 border rounded-md overflow-auto">
+      <div className="mt-3 border rounded-sm overflow-auto">
         <table className="w-full text-xs">
           <thead className="bg-neutral-50 sticky top-0">
             <tr>
@@ -198,7 +199,7 @@ export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
-        className={`border rounded-md p-4 text-sm ${dragOver ? "bg-neutral-50" : ""}`}
+        className={`border rounded-sm p-4 text-sm ${dragOver ? "bg-neutral-50" : ""}`}
       >
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -207,13 +208,13 @@ export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed
               Arraste e solte {multiple ? 'arquivos .csv' : 'um .csv'} aqui ou selecione {multiple ? 'arquivos' : 'um arquivo'}
             </div>
           </div>
-          <button
-            className="border rounded px-2 py-1 text-xs hover:bg-neutral-50"
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => fileInputRef.current?.click()}
-            type="button"
           >
             Selecionar arquivo{multiple ? 's' : ''}
-          </button>
+          </Button>
           <input
             ref={fileInputRef}
             type="file"

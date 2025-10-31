@@ -1,6 +1,7 @@
 "use client";
 
 import { ScrollableButtonGroup } from '@/components/ui/ScrollableButtonGroup';
+import { Button } from '@/components/ui/Button';
 
 type FiltrosCertificacaoProps = {
   anoLetivo: string;
@@ -29,20 +30,21 @@ export function FiltrosCertificacao({
 }: FiltrosCertificacaoProps) {
 
   return (
-    <div className="space-y-2 border rounded-md p-3 bg-neutral-50">
+    <div className="space-y-2 border rounded-sm p-3 bg-neutral-50">
       {/* Header compacto com informação de série */}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-neutral-700">
           Seleção de Turma <span className="text-blue-600">(3ª Série)</span>
         </h3>
         {hasFiltrosAtivos && (
-          <button
+          <Button
             onClick={onLimparFiltros}
-            className="text-[10px] text-red-600 hover:underline"
-            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-[10px] text-red-600 hover:underline h-auto px-0 py-0"
           >
             Limpar
-          </button>
+          </Button>
         )}
       </div>
 

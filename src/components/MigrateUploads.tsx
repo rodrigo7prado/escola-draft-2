@@ -3,6 +3,7 @@
 import DropCsv from "@/components/DropCsv";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
 import { useEffect, useMemo, useState, startTransition } from "react";
 
 type ParsedCsv = {
@@ -320,12 +321,12 @@ export default function MigrateUploads() {
 
         {/* Resumo de arquivos carregados */}
         {ataFiles.length > 0 && (
-          <button
+          <Button
             onClick={() => setShowFilesModal(true)}
-            className="w-full border rounded-md p-3 text-left hover:bg-neutral-50 transition-colors"
-            type="button"
+            variant="ghost"
+            className="w-full border rounded-sm p-3 text-left hover:bg-neutral-50 transition-colors h-auto justify-start"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between w-full">
               <div>
                 <div className="text-xs font-medium text-neutral-900">
                   {ataFiles.length} {ataFiles.length === 1 ? 'arquivo carregado' : 'arquivos carregados'}
@@ -338,7 +339,7 @@ export default function MigrateUploads() {
                 Clique para ver detalhes →
               </div>
             </div>
-          </button>
+          </Button>
         )}
 
         {/* Modal com lista completa de arquivos */}
@@ -356,45 +357,40 @@ export default function MigrateUploads() {
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-neutral-500">Ordenar:</span>
-                  <button
+                  <Button
                     onClick={() => setSortBy('name')}
-                    className={`text-xs px-2 py-1 rounded ${
-                      sortBy === 'name'
-                        ? 'bg-blue-100 text-blue-700 font-medium'
-                        : 'text-neutral-600 hover:bg-neutral-100'
-                    }`}
-                    type="button"
+                    variant={sortBy === 'name' ? 'primary' : 'ghost'}
+                    size="sm"
+                    className={sortBy === 'name' ? 'bg-blue-100 text-blue-700' : ''}
                   >
                     Nome
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setSortBy('date')}
-                    className={`text-xs px-2 py-1 rounded ${
-                      sortBy === 'date'
-                        ? 'bg-blue-100 text-blue-700 font-medium'
-                        : 'text-neutral-600 hover:bg-neutral-100'
-                    }`}
-                    type="button"
+                    variant={sortBy === 'date' ? 'primary' : 'ghost'}
+                    size="sm"
+                    className={sortBy === 'date' ? 'bg-blue-100 text-blue-700' : ''}
                   >
                     Data
-                  </button>
+                  </Button>
                 </div>
-                <button
+                <Button
                   onClick={() => {
                     clearAllFiles();
                     setShowFilesModal(false);
                   }}
-                  className="text-xs text-red-600 hover:underline"
-                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600 hover:underline"
                 >
                   Limpar todos
-                </button>
+                </Button>
               </div>
             </div>
 
             <ul className="space-y-2">
               {sortedFiles.map((file) => (
-                <li key={file.id} className="flex items-start justify-between p-3 border rounded-md hover:bg-neutral-50">
+                <li key={file.id} className="flex items-start justify-between p-3 border rounded-sm hover:bg-neutral-50">
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm mb-1">{file.fileName}</div>
                     <div className="text-xs text-neutral-500 space-y-0.5">
@@ -403,19 +399,20 @@ export default function MigrateUploads() {
                       <div className="text-[10px] text-neutral-400 font-mono">ID: {file.id.slice(0, 8)}...</div>
                     </div>
                   </div>
-                  <button
+                  <Button
                     onClick={() => removeFile(file.id)}
-                    className="ml-3 text-red-600 hover:bg-red-50 rounded px-2 py-1 text-xs font-medium"
-                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="ml-3 text-red-600 hover:bg-red-50"
                   >
                     Remover
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
           </div>
         </Modal>
-        <div className="text-xs text-neutral-700 border rounded-md p-3">
+        <div className="text-xs text-neutral-700 border rounded-sm p-3">
           {isLoading ? (
             <div className="text-center py-4 text-neutral-500">Carregando arquivos...</div>
           ) : ataFiles.length === 0 ? (
@@ -437,13 +434,14 @@ export default function MigrateUploads() {
                     <div className="text-xs text-neutral-600">
                       Modalidades: {modMap.size}
                     </div>
-                    <button
+                    <Button
                       onClick={() => removeByPeriodo(periodoLetivo)}
-                      className="text-[10px] text-red-600 hover:underline"
-                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-[10px] text-red-600 hover:underline h-auto px-0 py-0"
                     >
                       Excluir período
-                    </button>
+                    </Button>
                   </div>
                   <Tabs defaultValue={Array.from(modMap.keys()).sort()[0]} variant="tertiary">
                     <TabsList variant="tertiary">
@@ -456,13 +454,14 @@ export default function MigrateUploads() {
                         <div className="pt-2">
                           <div className="flex items-center justify-between mb-2">
                             <div className="text-xs text-neutral-600">Total: {pluralTurmas(turmasMap.size)}</div>
-                            <button
+                            <Button
                               onClick={() => removeByModalidade(mod, periodoLetivo)}
-                              className="text-[10px] text-red-600 hover:underline"
-                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="text-[10px] text-red-600 hover:underline h-auto px-0 py-0"
                             >
                               Excluir modalidade
-                            </button>
+                            </Button>
                           </div>
                           <ul className="divide-y max-h-60 overflow-auto border rounded">
                             {ordenarTurmas(turmasMap).map(([turma, info]) => (

@@ -52,7 +52,7 @@ export function DadosAlunoEditavel({ aluno }: DadosAlunoEditavelProps) {
     <div className="space-y-4 overflow-y-auto h-full p-4">
       {/* Avisos */}
       {aluno.fonteAusente && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-xs text-yellow-800">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-smp-2 text-xs text-yellow-800">
           ⚠️ Arquivo de origem foi excluído
         </div>
       )}

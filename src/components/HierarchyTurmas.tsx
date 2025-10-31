@@ -41,7 +41,7 @@ const HierarchyTurmas: React.FC<HierarchyTurmasProps> = ({
   turmasLabel = defaultTurmasLabel,
 }) => {
   return (
-    <div className="text-xs text-neutral-700 border rounded-md p-3">
+    <div className="text-xs text-neutral-700 border rounded-sm p-3">
       {Object.keys(hierarquia).length === 0 ? (
         <div>Nenhum upload válido de Ata_resultados_finais.csv realizado ainda.</div>
       ) : (
@@ -60,11 +60,11 @@ const HierarchyTurmas: React.FC<HierarchyTurmasProps> = ({
                 0
               );
               return (
-                <details key={ano} className="border rounded-md">
+                <details key={ano} className="border rounded-sm">
                   <summary className="px-3 py-2 cursor-pointer select-none font-medium flex items-center justify-between">
                     <span>Ano letivo: {ano}</span>
                     <span className="flex items-center gap-2 text-xs text-neutral-600">
-                      <span className="inline-flex items-center gap-1 border rounded px-1.5 py-0.5">
+                      <span className="inline-flex items-center gap-1 border rounded-smpx-1.5 py-0.5">
                         {turmasLabel(totalTurmasAno)}
                       </span>
                     </span>
@@ -78,15 +78,15 @@ const HierarchyTurmas: React.FC<HierarchyTurmasProps> = ({
                           nCurso.modalidades
                         ).reduce((a, m) => a + m.turmas.length, 0);
                         return (
-                          <details key={curso} className="border rounded-md">
+                          <details key={curso} className="border rounded-sm">
                             <summary className="px-3 py-2 cursor-pointer select-none flex items-center justify-between">
                               <span>Curso: {curso}</span>
                               <span className="flex items-center gap-2 text-xs text-neutral-600">
-                                <span className="inline-flex items-center gap-1 border rounded px-1.5 py-0.5">
+                                <span className="inline-flex items-center gap-1 border rounded-smpx-1.5 py-0.5">
                                   {nCurso.registros}
                                   <span className="text-[10px]">registros</span>
                                 </span>
-                                <span className="inline-flex items-center gap-1 border rounded px-1.5 py-0.5">
+                                <span className="inline-flex items-center gap-1 border rounded-smpx-1.5 py-0.5">
                                   {turmasLabel(totalTurmasCurso)}
                                 </span>
                               </span>
@@ -99,18 +99,18 @@ const HierarchyTurmas: React.FC<HierarchyTurmasProps> = ({
                                   return (
                                     <details
                                       key={mod}
-                                      className="border rounded-md"
+                                      className="border rounded-sm"
                                     >
                                       <summary className="px-3 py-2 cursor-pointer select-none flex items-center justify-between">
                                         <span>Modalidade: {mod}</span>
                                         <span className="flex items-center gap-2 text-xs text-neutral-600">
-                                          <span className="inline-flex items-center gap-1 border rounded px-1.5 py-0.5">
+                                          <span className="inline-flex items-center gap-1 border rounded-smpx-1.5 py-0.5">
                                             {nMod.registros}
                                             <span className="text-[10px]">
                                               registros
                                             </span>
                                           </span>
-                                          <span className="inline-flex items-center gap-1 border rounded px-1.5 py-0.5">
+                                          <span className="inline-flex items-center gap-1 border rounded-smpx-1.5 py-0.5">
                                             {turmasLabel(nMod.turmas.length)}
                                           </span>
                                         </span>
@@ -120,7 +120,7 @@ const HierarchyTurmas: React.FC<HierarchyTurmasProps> = ({
                                           {nMod.turmas.map((t) => (
                                             <li
                                               key={t.turma}
-                                              className="border rounded px-2 py-1 flex items-center justify-between"
+                                              className="border rounded-smpx-2 py-1 flex items-center justify-between"
                                             >
                                               <span className="font-medium">
                                                 {t.turma}

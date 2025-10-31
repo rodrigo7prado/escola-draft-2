@@ -10,11 +10,43 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* Cores semânticas iniciais */
+
+  /* ======================
+     DESIGN SYSTEM TOKENS
+     ====================== */
+
+  /* Cores semânticas de status */
   --color-pendente: #ef4444; /* vermelho */
   --color-resolvendo: #f59e0b; /* laranja */
   --color-ok: #3b82f6; /* azul */
   --color-corrigido: #10b981; /* verde */
+
+  /* Border Radius (padrão: sm = 0.125rem) */
+  --radius-default: 0.125rem;
+  --radius-none: 0;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-full: 9999px;
+
+  /* Spacing para inputs */
+  --spacing-input-x: 0.25rem; /* px-1 */
+  --spacing-input-y: 0.125rem; /* py-0.5 */
+
+  /* Spacing para botões */
+  --spacing-btn-sm-x: 0.75rem; /* px-3 */
+  --spacing-btn-sm-y: 0.375rem; /* py-1.5 */
+  --spacing-btn-md-x: 1rem; /* px-4 */
+  --spacing-btn-md-y: 0.5rem; /* py-2 */
+  --spacing-btn-lg-x: 1.5rem; /* px-6 */
+  --spacing-btn-lg-y: 0.75rem; /* py-3 */
+
+  /* Font sizes padrão */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
 }
 
 @media (prefers-color-scheme: dark) {

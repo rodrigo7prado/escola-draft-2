@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
+import { Button } from "./Button";
 
 type TabsContextValue = {
   activeTab: string;
@@ -78,13 +79,13 @@ export function TabsTrigger({
     : "border-transparent hover:border-neutral-400";
 
   return (
-    <button
-      type="button"
-      className={`${variantClasses[variant]} border-b-2 transition-colors ${activeClass}`}
+    <Button
       onClick={() => setActiveTab(value)}
+      variant="ghost"
+      className={`${variantClasses[variant]} border-b-2 transition-colors ${activeClass} rounded-none h-auto`}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 

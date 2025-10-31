@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/Button";
 
 type FiltrosState = {
   anoLetivo: string;
@@ -173,17 +174,18 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
   const hasFiltrosAtivos = filtros.anoLetivo || filtros.regime || filtros.modalidade || filtros.serie || filtros.turma;
 
   return (
-    <div className="border rounded-md p-4 bg-neutral-50">
+    <div className="border rounded-sm p-4 bg-neutral-50">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-xs font-semibold text-neutral-700">Filtros</h3>
         {hasFiltrosAtivos && (
-          <button
+          <Button
             onClick={handleLimparFiltros}
-            className="text-[10px] text-red-600 hover:underline"
-            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-[10px] text-red-600 hover:underline h-auto px-0 py-0"
           >
             Limpar filtros
-          </button>
+          </Button>
         )}
       </div>
 
@@ -194,7 +196,7 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
           <select
             value={filtros.anoLetivo}
             onChange={(e) => handleFiltroChange('anoLetivo', e.target.value)}
-            className="w-full text-xs border rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-xs border rounded-smpx-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Todos</option>
             {anosDisponiveis.map(ano => (
@@ -210,7 +212,7 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
             value={filtros.regime}
             onChange={(e) => handleFiltroChange('regime', e.target.value)}
             disabled={!filtros.anoLetivo}
-            className="w-full text-xs border rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
+            className="w-full text-xs border rounded-smpx-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
           >
             <option value="">Todos</option>
             {regimesDisponiveis.map(regime => (
@@ -228,7 +230,7 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
             value={filtros.modalidade}
             onChange={(e) => handleFiltroChange('modalidade', e.target.value)}
             disabled={!filtros.regime}
-            className="w-full text-xs border rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
+            className="w-full text-xs border rounded-smpx-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
           >
             <option value="">Todas</option>
             {modalidadesDisponiveis.map(modalidade => (
@@ -244,7 +246,7 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
             value={filtros.serie}
             onChange={(e) => handleFiltroChange('serie', e.target.value)}
             disabled={!filtros.modalidade}
-            className="w-full text-xs border rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
+            className="w-full text-xs border rounded-smpx-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
           >
             <option value="">Todas</option>
             {seriesDisponiveis.map(serie => (
@@ -260,7 +262,7 @@ export default function FiltrosHierarquicos({ filtros, onFiltrosChange }: Filtro
             value={filtros.turma}
             onChange={(e) => handleFiltroChange('turma', e.target.value)}
             disabled={!filtros.serie}
-            className="w-full text-xs border rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
+            className="w-full text-xs border rounded-smpx-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
           >
             <option value="">Todas</option>
             {turmasDisponiveis.map(turma => (

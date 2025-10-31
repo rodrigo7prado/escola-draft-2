@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Button } from "./Button";
 
 type ModalProps = {
   open: boolean;
@@ -68,14 +69,15 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
         {title && (
           <div className="flex items-center justify-between px-4 py-3 border-b">
             <h2 className="text-base font-semibold">{title}</h2>
-            <button
-              type="button"
+            <Button
               onClick={onClose}
-              className="text-neutral-500 hover:text-neutral-700 text-xl leading-none w-6 h-6 flex items-center justify-center rounded hover:bg-neutral-100"
+              variant="ghost"
+              size="sm"
+              className="text-xl leading-none w-6 h-6 p-0"
               aria-label="Fechar"
             >
               ×
-            </button>
+            </Button>
           </div>
         )}
 

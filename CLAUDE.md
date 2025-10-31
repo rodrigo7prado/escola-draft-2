@@ -24,10 +24,51 @@ Sistema de emissão de certificados e certidões para alunos de Ensino Médio
 - Sempre componentize conforme as melhores práticas;
 - Abstraia componentes de interface de usuário como <INPUT>, <MODAL>, <DROPDOWN>, <POPOVER>, <TABS>, etc, tal como Radix ou outro.
 
+# PADRÕES DE CÓDIGO E ARQUITETURA
+  ## COMPONENTIZAÇÃO (CRÍTICO)
+  - **SEMPRE** componentizar ao invés de criar código hard-coded direto
+  - Criar componentes genéricos e reutilizáveis em `src/components/ui/`
+  - Componentes específicos de domínio em `src/components/`
+  - Evitar código repetido - se algo aparece 2x, componentizar
+
+  ## CUSTOM HOOKS
+  - **SEMPRE** criar custom hooks para lógica reutilizável
+  - Hooks para gerenciamento de estado complexo
+  - Hooks para side effects compartilhados
+  - Localização: `src/hooks/`
+  - Nomenclatura: `use[Nome].ts` (ex: `useFiltros.ts`, `useAlunos.ts`)
+
+  ## ESTRUTURA DE COMPONENTES
+  - Componentes devem ser pequenos e com responsabilidade única
+  - Máximo de 200 linhas por componente
+  - Se ultrapassar, dividir em sub-componentes
+  - Props bem tipadas com TypeScript
+  - Componentes genéricos devem aceitar className para customização
+
+  ## BOAS PRÁTICAS
+  - DRY (Don't Repeat Yourself) - nunca repetir código
+  - Separação de concerns (UI vs Lógica vs Dados)
+  - Custom hooks para lógica compartilhada
+  - Componentes UI genéricos e reutilizáveis
+  - Código legível e bem organizado
+
+  ## EXEMPLO DE ESTRUTURA
+  ```
+  src/
+    components/
+      ui/              # Componentes genéricos (Button, Tabs, etc)
+      dominio/         # Componentes específicos (FiltrosCertificacao, etc)
+    hooks/             # Custom hooks
+    lib/               # Utilidades e configurações
+    app/               # Páginas Next.js
+  ```
+
 -----------------------------------------------------------------------------------------------------
 
 # TELA INICIAL
-Conterá os botões para acesso às principais telas do sistema.
+**IMPORTANTE: Todas as funcionalidades principais devem estar integradas diretamente na página inicial.**
+Não criar rotas separadas para funcionalidades principais - tudo deve ser acessível na home page através de abas ou seções.
+Apenas funcionalidades administrativas/secundárias devem ter páginas separadas.
 
 # TELA CENTRAL DE ALUNOS
   ## CONSTROLES
@@ -147,3 +188,187 @@ Antes de implementar as UI, vamos mockar os dados até termos certeza das estrut
 
 # DETALHES DA IMPLEMENTAÇÃO DO BANCO DE DADOS
 Trata-se de um banco de dados para um sistema para ser rodado localmente e por outros computadores da rede. Penso em Postgres com Prisma. Pode sugerir o que quiser aqui.
+
+---------------------------------------------------------------------------------------------------------------
+
+# ARQUITETURA E DECISÕES TÉCNICAS
+
+## ESTRUTURA DE ARQUIVOS
+```
+src/
+  app/
+    page.tsx                    # Página inicial - TUDO integrado aqui
+    alunos/page.tsx            # Página separada (secundária)
+  components/
+    ui/                        # Componentes genéricos reutilizáveis
+      Tabs.tsx                 # Sistema de abas (com context)
+      Modal.tsx                # Modal genérico
+      ButtonGroup.tsx          # Grupo de botões (seleção única)
+    FluxoCertificacao.tsx      # Container: integra filtros + lista de alunos
+    FiltrosCertificacao.tsx    # UI de filtros (recebe props, não usa hooks)
+    ListaAlunosCertificacao.tsx # Tabela de alunos (recebe props)
+    FiltrosHierarquicos.tsx    # Filtros completos (Central de Alunos)
+    CentralAlunosSimplified.tsx # Central de alunos com navegação
+    MigrateUploads.tsx         # Upload e migração de CSVs
+  hooks/
+    useFiltrosCertificacao.ts  # Lógica de filtros (ano, turma)
+    useAlunosCertificacao.ts   # Busca de alunos filtrados
+  lib/
+    prisma.ts                  # Cliente Prisma
+```
+
+## PRINCIPAIS FEATURES
+
+### 1. FLUXO DE CERTIFICAÇÃO
+**Localização:** Aba "Fluxo de Certificação" na página inicial
+
+**Componentes:**
+- `FluxoCertificacao` (container)
+- `FiltrosCertificacao` (UI de filtros)
+- `ListaAlunosCertificacao` (tabela de alunos)
+
+**Hooks:**
+- `useFiltrosCertificacao`: gerencia estado dos filtros (ano letivo, turma)
+- `useAlunosCertificacao`: busca alunos baseado nos filtros
+
+**Regras de Negócio:**
+- Fixo em 3ª série (concluintes)
+- Fixo em regime anual (0)
+- Modalidade: REGULAR (por enquanto)
+- **Inicialização automática:** ano mais recente + primeira turma
+- Filtros: Período Letivo (botões) → Turma (botões horizontais)
+
+### 2. CENTRAL DE ALUNOS
+**Localização:** Aba "Central de Alunos" na página inicial
+
+**Componentes:**
+- `CentralAlunosSimplified` (tudo-em-um)
+- `FiltrosHierarquicos` (filtros completos)
+
+**Hierarquia de filtros:**
+Período Letivo → Regime → Modalidade → Série → Turma → Aluno
+
+**Funcionalidades:**
+- Navegação: Anterior/Próximo
+- Pesquisa: por nome ou matrícula (com wildcard *)
+- Edição inline de campos
+- Comparação: valor original vs editado
+- Indicador de fonte ausente
+
+### 3. SISTEMA DE ENTURMAÇÕES
+**Model Prisma:** `Enturmacao`
+
+**Estrutura:**
+- Um aluno pode ter MÚLTIPLAS enturmações (períodos letivos diferentes)
+- Relacionamento: `Aluno` 1-N `Enturmacao`
+- Dados: anoLetivo, regime, modalidade, turma, serie, turno
+
+**Parsing de CSV:**
+- Campos vêm com prefixos: "Ano Letivo: 2024", "Modalidade: REGULAR"
+- **Função `limparValor`** remove prefixos automaticamente
+- Implementado em: API de upload e script de migração
+
+### 4. MIGRAÇÃO DE DADOS
+**Localização:** Seção "Painel de Migração" na página inicial (details)
+
+**Fluxo:**
+1. Upload de CSV
+2. Parse e hash para detectar duplicatas
+3. Criar registros em `ArquivoImportado` e `LinhaImportada`
+4. Criar/atualizar `Aluno`
+5. Criar `Enturmacao` (com parsing de prefixos)
+
+**Scripts úteis:**
+- `scripts/migrar-enturmacoes.ts`: migra dados existentes para enturmações
+- `scripts/diagnosticar-dados.ts`: analisa tamanhos de campos
+
+## DECISÕES ARQUITETURAIS IMPORTANTES
+
+### 1. SEPARAÇÃO DE CONCERNS
+✅ **Hooks** = Lógica e estado
+✅ **Componentes** = UI pura (recebem props)
+✅ **Containers** = Composição (usam hooks + passam props)
+
+**Exemplo:**
+```tsx
+// ✅ CORRETO
+function FluxoCertificacao() {
+  const hookData = useFiltrosCertificacao();
+  return <FiltrosCertificacao {...hookData} />;
+}
+
+// ❌ ERRADO (não fazer)
+function FiltrosCertificacao() {
+  const hookData = useFiltrosCertificacao(); // lógica dentro da UI
+  return <div>...</div>;
+}
+```
+
+### 2. COMPONENTIZAÇÃO
+- Componentes genéricos (ButtonGroup, Tabs, Modal) → `src/components/ui/`
+- Componentes de domínio (FiltrosCertificacao) → `src/components/`
+- Máximo 200 linhas por componente
+- Se ultrapassar: quebrar em sub-componentes
+
+### 3. CUSTOM HOOKS
+- Toda lógica reutilizável vira hook
+- Nomenclatura: `use[Nome].ts`
+- Retornam objetos com estados, handlers e helpers
+- Localização: `src/hooks/`
+
+### 4. TIPOS E TYPESCRIPT
+- Types compartilhados exportados dos hooks
+- Props sempre tipadas
+- Usar `type` para objetos simples, `interface` para extensíveis
+
+### 5. BANCO DE DADOS (Prisma)
+**Camadas:**
+1. **Origem** (imutável): `ArquivoImportado`, `LinhaImportada`
+2. **Estruturada** (editável): `Aluno`, `Enturmacao`
+3. **Auditoria**: `Auditoria`
+
+**Convenções:**
+- Soft delete: `status = 'excluido'`, `excluidoEm`
+- Metadados: `origemTipo`, `linhaOrigemId`
+- Dados originais preservados em JSONB
+
+### 6. PACKAGE MANAGER
+**SEMPRE usar `pnpx` ao invés de `npx`**
+
+## PADRÕES DE UI
+
+### Cores Semânticas
+- 🔴 Vermelho: PENDENTE
+- 🟠 Laranja: RESOLVENDO
+- 🔵 Azul: OK (não alterado)
+- 🟢 Verde: CORRIGIDO
+- 🟡 Amarelo: Avisos (fonte ausente)
+
+### Tamanhos de Fonte
+- Títulos: `text-lg` ou `text-xl`
+- Labels: `text-xs`
+- Campos: `text-sm`
+- Hints: `text-[10px]`
+
+### Espaçamento
+- Seções: `space-y-6`
+- Elementos internos: `space-y-4`
+- Campos de formulário: `gap-3`
+
+## CONVENÇÕES DE NOMENCLATURA
+
+### Componentes
+- PascalCase: `FiltrosCertificacao.tsx`
+- Sufixos descritivos: `ListaAlunosCertificacao`, `ButtonGroup`
+
+### Hooks
+- camelCase com prefixo `use`: `useFiltrosCertificacao.ts`
+- Nome descritivo do domínio
+
+### Tipos
+- PascalCase com sufixo: `FiltrosState`, `AlunoProps`
+- Exportar do mesmo arquivo quando possível
+
+### Variáveis de Estado
+- Descritivas: `anosDisponiveis`, `isLoadingTurmas`
+- Booleanos: prefixo `is`, `has`, `should`

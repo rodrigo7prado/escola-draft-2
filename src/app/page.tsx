@@ -1,5 +1,9 @@
+"use client";
+
 import MigrateUploads from "@/components/MigrateUploads";
 import CentralAlunosSimplified from "@/components/CentralAlunosSimplified";
+import { FluxoCertificacao } from "@/components/FluxoCertificacao";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 
 export default function Home() {
   return (
@@ -50,10 +54,23 @@ export default function Home() {
       </section>
 
       <section id="alunos" className="scroll-mt-16">
-        <details className="border rounded-md">
-          <summary className="cursor-pointer select-none px-4 py-3 font-medium">Central de Alunos</summary>
-          <div className="px-4 pb-4 text-sm text-neutral-700">
-            <CentralAlunosSimplified />
+        <details open className="border rounded-md">
+          <summary className="cursor-pointer select-none px-4 py-3 font-medium">Gestão de Alunos</summary>
+          <div className="px-4 pb-4">
+            <Tabs defaultValue="certificacao">
+              <TabsList>
+                <TabsTrigger value="certificacao">Fluxo de Certificação</TabsTrigger>
+                <TabsTrigger value="central">Central de Alunos</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="certificacao">
+                <FluxoCertificacao />
+              </TabsContent>
+
+              <TabsContent value="central">
+                <CentralAlunosSimplified />
+              </TabsContent>
+            </Tabs>
           </div>
         </details>
       </section>

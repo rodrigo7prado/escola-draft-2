@@ -1,10 +1,10 @@
 "use client";
 
-import { useFiltrosCertificacao } from '@/hooks/useFiltrosCertificacao';
-import { useAlunoSelecionado } from '@/hooks/useAlunoSelecionado';
-import { FiltrosCertificacao } from './FiltrosCertificacao';
-import { ListaAlunosCertificacao } from './ListaAlunosCertificacao';
-import { DadosAlunoEditavel } from './DadosAlunoEditavel';
+import { useFiltrosCertificacao } from "@/hooks/useFiltrosCertificacao";
+import { useAlunoSelecionado } from "@/hooks/useAlunoSelecionado";
+import { FiltrosCertificacao } from "./FiltrosCertificacao";
+import { ListaAlunosCertificacao } from "./ListaAlunosCertificacao";
+import { DadosAlunoEditavel } from "./DadosAlunoEditavel";
 
 export function FluxoCertificacao() {
   const {
@@ -18,16 +18,13 @@ export function FluxoCertificacao() {
     handleAnoChange,
     handleTurmaChange,
     limparFiltros,
-    hasFiltrosAtivos
+    hasFiltrosAtivos,
   } = useFiltrosCertificacao();
 
-  const {
-    alunoSelecionado,
-    selecionarAluno,
-  } = useAlunoSelecionado();
+  const { alunoSelecionado, selecionarAluno } = useAlunoSelecionado();
 
   return (
-    <div className="grid grid-cols-[300px_1fr] gap-4 h-[calc(100vh-280px)] overflow-hidden">
+    <div className="grid grid-cols-[300px_1fr] gap-4 min-h-0 overflow-hidden h-full">
       {/* Sidebar Esquerda - Lista de Alunos */}
       <div className="h-full overflow-hidden">
         <ListaAlunosCertificacao
@@ -38,9 +35,9 @@ export function FluxoCertificacao() {
       </div>
 
       {/* Painel Direito - Filtros + Dados */}
-      <div className="flex flex-col gap-3 h-full overflow-hidden">
-        {/* Seleção de Turma - Altura fixa e compacta */}
-        <div className="flex-shrink-0">
+      <div className="flex flex-col gap-3 h-full min-w-0 min-h-0">
+        {/* Fixed Container - Seleção de Turma */}
+        <div className="shrink-0">
           <FiltrosCertificacao
             anoLetivo={anoLetivo}
             turma={turma}
@@ -55,9 +52,12 @@ export function FluxoCertificacao() {
           />
         </div>
 
-        {/* Dados do Aluno - Ocupa o espaço restante com overflow interno */}
-        <div className="flex-1 border rounded-sm overflow-hidden min-h-0">
-          <DadosAlunoEditavel aluno={alunoSelecionado} />
+        {/* Content Wrapper */}
+        <div className="flex-1 min-h-0">
+          {/* Overflow Container */}
+          <div className="border rounded-sm overflow-y-auto h-full">
+            <DadosAlunoEditavel aluno={alunoSelecionado} />
+          </div>
         </div>
       </div>
     </div>

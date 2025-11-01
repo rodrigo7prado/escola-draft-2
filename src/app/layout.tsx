@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Senor Abravanel - Certificados e Certidões",
-  description: "Sistema de emissão de certificados e certidões para alunos do Ensino Médio",
+  description:
+    "Sistema de emissão de certificados e certidões para alunos do Ensino Médio",
 };
 
 export default function RootLayout({
@@ -25,19 +26,31 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <header className="border-b border-neutral-200">
-          <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4 text-sm">
-            <div className="font-medium">Senor Abravanel</div>
-            <nav className="flex items-center gap-3 text-neutral-600">
-              <Link href="/#migracao" className="hover:text-neutral-900">Migração</Link>
-              <Link href="/#inconsistencias" className="hover:text-neutral-900">Inconsistências</Link>
-              <Link href="/#alunos" className="hover:text-neutral-900">Alunos</Link>
-              <Link href="/#impressao" className="hover:text-neutral-900">Impressão</Link>
-            </nav>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex flex-col overflow-hidden`}
+      >
+        <header className="border-b border-neutral-200 shrink-0">
+          <div className="mx-auto max-w-6xl px-4 py-2 flex items-center gap-4 text-sm">
+            <div className="font-medium">
+              Sistema de Certificação | Colégio Estadual Senor Abravanel
+            </div>
+            {/* <nav className="flex items-center gap-3 text-neutral-600">
+              <Link href="/#migracao" className="hover:text-neutral-900">
+                Migração
+              </Link>
+              <Link href="/#inconsistencias" className="hover:text-neutral-900">
+                Inconsistências
+              </Link>
+              <Link href="/#alunos" className="hover:text-neutral-900">
+                Alunos
+              </Link>
+              <Link href="/#impressao" className="hover:text-neutral-900">
+                Impressão
+              </Link>
+            </nav> */}
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-4 min-h-dvh">
+        <main className="mx-auto max-w-6xl px-4 py-4 flex-1 min-h-0 w-full">
           {children}
         </main>
       </body>

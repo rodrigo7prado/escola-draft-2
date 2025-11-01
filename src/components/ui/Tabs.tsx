@@ -24,7 +24,7 @@ export function Tabs({
   const [activeTab, setActiveTab] = useState(defaultValue);
   return (
     <TabsContext.Provider value={{ activeTab, setActiveTab }}>
-      <div data-tabs-variant={variant}>
+      <div data-tabs-variant={variant} className="flex-1 flex flex-col min-h-0">
         {children}
       </div>
     </TabsContext.Provider>
@@ -40,7 +40,7 @@ export function TabsList({
   className?: string;
   variant?: TabsVariant;
 }) {
-  const baseClasses = "flex items-center gap-1 border-b";
+  const baseClasses = "flex items-center gap-1 border-b flex-shrink-0";
 
   const variantClasses = {
     default: "mb-3",
@@ -89,10 +89,10 @@ export function TabsTrigger({
   );
 }
 
-export function TabsContent({ value, children }: { value: string; children: React.ReactNode }) {
+export function TabsContent({ value, children, className = "" }: { value: string; children: React.ReactNode; className?: string }) {
   const ctx = useContext(TabsContext);
   if (!ctx) throw new Error("TabsContent must be inside Tabs");
   const { activeTab } = ctx;
-  return <div className={activeTab === value ? "" : "hidden"}>{children}</div>;
+  return <div className={`${activeTab === value ? "flex-1 min-h-0 flex flex-col" : "hidden"} ${className}`}>{children}</div>;
 }
 

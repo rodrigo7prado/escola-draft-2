@@ -34,9 +34,12 @@ export async function POST(request: NextRequest) {
     // Calcular hash
     const dataHash = await hashData(data);
 
-    // Verificar se já existe
-    const existing = await prisma.arquivoImportado.findUnique({
-      where: { hashArquivo: dataHash }
+    // Verificar se já existe (apenas entre arquivos ATIVOS)
+    const existing = await prisma.arquivoImportado.findFirst({
+      where: {
+        hashArquivo: dataHash,
+        status: 'ativo'
+      }
     });
 
     if (existing) {
@@ -56,8 +59,19 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Criar linhas importadas e processar alunos
-    const alunosMap = new Map<string, any>();
+    // Função helper para remover prefixos
+    const limparValor = (valor: string | undefined, prefixo: string): string => {
+      if (!valor) return '';
+      const str = valor.toString().trim();
+      if (str.startsWith(prefixo)) {
+        return str.substring(prefixo.length).trim();
+      }
+      return str;
+    };
+
+    // Criar linhas importadas e agrupar por aluno+enturmação
+    type ChaveEnturmacao = string; // `${matricula}|${anoLetivo}|${turma}`
+    const enturmacoesMap = new Map<ChaveEnturmacao, any>();
 
     for (let i = 0; i < data.rows.length; i++) {
       const row = data.rows[i];
@@ -76,9 +90,17 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      // Guardar para processar alunos depois
-      if (!alunosMap.has(matricula)) {
-        alunosMap.set(matricula, {
+      // Extrair dados de enturmação DESTA linha
+      const anoLetivo = limparValor(row.Ano, 'Ano Letivo:') || limparValor(row.Ano, 'Ano:');
+      const turma = limparValor(row.TURMA, 'Turma:');
+
+      // Criar chave única: matrícula + ano + turma
+      const chave: ChaveEnturmacao = `${matricula}|${anoLetivo}|${turma}`;
+
+      // Guardar APENAS se for a primeira linha dessa combinação
+      if (!enturmacoesMap.has(chave)) {
+        enturmacoesMap.set(chave, {
+          matricula,
           linha,
           dados: row
         });
@@ -90,7 +112,19 @@ export async function POST(request: NextRequest) {
     let alunosAtualizados = 0;
     let enturmacoesNovas = 0;
 
-    for (const [matricula, info] of alunosMap) {
+    // Agrupar alunos únicos primeiro (para criar apenas uma vez)
+    const alunosUnicos = new Map<string, any>();
+    for (const [, info] of enturmacoesMap) {
+      const matricula = info.matricula;
+      if (!alunosUnicos.has(matricula)) {
+        alunosUnicos.set(matricula, info);
+      }
+    }
+
+    // Criar/atualizar alunos
+    const alunosIds = new Map<string, string>();
+
+    for (const [matricula, info] of alunosUnicos) {
       const alunoExistente = await prisma.aluno.findUnique({
         where: { matricula }
       });
@@ -103,32 +137,36 @@ export async function POST(request: NextRequest) {
             matricula,
             nome: info.dados.NOME_COMPL || null,
             origemTipo: 'csv',
-            linhaOrigemId: info.linha.id
+            linhaOrigemId: info.linha.id,
+            fonteAusente: false
           }
         });
         alunosNovos++;
         alunoId = novoAluno.id;
       } else {
-        // Atualiza linha de origem se for mais recente
-        await prisma.aluno.update({
-          where: { matricula },
-          data: { linhaOrigemId: info.linha.id }
-        });
-        alunosAtualizados++;
+        // Atualizar aluno existente: resetar fonteAusente se estava true
+        if (alunoExistente.fonteAusente) {
+          await prisma.aluno.update({
+            where: { id: alunoExistente.id },
+            data: {
+              linhaOrigemId: info.linha.id,
+              fonteAusente: false
+            }
+          });
+        }
         alunoId = alunoExistente.id;
+        alunosAtualizados++;
       }
 
-      // Função helper para remover prefixos
-      const limparValor = (valor: string | undefined, prefixo: string): string => {
-        if (!valor) return '';
-        const str = valor.toString().trim();
-        if (str.startsWith(prefixo)) {
-          return str.substring(prefixo.length).trim();
-        }
-        return str;
-      };
+      alunosIds.set(matricula, alunoId);
+    }
 
-      // Criar registro de enturmação (se não existir)
+    // Agora criar enturmações (uma por chave única)
+    for (const [, info] of enturmacoesMap) {
+      const alunoId = alunosIds.get(info.matricula);
+      if (!alunoId) continue;
+
+      // Extrair dados de enturmação
       const anoLetivo = limparValor(info.dados.Ano, 'Ano Letivo:') || limparValor(info.dados.Ano, 'Ano:');
       const modalidade = limparValor(info.dados.MODALIDADE, 'Modalidade:');
       const turma = limparValor(info.dados.TURMA, 'Turma:');
@@ -158,10 +196,20 @@ export async function POST(request: NextRequest) {
               serie,
               turno,
               origemTipo: 'csv',
-              linhaOrigemId: info.linha.id
+              linhaOrigemId: info.linha.id,
+              fonteAusente: false
             }
           });
           enturmacoesNovas++;
+        } else if (enturmacaoExistente.fonteAusente) {
+          // Resetar fonteAusente se estava true
+          await prisma.enturmacao.update({
+            where: { id: enturmacaoExistente.id },
+            data: {
+              linhaOrigemId: info.linha.id,
+              fonteAusente: false
+            }
+          });
         }
       }
     }
@@ -183,50 +231,175 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET /api/files - Listar arquivos importados
+// Helper para limpar prefixos dos dados do CSV
+function limparValorLeitura(valor: string | undefined, prefixo: string): string {
+  if (!valor) return '';
+  const str = valor.toString().trim();
+  if (str.startsWith(prefixo)) {
+    return str.substring(prefixo.length).trim();
+  }
+  return str;
+}
+
+// GET /api/files - Listar dados por hierarquia (Período → Turma → Alunos)
 export async function GET() {
   try {
-    const arquivos = await prisma.arquivoImportado.findMany({
-      where: { status: 'ativo' },
-      orderBy: { dataUpload: 'desc' },
-      include: {
-        linhas: {
+    // Buscar todas as linhas importadas de arquivos ativos
+    const linhasImportadas = await prisma.linhaImportada.findMany({
+      where: {
+        tipoEntidade: 'aluno',
+        arquivo: {
+          status: 'ativo'
+        }
+      },
+      select: {
+        identificadorChave: true,
+        dadosOriginais: true
+      }
+    });
+
+    // Agrupar por período letivo e turma
+    type AlunoCsv = {
+      matricula: string;
+      nome: string;
+    };
+
+    type TurmaData = {
+      nome: string;
+      alunosCSV: Map<string, AlunoCsv>;
+    };
+
+    type PeriodoData = {
+      anoLetivo: string;
+      turmas: Map<string, TurmaData>;
+    };
+
+    const periodosMap = new Map<string, PeriodoData>();
+
+    // Processar linhas do CSV
+    for (const linha of linhasImportadas) {
+      const dados = linha.dadosOriginais as any;
+      const matricula = linha.identificadorChave;
+
+      if (!matricula) continue;
+
+      const anoLetivo = limparValorLeitura(dados.Ano, 'Ano Letivo:') ||
+                        limparValorLeitura(dados.Ano, 'Ano:') ||
+                        '(sem ano)';
+      const turma = limparValorLeitura(dados.TURMA, 'Turma:') || '(sem turma)';
+      const nome = dados.NOME_COMPL || '(sem nome)';
+
+      // Criar estrutura de período se não existir
+      if (!periodosMap.has(anoLetivo)) {
+        periodosMap.set(anoLetivo, {
+          anoLetivo,
+          turmas: new Map()
+        });
+      }
+
+      const periodo = periodosMap.get(anoLetivo)!;
+
+      // Criar estrutura de turma se não existir
+      if (!periodo.turmas.has(turma)) {
+        periodo.turmas.set(turma, {
+          nome: turma,
+          alunosCSV: new Map()
+        });
+      }
+
+      const turmaData = periodo.turmas.get(turma)!;
+
+      // Adicionar aluno ao CSV (deduplica por matrícula)
+      turmaData.alunosCSV.set(matricula, { matricula, nome });
+    }
+
+    // Buscar alunos criados no banco agrupados por enturmação
+    const enturmacoes = await prisma.enturmacao.findMany({
+      select: {
+        anoLetivo: true,
+        turma: true,
+        aluno: {
           select: {
-            dadosOriginais: true
+            matricula: true,
+            nome: true
           }
-        },
-        _count: {
-          select: { linhas: true }
         }
       }
     });
 
-    // Adicionar metadados extraídos das linhas
-    const arquivosComMetadados = arquivos.map(arquivo => {
-      const anosSet = new Set<string>();
-      const modalidadesSet = new Set<string>();
-      const turmasSet = new Set<string>();
+    // Mapear alunos no banco por período e turma
+    type AlunosNoBanco = Map<string, Set<string>>; // Map<turma, Set<matricula>>
+    const alunosBancoMap = new Map<string, AlunosNoBanco>();
 
-      for (const linha of arquivo.linhas) {
-        const dados = linha.dadosOriginais as any;
-        if (dados.Ano) anosSet.add(dados.Ano);
-        if (dados.MODALIDADE) modalidadesSet.add(dados.MODALIDADE);
-        if (dados.TURMA) turmasSet.add(dados.TURMA);
+    for (const ent of enturmacoes) {
+      if (!alunosBancoMap.has(ent.anoLetivo)) {
+        alunosBancoMap.set(ent.anoLetivo, new Map());
       }
 
+      const turmasMap = alunosBancoMap.get(ent.anoLetivo)!;
+
+      if (!turmasMap.has(ent.turma)) {
+        turmasMap.set(ent.turma, new Set());
+      }
+
+      turmasMap.get(ent.turma)!.add(ent.aluno.matricula);
+    }
+
+    // Montar resposta final
+    const periodos = Array.from(periodosMap.values()).map(periodo => {
+      const turmas = Array.from(periodo.turmas.values()).map(turmaData => {
+        const alunosCSV = Array.from(turmaData.alunosCSV.values());
+        const totalAlunosCSV = alunosCSV.length;
+
+        // Buscar alunos desta turma no banco
+        const alunosNoBancoSet = alunosBancoMap.get(periodo.anoLetivo)?.get(turmaData.nome) || new Set();
+        const totalAlunosBanco = alunosNoBancoSet.size;
+
+        // Identificar pendentes (no CSV mas não no banco)
+        const alunosPendentes = alunosCSV.filter(
+          aluno => !alunosNoBancoSet.has(aluno.matricula)
+        );
+
+        const pendentes = alunosPendentes.length;
+        const status = pendentes > 0 ? 'pendente' : 'ok';
+
+        return {
+          nome: turmaData.nome,
+          totalAlunosCSV,
+          totalAlunosBanco,
+          pendentes,
+          status,
+          alunosPendentes: status === 'pendente' ? alunosPendentes : undefined
+        };
+      }).sort((a, b) => {
+        // Ordenar turmas por nome (numérico se possível)
+        return a.nome.localeCompare(b.nome, undefined, { numeric: true });
+      });
+
+      // Calcular resumo do período
+      const totalTurmas = turmas.length;
+      const totalAlunosCSV = turmas.reduce((sum, t) => sum + t.totalAlunosCSV, 0);
+      const totalAlunosBanco = turmas.reduce((sum, t) => sum + t.totalAlunosBanco, 0);
+      const pendentes = turmas.reduce((sum, t) => sum + t.pendentes, 0);
+      const status = pendentes > 0 ? 'pendente' : 'ok';
+
       return {
-        id: arquivo.id,
-        nomeArquivo: arquivo.nomeArquivo,
-        dataUpload: arquivo.dataUpload,
-        hashArquivo: arquivo.hashArquivo,
-        anos: Array.from(anosSet),
-        modalidades: Array.from(modalidadesSet),
-        turmas: Array.from(turmasSet),
-        _count: arquivo._count
+        anoLetivo: periodo.anoLetivo,
+        resumo: {
+          totalTurmas,
+          totalAlunosCSV,
+          totalAlunosBanco,
+          pendentes,
+          status
+        },
+        turmas
       };
+    }).sort((a, b) => {
+      // Ordenar períodos por ano (decrescente)
+      return b.anoLetivo.localeCompare(a.anoLetivo);
     });
 
-    return NextResponse.json({ arquivos: arquivosComMetadados });
+    return NextResponse.json({ periodos });
 
   } catch (error) {
     console.error('Erro ao listar arquivos:', error);
@@ -237,31 +410,133 @@ export async function GET() {
   }
 }
 
-// DELETE /api/files - Marcar arquivo como excluído
+// DELETE /api/files - Hard delete de arquivo(s) e marcar entidades como fonteAusente
+// Suporta: ?id=X (individual) ou ?periodo=2024 (todos do período)
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const periodo = searchParams.get('periodo');
 
-    if (!id) {
+    if (!id && !periodo) {
       return NextResponse.json(
-        { error: 'Parâmetro id é obrigatório' },
+        { error: 'Parâmetro id ou periodo é obrigatório' },
         { status: 400 }
       );
     }
 
-    // Marcar como excluído (não deleta fisicamente)
-    await prisma.arquivoImportado.update({
-      where: { id },
-      data: {
-        status: 'excluido',
-        excluidoEm: new Date()
+    if (id) {
+      // Deletar arquivo individual
+      // 1. Buscar IDs das LinhaImportada deste arquivo
+      const linhasIds = await prisma.linhaImportada.findMany({
+        where: { arquivoId: id },
+        select: { id: true }
+      });
+
+      const linhasIdsArray = linhasIds.map(l => l.id);
+
+      // 2. Marcar alunos e enturmações como fonteAusente
+      await prisma.$transaction([
+        // Alunos que vieram deste arquivo
+        prisma.aluno.updateMany({
+          where: {
+            linhaOrigemId: { in: linhasIdsArray },
+            origemTipo: 'csv'
+          },
+          data: { fonteAusente: true }
+        }),
+        // Enturmações que vieram deste arquivo
+        prisma.enturmacao.updateMany({
+          where: {
+            linhaOrigemId: { in: linhasIdsArray },
+            origemTipo: 'csv'
+          },
+          data: { fonteAusente: true }
+        })
+      ]);
+
+      // 3. Hard delete do arquivo (cascade deleta LinhaImportada)
+      await prisma.arquivoImportado.delete({
+        where: { id }
+      });
+
+      return NextResponse.json({
+        message: 'Arquivo deletado e entidades marcadas como fonte ausente',
+        alunosMarcados: linhasIdsArray.length // aproximado
+      });
+    }
+
+    if (periodo) {
+      // Deletar todos os arquivos do período letivo
+      // 1. Buscar linhas com este período
+      const linhas = await prisma.linhaImportada.findMany({
+        where: {
+          tipoEntidade: 'aluno',
+          arquivo: {
+            status: 'ativo'
+          }
+        },
+        select: {
+          id: true,
+          arquivoId: true,
+          dadosOriginais: true
+        }
+      });
+
+      // 2. Filtrar linhas do período e coletar IDs
+      const arquivosIds = new Set<string>();
+      const linhasIdsDoPeriodo: string[] = [];
+
+      for (const linha of linhas) {
+        const dados = linha.dadosOriginais as any;
+        const anoLetivo = limparValorLeitura(dados.Ano, 'Ano Letivo:') ||
+                          limparValorLeitura(dados.Ano, 'Ano:');
+
+        if (anoLetivo === periodo) {
+          arquivosIds.add(linha.arquivoId);
+          linhasIdsDoPeriodo.push(linha.id);
+        }
       }
-    });
 
-    // O trigger fn_marcar_fonte_ausente vai marcar alunos como fonteAusente=true
+      if (arquivosIds.size === 0) {
+        return NextResponse.json({
+          message: `Nenhum arquivo do período ${periodo} encontrado`
+        });
+      }
 
-    return NextResponse.json({ message: 'Arquivo marcado como excluído' });
+      // 3. Marcar alunos e enturmações como fonteAusente
+      await prisma.$transaction([
+        // Alunos
+        prisma.aluno.updateMany({
+          where: {
+            linhaOrigemId: { in: linhasIdsDoPeriodo },
+            origemTipo: 'csv'
+          },
+          data: { fonteAusente: true }
+        }),
+        // Enturmações
+        prisma.enturmacao.updateMany({
+          where: {
+            linhaOrigemId: { in: linhasIdsDoPeriodo },
+            origemTipo: 'csv'
+          },
+          data: { fonteAusente: true }
+        })
+      ]);
+
+      // 4. Hard delete dos arquivos (cascade deleta LinhaImportada)
+      await prisma.arquivoImportado.deleteMany({
+        where: {
+          id: { in: Array.from(arquivosIds) }
+        }
+      });
+
+      return NextResponse.json({
+        message: `${arquivosIds.size} arquivo(s) do período ${periodo} deletado(s) e entidades marcadas como fonte ausente`,
+        arquivosDeletados: arquivosIds.size,
+        linhasDeletadas: linhasIdsDoPeriodo.length
+      });
+    }
 
   } catch (error) {
     console.error('Erro ao excluir arquivo:', error);

@@ -189,6 +189,75 @@ Antes de implementar as UI, vamos mockar os dados até termos certeza das estrut
 # DETALHES DA IMPLEMENTAÇÃO DO BANCO DE DADOS
 Trata-se de um banco de dados para um sistema para ser rodado localmente e por outros computadores da rede. Penso em Postgres com Prisma. Pode sugerir o que quiser aqui.
 
+## ARQUITETURA DE CAMADAS DO BANCO DE DADOS
+
+O banco de dados segue uma arquitetura em 3 camadas:
+
+### CAMADA 1: ORIGEM DOS DADOS (Imutável)
+Armazena os dados brutos dos arquivos CSV importados.
+
+**ArquivoImportado**
+- 1 registro = 1 arquivo CSV uploadado
+- Campos: nomeArquivo, hashArquivo (hash SHA-256 dos dados parseados), status ('ativo' ou 'excluido')
+- Propósito: detectar duplicatas, rastreabilidade
+
+**LinhaImportada**
+- 1 registro = 1 linha do CSV
+- Campo `dadosOriginais`: JSONB com dados brutos daquela linha
+- Relacionamento: N-1 com ArquivoImportado (onDelete: Cascade)
+- Propósito: performance em comparações, queries por matrícula/turma, rastreabilidade
+
+### CAMADA 2: ENTIDADES ESTRUTURADAS (Editáveis)
+Dados modelados e normalizados, derivados da Camada 1.
+
+**Turma** (a ser implementado)
+- Campos: código, anoLetivo, modalidade, serie, turno
+- `origemId`: FK → LinhaImportada (onDelete: SetNull)
+- `fonteAusente`: boolean - indica se o CSV de origem foi deletado
+
+**Aluno**
+- Campos: matricula, nome, documentos, etc
+- `linhaOrigemId`: FK → LinhaImportada (onDelete: SetNull)
+- `origemTipo`: 'csv' ou 'manual'
+- `fonteAusente`: boolean - indica se o CSV de origem foi deletado
+
+**Enturmacao**
+- Relaciona Aluno com Turma em um período letivo
+- `linhaOrigemId`: FK → LinhaImportada (onDelete: SetNull)
+- `origemTipo`: 'csv' ou 'manual'
+
+### CAMADA 3: AUDITORIA
+Registra todas as alterações nas entidades estruturadas.
+
+## PRINCÍPIO DE EXCLUSÃO E REIMPORTAÇÃO
+
+**Comportamento do Reset de Período/Turma:**
+
+1. **Hard Delete da Camada 1:**
+   - Deletar `ArquivoImportado` (remove o hash do banco)
+   - Deletar `LinhaImportada` (onDelete: Cascade - automático)
+   - Remove todo o JSONB, liberando espaço
+
+2. **SetNull na Camada 2:**
+   - `Aluno.linhaOrigemId` → NULL (onDelete: SetNull - automático)
+   - `Turma.origemId` → NULL (onDelete: SetNull - automático)
+   - `Enturmacao.linhaOrigemId` → NULL (onDelete: SetNull - automático)
+
+3. **Marcar Fonte Ausente:**
+   - Se `linhaOrigemId = NULL` E `origemTipo = 'csv'` → `fonteAusente = true`
+   - Aplica para Aluno, Turma, Enturmacao
+
+4. **Reimportação Permitida:**
+   - Com hash removido, mesmo arquivo pode ser importado novamente
+   - Novas entidades criadas ou existentes atualizadas
+   - `fonteAusente` volta a `false` ao vincular novo CSV
+
+**Vantagens:**
+- ✅ Permite reimportar dados após correção de problemas
+- ✅ Mantém dados editados manualmente (não deleta Aluno/Turma)
+- ✅ Rastreabilidade: sabe-se quais entidades perderam origem
+- ✅ Economia de espaço: remove JSONB desnecessário
+
 ---------------------------------------------------------------------------------------------------------------
 
 # ARQUITETURA E DECISÕES TÉCNICAS

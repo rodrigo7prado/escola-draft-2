@@ -144,6 +144,7 @@ model Enturmacao {
   // Metadados de origem
   origemTipo        String   // 'csv' ou 'manual'
   linhaOrigemId     String?
+  fonteAusente      Boolean  @default(false)
 
   // Relacionamentos
   aluno             Aluno              @relation(fields: [alunoId], references: [id], onDelete: Cascade)

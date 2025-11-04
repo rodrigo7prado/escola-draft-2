@@ -7,7 +7,7 @@ Registro de problemas identificados para resolução gradual.
 ## PAINEL DE MIGRAÇÃO
 
 ### 🔴 CRÍTICO #1: Dados não sincronizados entre frontend e backend
-**Status:** Pendente
+**Status:** ✅ Resolvido (2025-01-04)
 **Prioridade:** Alta
 **Impacto:** Visualização de turmas/modalidades completamente quebrada
 
@@ -37,7 +37,7 @@ Registro de problemas identificados para resolução gradual.
 ---
 
 ### 🔴 CRÍTICO #2: Modal exibe "0 registros" sempre
-**Status:** Pendente
+**Status:** ✅ Resolvido (2025-01-04) - Modal removido, substituído por visualização hierárquica
 **Prioridade:** Alta
 **Impacto:** Usuário não consegue ver quantos registros foram importados
 
@@ -55,7 +55,7 @@ Registro de problemas identificados para resolução gradual.
 ---
 
 ### 🔴 CRÍTICO #3: Funções de delete por período/modalidade quebradas
-**Status:** Pendente
+**Status:** ✅ Resolvido (2025-01-04) - Implementado delete por período com confirmação textual
 **Prioridade:** Alta
 **Impacto:** Usuário não consegue deletar dados por período ou modalidade
 
@@ -74,7 +74,7 @@ Registro de problemas identificados para resolução gradual.
 ---
 
 ### 🟡 MÉDIA #4: Duplicação de lógica de parsing de prefixos
-**Status:** Pendente
+**Status:** ✅ Resolvido (2025-01-04) - Parsing centralizado no backend, frontend removido
 **Prioridade:** Média
 **Impacto:** Manutenção difícil, risco de inconsistência
 
@@ -96,7 +96,7 @@ Registro de problemas identificados para resolução gradual.
 ---
 
 ### 🟡 MÉDIA #5: Processamento ineficiente - dados trafegam mas não são usados
-**Status:** Pendente
+**Status:** ✅ Resolvido (2025-01-04) - API agora retorna dados agregados e processados
 **Prioridade:** Média
 **Impacto:** Performance e complexidade desnecessária
 

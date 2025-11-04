@@ -5,6 +5,36 @@ Sistema de emissão de certificados e certidões para alunos de Ensino Médio
   - Antes de gerar estruturas permantes, geraremos sempre algum mock para a UI, e gradativamente implementaremos as estruturas.
   - Sempre me pergunte sobre os passos que tomaremos.
 
+# METODOLOGIA DE DESENVOLVIMENTO (CRÍTICO)
+  ## METODOLOGIA CIF (Ciclo de Integridade de Funcionalidade)
+
+  **Para funcionalidades complexas que exigem alta integridade de dados, SEMPRE usar a Metodologia CIF.**
+
+  **Documentação completa:** [docs/METODOLOGIA_CIF.md](./docs/METODOLOGIA_CIF.md)
+
+  **Resumo:**
+  - ✅ 4 Níveis de Documentação: CONCEITO → ESPECIFICAÇÃO → TÉCNICO → CICLO DE VIDA
+  - ✅ Checklist executável (ESPECIFICACAO.md) é a fonte da verdade
+  - ✅ Cada validação DEVE ter teste correspondente
+  - ✅ Abordagem híbrida: experimentação primeiro (features novas) ou TDD (código estável)
+
+  **Quando usar CIF:**
+  - ✅ Funcionalidades com múltiplas camadas de validação
+  - ✅ Operações críticas (migração de dados, emissão de documentos legais)
+  - ✅ Código com alta complexidade de estado
+  - ✅ Features que mudam frequentemente
+
+  **Quando NÃO usar CIF:**
+  - ❌ Componentes simples de UI (botão, input)
+  - ❌ Utilidades triviais (formatação de data)
+  - ❌ Protótipos descartáveis
+
+  **Templates disponíveis:** `docs/templates/CIF_*.template.md`
+
+  **Caso de estudo:** Painel de Migração ([docs/ciclos/MIGRACAO_*](./docs/ciclos/))
+
+  **Status de implementação:** 🚧 Em andamento - Ver [CHECKPOINT](./docs/CHECKPOINT_METODOLOGIA_CIF.md)
+
 # MODELO DE DADOS
   ## MODELO DE DADOS, PONTO DE VISTA DA OBTENÇÃO
   A origem dos dados será o sistema oficial do Conexão Educação da SEEDUC-RJ, através dos arquivos de relatório baixados de lá (.csv, .xml, a princípio).

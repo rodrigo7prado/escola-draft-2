@@ -1,8 +1,8 @@
 # CHECKPOINT - Implementação Metodologia CIF
 
 **Data de início:** 2025-01-04
-**Última atualização:** 2025-11-05 (Sessão 3)
-**Status:** ✅ TESTES CONFIGURADOS + 54 TESTES PASSANDO - Próximo: Testes de Integração
+**Última atualização:** 2025-11-05 (Sessão 5)
+**Status:** 🚧 TESTES DE INTEGRAÇÃO EM ANDAMENTO - 61/65 testes passando
 
 ---
 
@@ -34,33 +34,29 @@
 
 ---
 
-## 🎯 PRÓXIMA SESSÃO: Configurar Testes + Refatorações
+## 🎯 PRÓXIMA SESSÃO: Finalizar Testes de Integração
 
-### OPÇÃO 1: Configurar Ambiente de Testes (Recomendado)
+### OPÇÃO 1: Corrigir isolamento dos testes (Recomendado)
 
-**Objetivo:** Configurar Vitest + Playwright para começar a implementar testes automatizados.
+**Objetivo:** Corrigir os 4 testes de integração que estão falhando por constraint violations.
+
+**Problema identificado:**
+- Hash duplicado: constraint `hashArquivo` unique
+- Matrícula duplicada: constraint `matricula` unique
+- Causa: `clearTestDatabase()` não está limpando completamente entre testes
 
 **Tarefas:**
-1. Instalar dependências de teste:
-   ```bash
-   pnpm add -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom
-   pnpm add -D playwright @playwright/test
-   ```
-
-2. Criar configuração:
-   - `vitest.config.ts` - Config do Vitest
-   - `playwright.config.ts` - Config do Playwright
-   - `tests/setup.ts` - Setup global de testes
-
-3. Criar helpers:
-   - `tests/helpers/db-setup.ts` - Setup/teardown de banco
-   - `tests/helpers/csv-fixtures.ts` - CSVs de teste
-   - `tests/fixtures/ata-valido.csv` - Fixture de CSV válido
-
-4. Implementar primeiro teste (proof of concept):
-   - `tests/unit/lib/limparValor.test.ts` - Função crítica
+1. Verificar se `beforeEach` e `afterEach` estão executando corretamente
+2. Adicionar logs de debug nos helpers para confirmar limpeza
+3. Considerar usar transações ao invés de deleteMany (rollback automático)
+4. Rodar testes individualmente para isolar o problema
+5. Validar que os 11 testes de integração passam 100%
 
 **Estimativa:** 1-2h
+
+**Arquivos envolvidos:**
+- `tests/helpers/db-setup.ts` (linha 56-67: `clearTestDatabase`)
+- `tests/integration/api/files-upload.test.ts` (linha 63-70: beforeEach/afterEach)
 
 ---
 
@@ -148,10 +144,16 @@
 6. ✅ ~~Configurar ambiente de testes (Vitest + Husky)~~ **CONCLUÍDO**
    - Vitest configurado com pool forks (compatível com crypto do Node.js)
    - Pre-commit hook instalado (Husky v9)
-   - 54 testes implementados (100% passando)
+   - 54 testes unitários implementados (100% passando)
    - Funções críticas testadas: limparValor, limparCamposEnturmacao, hashData
 
-7. ⏳ Implementar testes de integração (API + banco) - **PRÓXIMO RECOMENDADO**
+7. 🚧 ~~Implementar testes de integração (API + banco)~~ **EM ANDAMENTO** (Sessão 5)
+   - ✅ Helpers de banco implementados (PostgreSQL real + limpeza entre testes)
+   - ✅ Fixtures de CSV criadas (CSV_VALIDO_3_ALUNOS com 3 alunos)
+   - ✅ Arquivo de teste criado: `tests/integration/api/files-upload.test.ts`
+   - ✅ 11 testes de integração implementados (7 passando, 4 com erros de isolamento)
+   - ⏳ **Pendente:** Corrigir isolamento entre testes (constraint unique violations)
+   - ⏳ **Pendente:** Implementar testes de delete (V6) e edge cases (V7)
 
 8. ⏳ Corrigir bugs críticos (V5.3.3, V8.1.2, V2.4.1)
 
@@ -184,17 +186,55 @@ Claude deve:
 | 5. MIGRACAO_TECNICO.md | ✅ Completo | ~1h |
 | 6. MIGRACAO_CICLO.md | ✅ Completo | ~30min |
 | **6.5. Refatoração Quick Win** | ✅ **COMPLETO** | ~20min |
-| 7. Configurar testes | ⏳ **PRÓXIMO** | ~1-2h |
+| 7. Configurar testes | ✅ **COMPLETO** | ~1h |
+| **7.5. Implementar testes integração** | 🚧 **EM ANDAMENTO** | ~3h |
 | 8. Implementar testes críticos | ⏳ Pendente | ~1-2 dias |
 | 9. Resolver bugs críticos | ⏳ Pendente | ~4-6h |
 
 **Total documentação CIF:** ~10h (COMPLETO!)
 **Total refatoração:** ~20min (COMPLETO!)
+**Total testes unitários:** ~1h (COMPLETO - 54 testes!)
+**Total testes integração:** ~3h (70% - 61/65 testes passando)
 **Total estimado restante (código):** ~5-6 dias de trabalho
 
 ---
 
 ## 📚 ARQUIVOS CRIADOS
+
+### Testes (Sessão 4-5):
+
+**Helpers e Fixtures:**
+1. ✅ `tests/helpers/db-setup.ts` (207 linhas)
+   - `setupTestDatabase()` - Inicializa conexão PostgreSQL
+   - `clearTestDatabase()` - Limpa dados entre testes (ordem FK-safe)
+   - `teardownTestDatabase()` - Fecha conexão
+   - `getTestPrisma()` - Retorna instância Prisma para testes
+   - `seedTestData()` - Cria fixtures básicas
+   - `contarRegistros()` - Helper para validação
+
+2. ✅ `tests/helpers/csv-fixtures.ts` (122 linhas)
+   - `CSV_VALIDO_3_ALUNOS` - 3 alunos da turma 3001/2024
+   - `CSV_DADOS_INCOMPLETOS` - Testa robustez
+   - `CSV_SEM_PREFIXOS` - Testa normalização
+   - `CSV_COM_ACENTUACAO` - Testa UTF-8
+   - `CSV_VAZIO` - Edge case
+   - `CSV_MULTIPLAS_TURMAS` - Agrupamento
+   - `CSV_MULTIPLOS_ANOS` - Separação temporal
+   - Helpers: `criarArquivoCsvTeste()`, `criarFormDataTeste()`
+
+**Testes de Integração:**
+3. 🚧 `tests/integration/api/files-upload.test.ts` (494 linhas, 11 testes)
+   - ✅ V2.1: Validação básica de payload (2 testes - passando)
+   - ✅ V4.1: Criar ArquivoImportado (2 testes - passando)
+   - ⚠️ V4.2: Detectar duplicatas (2 testes - 1 falhando)
+   - ⚠️ V4.3: Criar LinhaImportada (1 teste - falhando)
+   - ⚠️ V4.4: Criar/atualizar Aluno (2 testes - 1 falhando)
+   - ✅ V4.5: Criar Enturmacao (1 teste - passando)
+   - ⚠️ V4: Fluxo end-to-end (1 teste - falhando)
+
+**Scripts de Debug (Sessão 5):**
+4. ✅ `scripts/check-data.ts` - Verificar dados no banco
+5. ✅ `scripts/test-api-filtros.ts` - Testar lógica de filtros
 
 ### Documentação CIF do Painel de Migração:
 

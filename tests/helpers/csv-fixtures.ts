@@ -11,8 +11,9 @@
  * CSV válido com 3 alunos da mesma turma
  *
  * Representa uma exportação típica de Ata de Resultados Finais.
+ * IMPORTANTE: Usa "ALUNO" como nome da coluna (padrão do sistema oficial)
  */
-export const CSV_VALIDO_3_ALUNOS = `Ano,MODALIDADE,TURMA,SERIE,TURNO,MATRICULA,NOME,SEXO,NASCIMENTO,NACIONALIDADE,NATURALIDADE,UF,RG,ORGAO_EMISSOR,DATA_EMISSAO_RG,CPF,NOME_MAE,NOME_PAI
+export const CSV_VALIDO_3_ALUNOS = `Ano,MODALIDADE,TURMA,SERIE,TURNO,ALUNO,NOME,SEXO,NASCIMENTO,NACIONALIDADE,NATURALIDADE,UF,RG,ORGAO_EMISSOR,DATA_EMISSAO_RG,CPF,NOME_MAE,NOME_PAI
 Ano Letivo: 2024,Modalidade: REGULAR,Turma: 3001,Série: 3,Turno: MANHÃ,123456789012345,João da Silva,M,01/01/2006,Brasileira,Rio de Janeiro,RJ,12.345.678-9,DETRAN,01/01/2020,123.456.789-10,Maria da Silva,José da Silva
 Ano Letivo: 2024,Modalidade: REGULAR,Turma: 3001,Série: 3,Turno: MANHÃ,234567890123456,Ana Paula Santos,F,15/03/2006,Brasileira,Niterói,RJ,23.456.789-0,DETRAN,15/03/2020,234.567.890-11,Paula Santos,Carlos Santos
 Ano Letivo: 2024,Modalidade: REGULAR,Turma: 3001,Série: 3,Turno: MANHÃ,345678901234567,Pedro Oliveira,M,20/07/2005,Brasileira,São Gonçalo,RJ,34.567.890-1,DETRAN,20/07/2019,345.678.901-22,Joana Oliveira,Paulo Oliveira`;

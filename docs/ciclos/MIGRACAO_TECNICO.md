@@ -64,14 +64,14 @@ Este documento descreve a implementação técnica completa do Painel de Migraç
 
 ### Stack Tecnológica
 
-| Camada | Tecnologias | Versão |
-|--------|-------------|--------|
-| Frontend | React, TypeScript, Tailwind CSS | React 19.2.0 |
-| Backend | Next.js API Routes, Node.js | Next.js 16.0.0 |
-| Banco de Dados | PostgreSQL, Prisma ORM | Prisma 6.18.0 |
-| Parsing | JavaScript manual (parseCsvLoose) | N/A |
-| Hash | crypto (Node.js nativo) | SHA-256 |
-| UI Components | Componentes customizados (Button, Modal, Tabs) | N/A |
+| Camada         | Tecnologias                                    | Versão         |
+| -------------- | ---------------------------------------------- | -------------- |
+| Frontend       | React, TypeScript, Tailwind CSS                | React 19.2.0   |
+| Backend        | Next.js API Routes, Node.js                    | Next.js 16.0.0 |
+| Banco de Dados | PostgreSQL, Prisma ORM                         | Prisma 6.18.0  |
+| Parsing        | JavaScript manual (parseCsvLoose)              | N/A            |
+| Hash           | crypto (Node.js nativo)                        | SHA-256        |
+| UI Components  | Componentes customizados (Button, Modal, Tabs) | N/A            |
 
 **Nota:** Não usa bibliotecas externas para CSV (Papa Parse) para ter controle total sobre parsing tolerante.
 
@@ -231,7 +231,7 @@ type PeriodoData = {
     totalAlunosCSV: number;
     totalAlunosBanco: number;
     pendentes: number;
-    status: 'ok' | 'pendente';
+    status: "ok" | "pendente";
   };
   turmas: TurmaData[];
 };
@@ -241,7 +241,7 @@ type TurmaData = {
   totalAlunosCSV: number;
   totalAlunosBanco: number;
   pendentes: number;
-  status: 'ok' | 'pendente';
+  status: "ok" | "pendente";
   alunosPendentes?: { matricula: string; nome: string }[];
 };
 ```
@@ -249,10 +249,12 @@ type TurmaData = {
 **Funções principais:**
 
 - **`fetchData()`** - Busca GET /api/files ao montar e após modificações
+
   - Atualiza `periodos` state
   - Controla loading
 
 - **`handleNewFiles(data: ParsedCsv, fileName: string)`** - Callback de DropCsv
+
   - POST /api/files
   - Trata 409 (duplicata)
   - Recarrega dados após sucesso
@@ -278,7 +280,7 @@ type TurmaData = {
 
   {isLoading && <div>Carregando dados...</div>}
 
-  {periodos.map(periodo => (
+  {periodos.map((periodo) => (
     <PeriodoCard
       key={periodo.anoLetivo}
       periodo={periodo}
@@ -289,6 +291,7 @@ type TurmaData = {
 ```
 
 **Validações correspondentes:**
+
 - V8.1.1: Sincronizar upload (POST)
 - V8.1.2: Exibir dados corretos após upload ⚠️ **(BUGADO - Ver Troubleshooting)**
 
@@ -304,18 +307,19 @@ type TurmaData = {
 
 ```typescript
 interface DropCsvProps {
-  title: string;                       // Título do componente
-  requiredHeaders: string[];           // Headers obrigatórios
-  duplicateKey: string;                // Campo para detectar duplicatas (ex: "ALUNO")
-  onParsed: (data: ParsedCsv, fileName: string) => void;  // Callback com dados parseados
-  showPreview?: boolean;               // Mostrar preview da tabela (default: true)
-  multiple?: boolean;                  // Aceitar múltiplos arquivos (default: false)
+  title: string; // Título do componente
+  requiredHeaders: string[]; // Headers obrigatórios
+  duplicateKey: string; // Campo para detectar duplicatas (ex: "ALUNO")
+  onParsed: (data: ParsedCsv, fileName: string) => void; // Callback com dados parseados
+  showPreview?: boolean; // Mostrar preview da tabela (default: true)
+  multiple?: boolean; // Aceitar múltiplos arquivos (default: false)
 }
 ```
 
 **Funções internas críticas:**
 
 - **`parseCsvLoose(text: string, requiredHeaders: string[])`**
+
   - Parser CSV customizado, tolerante a variações
   - Remove BOM (`\uFEFF`)
   - Procura headers em qualquer linha (não só primeira)
@@ -341,6 +345,7 @@ interface DropCsvProps {
 ```
 
 **Validações correspondentes:**
+
 - V1.1.1: Arquivo não vazio
 - V1.1.2: Headers obrigatórios presentes
 - V1.1.3: Parsing tolerante de BOM
@@ -366,12 +371,14 @@ interface PeriodoCardProps {
 ```
 
 **Funcionalidades:**
+
 - Exibe resumo do período (total de turmas, alunos CSV, alunos no banco, pendentes)
 - Lista turmas com status (ok/pendente)
 - Botão "Resetar Período" com confirmação
 - Indicador visual de status (verde/vermelho)
 
 **Validações correspondentes:**
+
 - V5.1.1: Exibir hierarquia (Período → Turmas)
 - V5.2.1: Exibir resumo do período
 - V5.3.1: Contar alunos no CSV
@@ -383,12 +390,12 @@ interface PeriodoCardProps {
 
 ### Estrutura de Rotas
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | `/api/files` | Upload e processamento de CSV |
-| GET | `/api/files` | Visualização hierárquica (Período → Turmas → Alunos) |
-| DELETE | `/api/files?id={id}` | Hard delete de arquivo individual |
-| DELETE | `/api/files?periodo={ano}` | Hard delete de todos os arquivos do período |
+| Método | Endpoint                   | Descrição                                            |
+| ------ | -------------------------- | ---------------------------------------------------- |
+| POST   | `/api/files`               | Upload e processamento de CSV                        |
+| GET    | `/api/files`               | Visualização hierárquica (Período → Turmas → Alunos) |
+| DELETE | `/api/files?id={id}`       | Hard delete de arquivo individual                    |
+| DELETE | `/api/files?periodo={ano}` | Hard delete de todos os arquivos do período          |
 
 ---
 
@@ -427,7 +434,7 @@ interface PeriodoCardProps {
     tipo: string;
     status: string;
     createdAt: Date;
-  };
+  }
   linhasImportadas: number;
   alunosNovos: number;
   alunosAtualizados: number;
@@ -585,10 +592,10 @@ alunosPendentes = alunosCSV.filter(aluno =>
 **Exemplo de uso:**
 
 ```typescript
-const response = await fetch('/api/files');
+const response = await fetch("/api/files");
 const { periodos } = await response.json();
 
-periodos.forEach(periodo => {
+periodos.forEach((periodo) => {
   console.log(`Período: ${periodo.anoLetivo}`);
   console.log(`  Total de turmas: ${periodo.resumo.totalTurmas}`);
   console.log(`  Alunos no CSV: ${periodo.resumo.totalAlunosCSV}`);
@@ -666,10 +673,10 @@ DELETE /api/files?periodo={anoLetivo}
 
 ```typescript
 // Delete individual
-await fetch('/api/files?id=abc123', { method: 'DELETE' });
+await fetch("/api/files?id=abc123", { method: "DELETE" });
 
 // Delete por período (todos os arquivos de 2024)
-await fetch('/api/files?periodo=2024', { method: 'DELETE' });
+await fetch("/api/files?periodo=2024", { method: "DELETE" });
 ```
 
 ---
@@ -685,7 +692,7 @@ await fetch('/api/files?periodo=2024', { method: 'DELETE' });
 **Assinatura:**
 
 ```typescript
-async function hashData(data: ParsedCsv): Promise<string>
+async function hashData(data: ParsedCsv): Promise<string>;
 ```
 
 **Parâmetros:**
@@ -704,14 +711,18 @@ const sortedHeaders = data.headers.sort();
 
 // 2. Ordenar rows por concatenação de chaves
 const sortedRows = [...data.rows].sort((a, b) => {
-  const keyA = Object.keys(a).map(k => `${k}:${a[k]}`).join('|');
-  const keyB = Object.keys(b).map(k => `${k}:${b[k]}`).join('|');
+  const keyA = Object.keys(a)
+    .map((k) => `${k}:${a[k]}`)
+    .join("|");
+  const keyB = Object.keys(b)
+    .map((k) => `${k}:${b[k]}`)
+    .join("|");
   return keyA.localeCompare(keyB);
 });
 
 // 3. Gerar JSON e calcular hash
 const str = JSON.stringify({ headers: sortedHeaders, rows: sortedRows });
-return crypto.createHash('sha256').update(str).digest('hex');
+return crypto.createHash("sha256").update(str).digest("hex");
 ```
 
 **Por que ordenar?**
@@ -725,9 +736,9 @@ return crypto.createHash('sha256').update(str).digest('hex');
 const data = {
   headers: ["ALUNO", "NOME_COMPL"],
   rows: [
-    { "ALUNO": "123", "NOME_COMPL": "João" },
-    { "ALUNO": "456", "NOME_COMPL": "Maria" }
-  ]
+    { ALUNO: "123", NOME_COMPL: "João" },
+    { ALUNO: "456", NOME_COMPL: "Maria" },
+  ],
 };
 
 const hash = await hashData(data);
@@ -741,10 +752,12 @@ const hash = await hashData(data);
 3. Rows em ordem diferente → mesmo hash
 
 **Validações correspondentes:**
+
 - V2.2.1: Calcular hash dos dados
 - V2.2.2: Buscar duplicata por hash
 
 **Testes:**
+
 - `tests/unit/lib/hash.test.ts` - V2.2.1 (a criar)
 
 ---
@@ -756,6 +769,7 @@ const hash = await hashData(data);
 **Responsabilidade:** ⭐ **FUNÇÃO CRÍTICA** - Remover prefixos dos campos do CSV do Conexão Educação.
 
 **Contexto:** Arquivos CSV do sistema Conexão vêm com valores prefixados:
+
 - `"Ano Letivo: 2024"` ao invés de `"2024"`
 - `"Modalidade: REGULAR"` ao invés de `"REGULAR"`
 - `"Turma: 3001"` ao invés de `"3001"`
@@ -782,7 +796,7 @@ const limparValor = (valor: string | undefined, prefixo: string): string
 
 ```typescript
 const limparValor = (valor: string | undefined, prefixo: string): string => {
-  if (!valor) return '';
+  if (!valor) return "";
   const str = valor.toString().trim();
   if (str.startsWith(prefixo)) {
     return str.substring(prefixo.length).trim();
@@ -795,19 +809,19 @@ const limparValor = (valor: string | undefined, prefixo: string): string => {
 
 ```typescript
 // Limpeza de dados de enturmação
-const anoLetivo = limparValor(row.Ano, 'Ano Letivo:');
+const anoLetivo = limparValor(row.Ano, "Ano Letivo:");
 // "Ano Letivo: 2024" → "2024"
 
-const modalidade = limparValor(row.MODALIDADE, 'Modalidade:');
+const modalidade = limparValor(row.MODALIDADE, "Modalidade:");
 // "Modalidade: REGULAR" → "REGULAR"
 
-const turma = limparValor(row.TURMA, 'Turma:');
+const turma = limparValor(row.TURMA, "Turma:");
 // "Turma: 3001" → "3001"
 
-const serie = limparValor(row.SERIE, 'Série:');
+const serie = limparValor(row.SERIE, "Série:");
 // "Série: 3" → "3"
 
-const turno = limparValor(row.TURNO, 'Turno:') || null;
+const turno = limparValor(row.TURNO, "Turno:") || null;
 // "Turno: MANHÃ" → "MANHÃ"
 // undefined → null
 ```
@@ -829,6 +843,7 @@ const turno = limparValor(row.TURNO, 'Turno:') || null;
 - ✅ Qualquer script de migração ou processamento de CSV
 
 **Validações correspondentes:**
+
 - V3.1.1: Remover "Ano Letivo: " de anoLetivo
 - V3.1.2: Remover "Modalidade: " de modalidade
 - V3.1.3: Remover "Turma: " de turma
@@ -837,6 +852,7 @@ const turno = limparValor(row.TURNO, 'Turno:') || null;
 - V3.2.2: Converter turno vazio para null
 
 **Testes:**
+
 - `tests/unit/lib/limparValor.test.ts` - V3.1.1 a V3.2.2 (a criar)
 
 ---
@@ -853,7 +869,7 @@ const turno = limparValor(row.TURNO, 'Turno:') || null;
 function parseCsvLoose(
   text: string,
   requiredHeaders: string[]
-): { headers: string[]; rows: Record<string, string>[] }
+): { headers: string[]; rows: Record<string, string>[] };
 ```
 
 **Características:**
@@ -868,13 +884,13 @@ function parseCsvLoose(
 
 ```typescript
 // 1. Remover BOM
-lines = lines.map(l => l.replace(/\uFEFF/g, ""));
+lines = lines.map((l) => l.replace(/\uFEFF/g, ""));
 
 // 2. Procurar headers em qualquer linha
 for (const line of lines) {
   const cols = splitCsvLine(line);
-  const headerSet = new Set(cols.map(c => c.trim()));
-  const missing = requiredHeaders.filter(h => !headerSet.has(h));
+  const headerSet = new Set(cols.map((c) => c.trim()));
+  const missing = requiredHeaders.filter((h) => !headerSet.has(h));
 
   if (missing.length === 0) {
     headers = cols;
@@ -884,7 +900,7 @@ for (const line of lines) {
 
 // 3. Processar rows
 for (const line of lines.slice(headerLineIndex + 1)) {
-  if (isBlank(line)) continue;  // Ignora vazias
+  if (isBlank(line)) continue; // Ignora vazias
 
   const cols = splitCsvLine(line);
   const row: Record<string, string> = {};
@@ -918,11 +934,13 @@ const result = parseCsvLoose(csvText, ["Ano", "ALUNO", "NOME_COMPL"]);
 ```
 
 **Validações correspondentes:**
+
 - V1.1.3: Parsing tolerante de BOM
 - V1.1.4: Parsing de aspas duplas
 - V1.2.1: Ignora linhas vazias
 
 **Testes:**
+
 - `tests/unit/components/parseCsv.test.ts` - V1.1.3, V1.1.4, V1.2.1 (a criar)
 
 ---
@@ -981,21 +999,21 @@ model ArquivoImportado {
 ```typescript
 // Buscar duplicata
 const duplicata = await prisma.arquivoImportado.findFirst({
-  where: { hashArquivo: hash, status: 'ativo' }
+  where: { hashArquivo: hash, status: "ativo" },
 });
 
 // Criar arquivo
 const arquivo = await prisma.arquivoImportado.create({
   data: {
-    nomeArquivo: 'ata_2024_3001.csv',
-    hashArquivo: 'a1b2c3...',
-    tipo: 'alunos'
-  }
+    nomeArquivo: "ata_2024_3001.csv",
+    hashArquivo: "a1b2c3...",
+    tipo: "alunos",
+  },
 });
 
 // Hard delete (remove também as linhas via cascade)
 await prisma.arquivoImportado.delete({
-  where: { id: 'abc123' }
+  where: { id: "abc123" },
 });
 ```
 
@@ -1128,34 +1146,34 @@ model Aluno {
 ```typescript
 // Buscar aluno por matrícula
 const aluno = await prisma.aluno.findUnique({
-  where: { matricula: '123456' },
-  include: { enturmacoes: true }
+  where: { matricula: "123456" },
+  include: { enturmacoes: true },
 });
 
 // Criar aluno
 const aluno = await prisma.aluno.create({
   data: {
-    matricula: '123456',
-    nome: 'João Silva',
-    origemTipo: 'csv',
-    linhaOrigemId: 'linha-id',
-    fonteAusente: false
-  }
+    matricula: "123456",
+    nome: "João Silva",
+    origemTipo: "csv",
+    linhaOrigemId: "linha-id",
+    fonteAusente: false,
+  },
 });
 
 // Marcar aluno como fonte ausente
 await prisma.aluno.update({
-  where: { id: 'aluno-id' },
-  data: { fonteAusente: true }
+  where: { id: "aluno-id" },
+  data: { fonteAusente: true },
 });
 
 // Resetar fonte ausente (re-importação)
 await prisma.aluno.update({
-  where: { id: 'aluno-id' },
+  where: { id: "aluno-id" },
   data: {
-    linhaOrigemId: 'nova-linha-id',
-    fonteAusente: false
-  }
+    linhaOrigemId: "nova-linha-id",
+    fonteAusente: false,
+  },
 });
 ```
 
@@ -1218,33 +1236,33 @@ model Enturmacao {
 ```typescript
 // Buscar enturmações de um aluno
 const enturmacoes = await prisma.enturmacao.findMany({
-  where: { alunoId: 'aluno-id' },
-  orderBy: { anoLetivo: 'desc' }
+  where: { alunoId: "aluno-id" },
+  orderBy: { anoLetivo: "desc" },
 });
 
 // Criar enturmação
 const ent = await prisma.enturmacao.create({
   data: {
-    alunoId: 'aluno-id',
-    anoLetivo: '2024',  // LIMPO
+    alunoId: "aluno-id",
+    anoLetivo: "2024", // LIMPO
     regime: 0,
-    modalidade: 'REGULAR',  // LIMPO
-    turma: '3001',  // LIMPO
-    serie: '3',  // LIMPO
-    turno: 'MANHÃ',  // LIMPO
-    origemTipo: 'csv',
-    linhaOrigemId: 'linha-id'
-  }
+    modalidade: "REGULAR", // LIMPO
+    turma: "3001", // LIMPO
+    serie: "3", // LIMPO
+    turno: "MANHÃ", // LIMPO
+    origemTipo: "csv",
+    linhaOrigemId: "linha-id",
+  },
 });
 
 // Verificar se enturmação já existe
 const existente = await prisma.enturmacao.findFirst({
   where: {
-    alunoId: 'aluno-id',
-    anoLetivo: '2024',
-    turma: '3001',
-    serie: '3'
-  }
+    alunoId: "aluno-id",
+    anoLetivo: "2024",
+    turma: "3001",
+    serie: "3",
+  },
 });
 ```
 
@@ -1259,10 +1277,12 @@ const existente = await prisma.enturmacao.findFirst({
 **Opções consideradas:**
 
 1. **Opção A: Camada Única (apenas Aluno/Enturmacao)**
+
    - Prós: Simples, rápido de implementar
    - Contras: Perde dados originais, não detecta duplicatas, não permite re-importação
 
 2. **Opção B: 2 Camadas (Origem imutável + Estruturada editável)**
+
    - Prós: Preserva original, permite edição
    - Contras: Sem histórico de mudanças
 
@@ -1300,10 +1320,12 @@ const existente = await prisma.enturmacao.findFirst({
 **Opções consideradas:**
 
 1. **Opção A: Soft Delete (status='excluido')** ❌
+
    - Prós: Recuperável, histórico permanente
    - Contras: Hash permanece no banco → bloqueia re-importação
 
 2. **Opção B: Hard Delete de ArquivoImportado + Cascade para LinhaImportada** ✅
+
    - Prós: Libera hash → permite re-importação, libera storage (JSONB)
    - Contras: Não recuperável
 
@@ -1337,7 +1359,7 @@ const existente = await prisma.enturmacao.findFirst({
 ```typescript
 // Hard delete
 await prisma.arquivoImportado.delete({
-  where: { id: 'abc123' }
+  where: { id: "abc123" },
 });
 // Cascade deleta LinhaImportada automaticamente
 // Aluno/Enturmacao preservados com fonteAusente=true
@@ -1352,10 +1374,12 @@ await prisma.arquivoImportado.delete({
 **Opções consideradas:**
 
 1. **Opção A: Papa Parse (biblioteca popular)**
+
    - Prós: Testado, rápido, bem documentado
    - Contras: Rígido, não busca headers em linha aleatória, 44KB minified
 
 2. **Opção B: csv-parse (Node.js)**
+
    - Prós: Nativo do Node, rápido
    - Contras: Apenas backend (não funciona no browser), não busca headers
 
@@ -1393,10 +1417,12 @@ await prisma.arquivoImportado.delete({
 **Opções consideradas:**
 
 1. **Opção A: Manter duplicado** (status atual)
+
    - Prós: Zero refatoração, funciona
    - Contras: DRY violation, risco de divergência
 
 2. **Opção B: Extrair para src/lib/csv.ts** ✅ (recomendado)
+
    - Prós: DRY, testável, reutilizável
    - Contras: Precisa de refatoração
 
@@ -1416,8 +1442,11 @@ await prisma.arquivoImportado.delete({
 
 ```typescript
 // src/lib/csv.ts
-export function limparValor(valor: string | undefined, prefixo: string): string {
-  if (!valor) return '';
+export function limparValor(
+  valor: string | undefined,
+  prefixo: string
+): string {
+  if (!valor) return "";
   const str = valor.toString().trim();
   if (str.startsWith(prefixo)) {
     return str.substring(prefixo.length).trim();
@@ -1427,11 +1456,12 @@ export function limparValor(valor: string | undefined, prefixo: string): string 
 
 export function limparCamposEnturmacao(dados: Record<string, string>) {
   return {
-    anoLetivo: limparValor(dados.Ano, 'Ano Letivo:') || limparValor(dados.Ano, 'Ano:'),
-    modalidade: limparValor(dados.MODALIDADE, 'Modalidade:'),
-    turma: limparValor(dados.TURMA, 'Turma:'),
-    serie: limparValor(dados.SERIE, 'Série:'),
-    turno: limparValor(dados.TURNO, 'Turno:') || null
+    anoLetivo:
+      limparValor(dados.Ano, "Ano Letivo:") || limparValor(dados.Ano, "Ano:"),
+    modalidade: limparValor(dados.MODALIDADE, "Modalidade:"),
+    turma: limparValor(dados.TURMA, "Turma:"),
+    serie: limparValor(dados.SERIE, "Série:"),
+    turno: limparValor(dados.TURNO, "Turno:") || null,
   };
 }
 ```
@@ -1450,11 +1480,11 @@ export function limparCamposEnturmacao(dados: Record<string, string>) {
 
 ```json
 {
-  "@prisma/client": "^6.18.0",   // ORM para PostgreSQL
-  "next": "16.0.0",               // Framework React + API Routes
-  "react": "19.2.0",              // UI library
-  "react-dom": "19.2.0",          // React DOM renderer
-  "lucide-react": "^0.552.0"      // Ícones SVG
+  "@prisma/client": "^6.18.0", // ORM para PostgreSQL
+  "next": "16.0.0", // Framework React + API Routes
+  "react": "19.2.0", // UI library
+  "react-dom": "19.2.0", // React DOM renderer
+  "lucide-react": "^0.552.0" // Ícones SVG
 }
 ```
 
@@ -1464,14 +1494,14 @@ export function limparCamposEnturmacao(dados: Record<string, string>) {
 
 ```json
 {
-  "prisma": "^6.18.0",           // CLI do Prisma (migrations)
-  "typescript": "^5",            // TypeScript compiler
-  "@types/node": "^20",          // Types do Node.js
-  "@types/react": "^19",         // Types do React
-  "@types/react-dom": "^19",     // Types do React DOM
-  "tailwindcss": "^4",           // CSS utility-first
-  "@tailwindcss/postcss": "^4",  // PostCSS plugin
-  "eslint": "^9",                // Linter
+  "prisma": "^6.18.0", // CLI do Prisma (migrations)
+  "typescript": "^5", // TypeScript compiler
+  "@types/node": "^20", // Types do Node.js
+  "@types/react": "^19", // Types do React
+  "@types/react-dom": "^19", // Types do React DOM
+  "tailwindcss": "^4", // CSS utility-first
+  "@tailwindcss/postcss": "^4", // PostCSS plugin
+  "eslint": "^9", // Linter
   "eslint-config-next": "16.0.0" // ESLint config do Next.js
 }
 ```
@@ -1503,6 +1533,7 @@ PORT=3006  # Porta do dev server (opcional)
 ### Otimizações Implementadas
 
 1. **Índices de Banco de Dados:**
+
    - **Onde:** Models Prisma (ArquivoImportado, LinhaImportada, Aluno, Enturmacao)
    - **Técnica:** Índices em campos de busca frequente
    - **Impacto:** Queries 10-100x mais rápidas
@@ -1515,6 +1546,7 @@ PORT=3006  # Porta do dev server (opcional)
      ```
 
 2. **Ordenação no Hash (hashData):**
+
    - **Onde:** `route.ts:11-19`
    - **Técnica:** Ordenar headers e rows antes de calcular hash
    - **Impacto:** Detecção de duplicatas funciona independente da ordem
@@ -1529,12 +1561,14 @@ PORT=3006  # Porta do dev server (opcional)
 ### Gargalos Conhecidos
 
 1. **Criação Individual de LinhaImportada:**
+
    - **Onde:** POST /api/files (linha 83-91)
    - **Problema:** Loop com `prisma.linhaImportada.create()` individual
    - **Impacto:** ~500ms para 100 linhas (aceitável), mas poderia ser <50ms
    - **Solução futura:** Usar `prisma.linhaImportada.createMany()` - Gap V4.2.2
 
 2. **Busca de Aluno por Matrícula (N queries):**
+
    - **Onde:** POST /api/files (linha 128-130)
    - **Problema:** Loop com `prisma.aluno.findUnique()` individual
    - **Impacto:** ~300ms para 100 alunos
@@ -1555,16 +1589,18 @@ PORT=3006  # Porta do dev server (opcional)
 ### Medidas Implementadas
 
 1. **Validação de Payload (Backend):**
+
    - **Onde:** POST /api/files (linha 27-32)
    - **Protege contra:** Payloads malformados, SQL injection via campos vazios
    - **Implementação:**
      ```typescript
      if (!data || !fileName) {
-       return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
+       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
      }
      ```
 
 2. **Detecção de Duplicatas por Hash:**
+
    - **Onde:** POST /api/files (linha 34-50)
    - **Protege contra:** Importação acidental de dados duplicados
    - **Implementação:** Hash SHA-256 dos dados parseados
@@ -1577,11 +1613,13 @@ PORT=3006  # Porta do dev server (opcional)
 ### Vulnerabilidades Conhecidas
 
 1. **Falta de Autenticação/Autorização:**
+
    - **Risco:** Alto
    - **Descrição:** API Routes não verificam usuário logado - qualquer um pode fazer upload/delete
    - **Mitigação planejada:** Implementar NextAuth.js ou similar
 
 2. **Falta de Rate Limiting:**
+
    - **Risco:** Médio
    - **Descrição:** Atacante pode fazer upload infinito de CSVs grandes
    - **Mitigação planejada:** Middleware de rate limiting (ex: `next-rate-limit`)
@@ -1602,46 +1640,52 @@ PORT=3006  # Porta do dev server (opcional)
 **Logs do Frontend (MigrateUploads.tsx):**
 
 ```typescript
-console.log('Upload concluído:', result);  // Linha 96
+console.log("Upload concluído:", result); // Linha 96
 // Output: { arquivo: {...}, linhasImportadas: 100, alunosNovos: 50, ... }
 
-console.log(result.message);  // Linha 121 (delete período)
+console.log(result.message); // Linha 121 (delete período)
 // Output: "3 arquivo(s) do período 2024 deletado(s)..."
 ```
 
 **Logs do Backend (route.ts):**
 
 ```typescript
-console.error('Erro ao fazer upload:', error);  // Linha 226
-console.error('Erro ao listar arquivos:', error);  // Linha 405
-console.error('Erro ao excluir arquivo:', error);  // Linha 542
+console.error("Erro ao fazer upload:", error); // Linha 226
+console.error("Erro ao listar arquivos:", error); // Linha 405
+console.error("Erro ao excluir arquivo:", error); // Linha 542
 ```
 
 **Como ativar logs detalhados:**
 
 ```typescript
 // Adicionar no início de route.ts
-const DEBUG = process.env.DEBUG === 'true';
+const DEBUG = process.env.DEBUG === "true";
 
 if (DEBUG) {
-  console.log('[POST /api/files] Recebido:', { fileName, rowCount: data.rows.length });
-  console.log('[POST /api/files] Hash calculado:', dataHash);
-  console.log('[POST /api/files] Alunos criados:', alunosNovos);
+  console.log("[POST /api/files] Recebido:", {
+    fileName,
+    rowCount: data.rows.length,
+  });
+  console.log("[POST /api/files] Hash calculado:", dataHash);
+  console.log("[POST /api/files] Alunos criados:", alunosNovos);
 }
 ```
 
 ### Ferramentas de Debug
 
 1. **Prisma Studio:**
+
    - **Comando:** `pnpx prisma studio`
    - **Uso:** Visualizar e editar dados do banco via interface web (http://localhost:5555)
    - **Útil para:** Verificar se dados foram importados corretamente, inspecionar JSONB
 
 2. **Next.js DevTools:**
+
    - **Como acessar:** Automático no modo dev (`pnpm dev`)
    - **Uso:** Ver requests/responses de API Routes, erros de compilação
 
 3. **PostgreSQL Logs:**
+
    - **Onde:** Configurar `log_statement = 'all'` no `postgresql.conf`
    - **Uso:** Ver todas as queries SQL executadas pelo Prisma
 
@@ -1713,10 +1757,12 @@ pnpm test:e2e
 **Fase 1 - Funções Críticas (Alta prioridade):**
 
 1. ✅ `tests/unit/lib/limparValor.test.ts` - V3.1.1 a V3.2.2
+
    - **Por quê:** Função crítica que pode quebrar importação inteira
    - **Casos:** Prefixos, undefined, strings vazias, valores sem prefixo
 
 2. ✅ `tests/unit/lib/hash.test.ts` - V2.2.1
+
    - **Por quê:** Detecção de duplicatas depende disso
    - **Casos:** Ordem diferente de rows/headers, dados idênticos, dados diferentes
 
@@ -1727,6 +1773,7 @@ pnpm test:e2e
 **Fase 2 - APIs (Média prioridade):**
 
 4. ✅ `tests/integration/api/files.post.test.ts` - V2.x, V4.x
+
    - **Por quê:** Validar fluxo completo de upload
    - **Casos:** CSV válido, duplicata, dados inválidos, transação rollback
 
@@ -1747,6 +1794,7 @@ pnpm test:e2e
 ### Tarefas Recorrentes
 
 1. **Limpeza de dados antigos (manual):**
+
    - **Frequência:** Conforme necessário
    - **Como executar:** Via Prisma Studio ou SQL direto
    - **Comando:**
@@ -1757,8 +1805,10 @@ pnpm test:e2e
      ```
 
 2. **Verificação de integridade referencial:**
+
    - **Frequência:** Após migrations
    - **Como executar:**
+
      ```sql
      -- Verificar alunos com linhaOrigemId inválido
      SELECT * FROM "Aluno"
@@ -1798,6 +1848,7 @@ pnpx prisma studio
 ### Como Adicionar Novo Tipo de CSV (ex: Histórico Escolar)
 
 1. **Adicionar constante de headers:**
+
    ```typescript
    // src/components/MigrateUploads.tsx
    const HISTORICO_HEADERS = [
@@ -1810,6 +1861,7 @@ pnpx prisma studio
    ```
 
 2. **Criar novo componente DropCsv:**
+
    ```tsx
    <DropCsv
      title="Histórico Escolar"
@@ -1821,6 +1873,7 @@ pnpx prisma studio
    ```
 
 3. **Criar model Prisma:**
+
    ```prisma
    model HistoricoEscolar {
      id              String @id @default(cuid())
@@ -1836,12 +1889,13 @@ pnpx prisma studio
    ```
 
 4. **Atualizar POST /api/files:**
+
    ```typescript
    // Detectar tipo de CSV pelos headers
-   const tipo = data.headers.includes('NOTA_1BIM') ? 'historico' : 'alunos';
+   const tipo = data.headers.includes("NOTA_1BIM") ? "historico" : "alunos";
 
    // Processar conforme tipo
-   if (tipo === 'historico') {
+   if (tipo === "historico") {
      // Criar HistoricoEscolar ao invés de Enturmacao
    }
    ```
@@ -1875,7 +1929,7 @@ DETAIL: Failed to insert into column "anoLetivo" (value: "Ano Letivo: 2024")
 
 ```typescript
 // ✅ CORRETO
-const anoLetivo = limparValor(row.Ano, 'Ano Letivo:');
+const anoLetivo = limparValor(row.Ano, "Ano Letivo:");
 // "Ano Letivo: 2024" → "2024"
 
 // ❌ ERRADO (causa o erro)
@@ -1907,8 +1961,8 @@ const anoLetivo = row.Ano;
       "resumo": {
         "totalAlunosCSV": 100,
         "totalAlunosBanco": 50,
-        "pendentes": 0,  // ❌ ERRADO - deveria ser 50
-        "status": "ok"   // ❌ ERRADO - deveria ser "pendente"
+        "pendentes": 0, // ❌ ERRADO - deveria ser 50
+        "status": "ok" // ❌ ERRADO - deveria ser "pendente"
       }
     }
   ]
@@ -1924,15 +1978,18 @@ const anoLetivo = row.Ano;
 ```typescript
 // ATUAL (BUGADO)
 const alunosPendentes = alunosCSV.filter(
-  aluno => !alunosNoBanco.has(aluno.matricula)
+  (aluno) => !alunosNoBanco.has(aluno.matricula)
 );
 
 // CORRIGIDO (verificar implementação real em route.ts:359-361)
 // 1. Confirmar que alunosNoBanco é Set<string> com matrículas
 // 2. Conferir se alunosCSV tem campo 'matricula' populado
 // 3. Adicionar log para debug:
-console.log('alunosCSV:', alunosCSV.map(a => a.matricula));
-console.log('alunosNoBanco:', Array.from(alunosNoBanco));
+console.log(
+  "alunosCSV:",
+  alunosCSV.map((a) => a.matricula)
+);
+console.log("alunosNoBanco:", Array.from(alunosNoBanco));
 ```
 
 **Verificação:**
@@ -1957,19 +2014,20 @@ console.log('alunosNoBanco:', Array.from(alunosNoBanco));
 
 1. Verificar se `hashData()` está sendo chamado (linha 35)
 2. Verificar query de duplicata (linha 38-43):
+
    ```typescript
    const existing = await prisma.arquivoImportado.findFirst({
      where: {
        hashArquivo: dataHash,
-       status: 'ativo'  // ⚠️ Se mudar para hard delete, remover este filtro
-     }
+       status: "ativo", // ⚠️ Se mudar para hard delete, remover este filtro
+     },
    });
    ```
 
 3. Se hard delete implementado, query deve ser:
    ```typescript
    const existing = await prisma.arquivoImportado.findFirst({
-     where: { hashArquivo: dataHash }
+     where: { hashArquivo: dataHash },
    });
    ```
 
@@ -1999,14 +2057,13 @@ Verificar se `handleResetPeriodo()` está chamando `fetchData()` após delete (l
 const handleResetPeriodo = async (anoLetivo: string) => {
   try {
     await fetch(`/api/files?periodo=${encodeURIComponent(anoLetivo)}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
 
     // ✅ CRÍTICO: Recarregar dados
     await fetchData();
-
   } catch (error) {
-    console.error('Erro ao deletar período:', error);
+    console.error("Erro ao deletar período:", error);
   }
 };
 ```
@@ -2029,9 +2086,10 @@ Verificar se `parseCsvLoose()` tem remoção de BOM:
 
 ```typescript
 // DropCsv.tsx
-const lines = text.split(/\r?\n/)
-  .map(l => l.replace(/\uFEFF/g, ""))  // ✅ Remove BOM
-  .filter(l => l.trim());
+const lines = text
+  .split(/\r?\n/)
+  .map((l) => l.replace(/\uFEFF/g, "")) // ✅ Remove BOM
+  .filter((l) => l.trim());
 ```
 
 **Verificação:**
@@ -2045,11 +2103,13 @@ const lines = text.split(/\r?\n/)
 ## REFERÊNCIAS
 
 - **Documentação relacionada:**
+
   - [Conceito](./MIGRACAO_CONCEITO.md) - Visão geral, problema, escopo
   - [Especificação](./MIGRACAO_ESPECIFICACAO.md) - 80 validações, casos de teste
   - [Ciclo de Vida](./MIGRACAO_CICLO.md) - Histórico de implementação (a criar)
 
 - **Recursos externos:**
+
   - [Documentação do Prisma](https://www.prisma.io/docs)
   - [Next.js API Routes](https://nextjs.org/docs/app/building-your-application/routing/route-handlers)
   - [PostgreSQL JSONB](https://www.postgresql.org/docs/current/datatype-json.html)
@@ -2065,6 +2125,6 @@ const lines = text.split(/\r?\n/)
 **Data de criação:** 2025-01-04
 **Última atualização:** 2025-11-04
 **Autor:** Claude (Anthropic)
-**Revisado por:** Rafael Prado
+**Revisado por:** Rodrigo Prado
 **Versão da implementação:** v1.0.0
 **Status:** 🟡 70% implementado (56/80 validações) - 3 gaps críticos conhecidos

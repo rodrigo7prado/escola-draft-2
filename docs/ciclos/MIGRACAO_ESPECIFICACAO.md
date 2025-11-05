@@ -2523,6 +2523,22 @@
    - **Ação:** Função parseCsvLoose já busca primeira linha válida (V1.1.2)
    - **Status:** ✅ Mitigado (DropCsv.tsx:52-61)
 
+9. **Dados no banco SEM arquivo CSV correspondente** ⭐ **CRÍTICO**
+   - **Cenário:** Turma 3004/2024 existe no banco mas CSV foi deletado (fonteAusente=false incorreto)
+   - **Exemplo real:** Migração manual, correção direta no banco, bug em delete
+   - **Risco:** ALTO - Painel de Migração mostra dados inconsistentes
+   - **Problema:** GET /api/files compara apenas "CSV → Banco", não "Banco → CSV"
+   - **Ação:**
+     - Adicionar validação reversa V5.3.4: Identificar turmas/alunos órfãos (no banco mas sem CSV)
+     - Exibir aviso visual no Painel de Migração (badge amarelo "⚠️ Sem origem CSV")
+     - Marcar automaticamente `fonteAusente=true` se detectado
+   - **Fixture de teste:**
+     - `tests/fixtures/orphaned-data.sql` - Criar aluno/enturmação sem CSV
+     - `tests/integration/api/files-orphaned.test.ts` - Validar detecção
+   - **Status:** 🔴 **GAP CRÍTICO** - Não implementado
+   - **Prioridade:** ALTA
+   - **Estimativa:** 2h
+
 ---
 
 ## REGRAS DE NEGÓCIO (CHECKLIST)

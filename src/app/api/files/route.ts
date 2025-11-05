@@ -1,23 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { limparValor } from '@/lib/csv';
-import crypto from 'crypto';
-
-type ParsedCsv = {
-  headers: string[];
-  rows: Record<string, string>[];
-};
-
-// Helper para calcular hash dos dados
-async function hashData(data: ParsedCsv): Promise<string> {
-  const sortedRows = [...data.rows].sort((a, b) => {
-    const keyA = Object.keys(a).map(k => `${k}:${a[k]}`).join('|');
-    const keyB = Object.keys(b).map(k => `${k}:${b[k]}`).join('|');
-    return keyA.localeCompare(keyB);
-  });
-  const str = JSON.stringify({ headers: data.headers.sort(), rows: sortedRows });
-  return crypto.createHash('sha256').update(str).digest('hex');
-}
+import { hashData, type ParsedCsv } from '@/lib/hash';
 
 // POST /api/files - Upload de arquivo
 export async function POST(request: NextRequest) {

@@ -74,8 +74,15 @@ export function limparValor(
  * ```
  */
 export function limparCamposEnturmacao(dados: Record<string, string>) {
+  // Tentar primeiro "Ano Letivo:", depois "Ano:" como fallback
+  let anoLetivo = limparValor(dados.Ano, 'Ano Letivo:');
+  if (!anoLetivo || anoLetivo === dados.Ano?.trim()) {
+    // Se não removeu o prefixo, tentar alternativa
+    anoLetivo = limparValor(dados.Ano, 'Ano:');
+  }
+
   return {
-    anoLetivo: limparValor(dados.Ano, 'Ano Letivo:') || limparValor(dados.Ano, 'Ano:'),
+    anoLetivo,
     modalidade: limparValor(dados.MODALIDADE, 'Modalidade:'),
     turma: limparValor(dados.TURMA, 'Turma:'),
     serie: limparValor(dados.SERIE, 'Série:'),

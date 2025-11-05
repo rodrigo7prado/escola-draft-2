@@ -26,6 +26,7 @@ Exibe anos letivos com dados agregados:
 ```
 
 **Ações:**
+
 - **Resetar Período** (com confirmação textual)
   - Usuário digita o ano (ex: "2024") para confirmar
   - Deleta (soft delete) todos os arquivos do período
@@ -51,6 +52,7 @@ Exibe turmas dentro de cada período letivo:
 ```
 
 **Status da turma:**
+
 - ✅ **OK** - Todos os alunos do CSV foram criados no banco
 - ⚠️ **PENDENTE** - Alguns alunos do CSV não estão no banco
 
@@ -77,6 +79,7 @@ Lista compacta mostrando alunos **pendentes** (não criados):
 ## 🔍 CASO DE USO REAL
 
 ### **Cenário:**
+
 - Turma 3001 de 2024 tem 850 alunos no CSV
 - Apenas 3 alunos aparecem na "Gestão de Alunos"
 - **Problema:** 847 alunos não foram criados no banco
@@ -122,10 +125,10 @@ Response: {
       anoLetivo: "2024",
       resumo: {
         totalTurmas: 45,
-        totalAlunosCSV: 1250,      // Total de matrículas únicas nos CSVs
-        totalAlunosBanco: 1200,     // Total de alunos criados no banco
-        pendentes: 50,              // Diferença (no CSV mas não no banco)
-        status: "pendente"          // "ok" | "pendente"
+        totalAlunosCSV: 1250, // Total de matrículas únicas nos CSVs
+        totalAlunosBanco: 1200, // Total de alunos criados no banco
+        pendentes: 50, // Diferença (no CSV mas não no banco)
+        status: "pendente", // "ok" | "pendente"
       },
       turmas: [
         {
@@ -134,15 +137,16 @@ Response: {
           totalAlunosBanco: 3,
           pendentes: 847,
           status: "pendente",
-          alunosPendentes: [         // Só se status === "pendente"
+          alunosPendentes: [
+            // Só se status === "pendente"
             { matricula: "123456", nome: "João Silva" },
             { matricula: "789012", nome: "Maria Santos" },
             // ... lista de alunos no CSV mas não no banco
-          ]
-        }
-      ]
-    }
-  ]
+          ],
+        },
+      ],
+    },
+  ];
 }
 ```
 
@@ -202,7 +206,7 @@ type PeriodoData = {
     totalAlunosCSV: number;
     totalAlunosBanco: number;
     pendentes: number;
-    status: 'ok' | 'pendente';
+    status: "ok" | "pendente";
   };
   turmas: TurmaData[];
 };
@@ -212,7 +216,7 @@ type TurmaData = {
   totalAlunosCSV: number;
   totalAlunosBanco: number;
   pendentes: number;
-  status: 'ok' | 'pendente';
+  status: "ok" | "pendente";
   alunosPendentes?: AlunoPendente[];
 };
 
@@ -230,16 +234,16 @@ type AlunoPendente = {
 
 ```css
 /* Status OK */
---status-ok: #10b981;        /* Verde */
---status-ok-bg: #d1fae5;     /* Verde claro */
+--status-ok: #10b981; /* Verde */
+--status-ok-bg: #d1fae5; /* Verde claro */
 
 /* Status Pendente */
---status-pendente: #f59e0b;  /* Laranja */
+--status-pendente: #f59e0b; /* Laranja */
 --status-pendente-bg: #fef3c7; /* Laranja claro */
 
 /* Status Erro */
---status-erro: #ef4444;      /* Vermelho */
---status-erro-bg: #fee2e2;   /* Vermelho claro */
+--status-erro: #ef4444; /* Vermelho */
+--status-erro-bg: #fee2e2; /* Vermelho claro */
 ```
 
 ### **Layout proposto:**
@@ -362,12 +366,14 @@ WHERE li.tipoEntidade = 'aluno'
 ```
 
 **Motivos possíveis:**
+
 1. Erro no processamento durante upload
 2. Validação de dados falhou (CPF inválido, etc)
 3. Upload interrompido
 4. Bug no código de criação de alunos
 
 **Ação esperada:**
+
 - Sistema alerta visualmente (⚠️)
 - Mostra quantos e quais alunos estão pendentes
 - Permite baixar lista para análise
@@ -378,6 +384,7 @@ WHERE li.tipoEntidade = 'aluno'
 ## 📊 ESTATÍSTICAS EXIBIDAS
 
 ### **Nível Período:**
+
 - Total de turmas
 - Total de alunos no CSV (matrículas únicas)
 - Total de alunos no banco
@@ -385,6 +392,7 @@ WHERE li.tipoEntidade = 'aluno'
 - Status geral (✅ OK se pendentes=0, ⚠️ PENDENTE se >0)
 
 ### **Nível Turma:**
+
 - Total de alunos no CSV
 - Total de alunos no banco
 - Total de pendentes
@@ -396,6 +404,7 @@ WHERE li.tipoEntidade = 'aluno'
 ## 🚀 PLANO DE IMPLEMENTAÇÃO
 
 ### **FASE 1: Backend - Modificar GET /api/files**
+
 1. Adicionar query de agregação por período e turma
 2. Contar alunos no CSV (LinhaImportada)
 3. Contar alunos no banco (Enturmacao + Aluno)
@@ -403,17 +412,20 @@ WHERE li.tipoEntidade = 'aluno'
 5. Retornar estrutura hierárquica
 
 ### **FASE 2: Frontend - Criar componentes**
+
 1. `PeriodoLetivoItem.tsx` - Card do período com resumo
 2. `TurmaItem.tsx` - Item da turma (collapsible)
 3. `ListaAlunosPendentes.tsx` - Lista de pendentes
 4. Integrar em `MigrateUploads.tsx`
 
 ### **FASE 3: Resetar Período**
+
 1. Modal de confirmação com input de texto
 2. Implementar DELETE /api/files?periodo=X
 3. Recarregar dados após exclusão
 
 ### **FASE 4: Refinamentos**
+
 1. Loading states
 2. Error handling
 3. Animações de expand/collapse
@@ -424,15 +436,18 @@ WHERE li.tipoEntidade = 'aluno'
 ## 🔗 ARQUIVOS AFETADOS
 
 **Backend:**
+
 - `src/app/api/files/route.ts` - Modificar GET
 
 **Frontend:**
+
 - `src/components/MigrateUploads.tsx` - Refatorar visualização
 - `src/components/PeriodoLetivoItem.tsx` - Criar (novo)
 - `src/components/TurmaItem.tsx` - Criar (novo)
 - `src/components/ListaAlunosPendentes.tsx` - Criar (novo)
 
 **Documentação:**
+
 - `docs/PAINEL_MIGRACAO.md` - Atualizar com nova estrutura
 - `ISSUES.md` - Marcar issues #1, #2, #3, #4, #5 como resolvidos
 
@@ -441,16 +456,19 @@ WHERE li.tipoEntidade = 'aluno'
 ## 📝 NOTAS TÉCNICAS
 
 ### **Performance:**
+
 - Queries agregadas podem ser pesadas com muitos dados
 - Considerar cache ou materialização futura
 - Por enquanto: aceitável para ~2000 alunos
 
 ### **Paginação:**
+
 - Lista de alunos pendentes pode ter centenas de itens
 - Mostrar primeiros 50 com botão "Ver mais"
 - Ou download CSV completo
 
 ### **Responsividade:**
+
 - Layout deve funcionar em telas menores
 - Considerar collapse automático em mobile
 
@@ -471,4 +489,4 @@ A reformulação será considerada bem-sucedida quando:
 ---
 
 **Data da reformulação:** Janeiro 2025
-**Responsável:** Claude + Rafael
+**Responsável:** Claude + Rodrigo

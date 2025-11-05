@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { limparValor } from '@/lib/csv';
 import crypto from 'crypto';
 
 type ParsedCsv = {
@@ -59,15 +60,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Função helper para remover prefixos
-    const limparValor = (valor: string | undefined, prefixo: string): string => {
-      if (!valor) return '';
-      const str = valor.toString().trim();
-      if (str.startsWith(prefixo)) {
-        return str.substring(prefixo.length).trim();
-      }
-      return str;
-    };
+    // Função limparValor() agora importada de @/lib/csv
 
     // Criar linhas importadas e agrupar por aluno+enturmação
     type ChaveEnturmacao = string; // `${matricula}|${anoLetivo}|${turma}`
@@ -231,16 +224,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Helper para limpar prefixos dos dados do CSV
-function limparValorLeitura(valor: string | undefined, prefixo: string): string {
-  if (!valor) return '';
-  const str = valor.toString().trim();
-  if (str.startsWith(prefixo)) {
-    return str.substring(prefixo.length).trim();
-  }
-  return str;
-}
-
 // GET /api/files - Listar dados por hierarquia (Período → Turma → Alunos)
 export async function GET() {
   try {
@@ -283,10 +266,10 @@ export async function GET() {
 
       if (!matricula) continue;
 
-      const anoLetivo = limparValorLeitura(dados.Ano, 'Ano Letivo:') ||
-                        limparValorLeitura(dados.Ano, 'Ano:') ||
+      const anoLetivo = limparValor(dados.Ano, 'Ano Letivo:') ||
+                        limparValor(dados.Ano, 'Ano:') ||
                         '(sem ano)';
-      const turma = limparValorLeitura(dados.TURMA, 'Turma:') || '(sem turma)';
+      const turma = limparValor(dados.TURMA, 'Turma:') || '(sem turma)';
       const nome = dados.NOME_COMPL || '(sem nome)';
 
       // Criar estrutura de período se não existir
@@ -489,8 +472,8 @@ export async function DELETE(request: NextRequest) {
 
       for (const linha of linhas) {
         const dados = linha.dadosOriginais as any;
-        const anoLetivo = limparValorLeitura(dados.Ano, 'Ano Letivo:') ||
-                          limparValorLeitura(dados.Ano, 'Ano:');
+        const anoLetivo = limparValor(dados.Ano, 'Ano Letivo:') ||
+                          limparValor(dados.Ano, 'Ano:');
 
         if (anoLetivo === periodo) {
           arquivosIds.add(linha.arquivoId);

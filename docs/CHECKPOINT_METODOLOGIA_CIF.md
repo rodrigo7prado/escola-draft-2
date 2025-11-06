@@ -65,29 +65,37 @@
 
 ---
 
-## 🎯 PRÓXIMA SESSÃO: Finalizar Testes de Integração
+## 🎯 PRÓXIMA SESSÃO: Corrigir Isolamento entre Testes
 
-### OPÇÃO 1: Corrigir isolamento dos testes
+### PRIORIDADE 1: Corrigir 2 testes falhando
 
-**Objetivo:** Corrigir os 4 testes de integração que estão falhando por constraint violations.
+**STATUS ATUAL:** 9/11 testes passando (81.8%)
 
-**Problema identificado:**
-- Hash duplicado: constraint `hashArquivo` unique
-- Matrícula duplicada: constraint `matricula` unique
-- Causa: `clearTestDatabase()` não está limpando completamente entre testes
+**Testes Falhando:**
+1. **V4.2:** "deve permitir upload se arquivo anterior foi deletado"
+   - Erro: `Unique constraint failed on the fields: (hashArquivo)`
+   - Causa: Teste anterior não está limpando registro deletado
+
+2. **V4:** "deve processar CSV completo"
+   - Erro: `expected 13 to be 10 // Object.is equality`
+   - Causa: Dados de testes anteriores ainda no banco
+
+**Problema Identificado:**
+- `clearTestDatabase()` está funcionando, MAS testes ainda compartilham estado
+- Possível causa: ordem de execução dos hooks (beforeEach vs afterEach)
 
 **Tarefas:**
-1. Verificar se `beforeEach` e `afterEach` estão executando corretamente
-2. Adicionar logs de debug nos helpers para confirmar limpeza
-3. Considerar usar transações ao invés de deleteMany (rollback automático)
-4. Rodar testes individualmente para isolar o problema
-5. Validar que os 11 testes de integração passam 100%
+1. Analisar ordem de execução dos hooks em `files-upload.test.ts`
+2. Adicionar logs de debug para confirmar limpeza
+3. Considerar mover `clearTestDatabase()` para `beforeEach` (ao invés de `afterEach`)
+4. Rodar testes individualmente para confirmar isolamento
+5. Validar que os 11 testes passam 100%
 
-**Estimativa:** 1-2h
+**Estimativa:** 1h
 
 **Arquivos envolvidos:**
-- `tests/helpers/db-setup.ts` (linha 56-67: `clearTestDatabase`)
-- `tests/integration/api/files-upload.test.ts` (linha 63-70: beforeEach/afterEach)
+- `tests/integration/api/files-upload.test.ts` (linha ~63-70: hooks)
+- `tests/helpers/db-setup.ts` (validar função `clearTestDatabase`)
 
 ---
 
@@ -209,14 +217,20 @@ IMPORTANTE: Ver PRIORIDADE 0 no topo - banco de testes precisa ser configurado.
    - Adicionada tabela comparativa CHECKPOINT vs CICLO (propósito, duração, conteúdo)
    - Objetivo: Reduzir verbosidade e focar documentação em mudanças funcionais
 
-**Tarefas da Sessão 8:**
-1. **Configurar banco separado para testes (PRIORIDADE 0)**
-   - Criar banco PostgreSQL: `certificados_test`
-   - Adicionar `DATABASE_URL_TEST` no `.env`
-   - Modificar `tests/helpers/db-setup.ts` para usar `DATABASE_URL_TEST`
-   - Rodar migrations no banco de teste
-2. Rodar testes de integração (validar que não apagam dados)
-3. Corrigir isolamento de testes (se necessário)
+**Tarefas da Sessão 8:** ✅ COMPLETO
+1. ✅ Configurar banco separado para testes (PRIORIDADE 0)
+   - ✅ Criado banco PostgreSQL: `certificados_test`
+   - ✅ Adicionado `DATABASE_URL_TEST` no `.env`
+   - ✅ Modificado `tests/helpers/db-setup.ts` para usar `DATABASE_URL_TEST`
+   - ✅ Rodadas 7 migrations no banco de teste
+2. ✅ Rodados testes de integração (9/11 passando)
+3. ✅ Validado isolamento: banco real NÃO foi afetado
+4. ✅ Documentado problema: 2 testes com falhas de isolamento entre testes
+
+**Tarefas da Sessão 9:**
+1. Corrigir isolamento entre testes (2 testes falhando)
+2. Validar 100% de testes passando (11/11)
+3. Decidir próximo passo: bugs críticos ou novas features
 
 ---
 
@@ -231,26 +245,32 @@ IMPORTANTE: Ver PRIORIDADE 0 no topo - banco de testes precisa ser configurado.
 | 5. MIGRACAO_TECNICO.md | ✅ Completo | ~1h |
 | 6. MIGRACAO_CICLO.md | ✅ Completo | ~30min |
 | **6.5. Refatoração Quick Win** | ✅ **COMPLETO** | ~20min |
-| 7. Configurar testes | ✅ **COMPLETO** | ~1h |
-| **7.5. Implementar testes integração** | 🚧 **EM ANDAMENTO** | ~3h |
-| 8. Implementar testes críticos | ⏳ Pendente | ~1-2 dias |
-| 9. Resolver bugs críticos | ⏳ Pendente | ~4-6h |
+| 7. Configurar testes unitários | ✅ **COMPLETO** | ~1h |
+| 7.5. Implementar testes integração | 🚧 **EM ANDAMENTO** | ~3h |
+| **8. Configurar banco de testes** | ✅ **COMPLETO** | ~30min |
+| 9. Corrigir isolamento testes | ⏳ Pendente | ~1h |
+| 10. Implementar testes críticos | ⏳ Pendente | ~1-2 dias |
+| 11. Resolver bugs críticos | ⏳ Pendente | ~4-6h |
 
 **Total documentação CIF:** ~10h (COMPLETO!)
 **Total refatoração:** ~20min (COMPLETO!)
 **Total testes unitários:** ~1h (COMPLETO - 54 testes!)
-**Total testes integração:** ~3h (70% - 61/65 testes passando)
+**Total testes integração:** ~3.5h (82% - 9/11 passando, banco isolado!)
 **Total estimado restante (código):** ~5-6 dias de trabalho
 
 ---
 
 ## 📚 ARQUIVOS CRIADOS
 
-### Testes (Sessão 4-5):
+### Testes (Sessão 4-5, 8):
 
 **Helpers e Fixtures:**
-1. ✅ `tests/helpers/db-setup.ts` (207 linhas)
-   - `setupTestDatabase()` - Inicializa conexão PostgreSQL
+1. ✅ `tests/helpers/db-setup.ts` (207 linhas, atualizado Sessão 8)
+   - **MODIFICADO (Sessão 8):**
+     - ✅ Validação obrigatória de `DATABASE_URL_TEST`
+     - ✅ PrismaClient com override de datasource (usa `certificados_test`)
+     - ✅ Documentação atualizada sobre isolamento
+   - `setupTestDatabase()` - Inicializa conexão PostgreSQL de TESTE
    - `clearTestDatabase()` - Limpa dados entre testes (ordem FK-safe)
    - `teardownTestDatabase()` - Fecha conexão
    - `getTestPrisma()` - Retorna instância Prisma para testes
@@ -280,6 +300,10 @@ IMPORTANTE: Ver PRIORIDADE 0 no topo - banco de testes precisa ser configurado.
 **Scripts de Debug (Sessão 5):**
 4. ✅ `scripts/check-data.ts` - Verificar dados no banco
 5. ✅ `scripts/test-api-filtros.ts` - Testar lógica de filtros
+
+**Configuração (Sessão 8):**
+6. ✅ `.env` - Adicionada variável `DATABASE_URL_TEST`
+7. ✅ Banco PostgreSQL `certificados_test` criado e migrado (7 migrations)
 
 ### Documentação CIF do Painel de Migração:
 

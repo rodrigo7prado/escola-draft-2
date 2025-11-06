@@ -465,15 +465,10 @@ Veja a aplicação completa da metodologia:
 - Validação nova → `*_ESPECIFICACAO.md` (adicionar item + marcar [x] após teste)
 - Mudança funcional → `*_CICLO.md` (nova entrada concisa)
 - Decisão de lógica → `*_TECNICO.md` (seção ADRs)
-- Bloqueador de sessão → `CHECKPOINT.md` (infraestrutura OK aqui)
 
 ### Checklist Pós-Implementação:
 - [ ] É mudança funcional? → Documentar em CICLO (conciso)
 - [ ] Tem nova validação? → Adicionar em ESPECIFICACAO + teste
-- [ ] Decisão de arquitetura funcional? → Documentar em TECNICO
-- [ ] Bloqueia sessão? → Registrar em CHECKPOINT
-- [ ] É infraestrutura? → Comentário no código ou README
-
 ---
 
 ## 📝 PRINCÍPIO DE CONCISÃO

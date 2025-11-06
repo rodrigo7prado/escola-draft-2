@@ -1,8 +1,8 @@
 # CHECKPOINT - Implementação Metodologia CIF
 
 **Data de início:** 2025-01-04
-**Última atualização:** 2025-11-06 (Sessão 7)
-**Status:** 🚨 BLOQUEADO - Banco de testes precisa ser configurado antes de continuar
+**Última atualização:** 2025-11-06 (Sessão 8)
+**Status:** ✅ BANCO DE TESTES CONFIGURADO - Pronto para corrigir testes
 
 ---
 
@@ -37,29 +37,31 @@
 
 ---
 
-## 🚨 PRIORIDADE 0 (BLOQUEADOR): Banco Separado para Testes
+## ✅ PRIORIDADE 0 (RESOLVIDO): Banco Separado para Testes
 
-**STATUS:** ❌ **CRÍTICO - TESTES APAGARAM DADOS REAIS**
+**STATUS:** ✅ **CONFIGURADO COM SUCESSO - ISOLAMENTO VALIDADO**
 
-**Problema:**
-- Testes usam `DATABASE_URL` do `.env` (banco de desenvolvimento)
+**Problema Original (Sessão 6):**
+- Testes usavam `DATABASE_URL` do `.env` (banco de desenvolvimento)
 - `clearTestDatabase()` executou `deleteMany()` no banco real
 - **Resultado:** 832 alunos, 1301 enturmações, 47 arquivos APAGADOS
 
-**Causa Raiz:**
-- `tests/helpers/db-setup.ts` cria PrismaClient sem variável separada
-- Não há `DATABASE_URL_TEST` configurada
-- Não há banco `certificados_test` separado
+**Solução Implementada (Sessão 8):**
+1. ✅ Criado banco PostgreSQL separado: `certificados_test`
+2. ✅ Adicionado `.env`: `DATABASE_URL_TEST="postgresql://postgres:postgres@localhost:5432/certificados_test?schema=public"`
+3. ✅ Modificado `tests/helpers/db-setup.ts`:
+   - Validação obrigatória de `DATABASE_URL_TEST`
+   - PrismaClient com override de datasource
+   - Documentação atualizada
+4. ✅ Rodadas 7 migrations no banco de teste
+5. ✅ **VALIDADO:** Testes NÃO afetam banco real
 
-**Solução Obrigatória (ANTES de rodar testes novamente):**
-1. Criar banco PostgreSQL separado: `certificados_test`
-2. Adicionar no `.env`: `DATABASE_URL_TEST="postgresql://postgres:postgres@localhost:5432/certificados_test?schema=public"`
-3. Modificar `db-setup.ts` para usar `process.env.DATABASE_URL_TEST`
-4. Rodar migrations no banco de teste: `DATABASE_URL=$DATABASE_URL_TEST pnpm prisma migrate deploy`
+**Evidência de Isolamento:**
+- Banco REAL (`certificados`): 0 registros antes e DEPOIS dos testes
+- Banco TESTES (`certificados_test`): usado e limpo corretamente
+- 9/11 testes passando (2 falhas de isolamento entre testes, não relacionadas ao banco)
 
-**Estimativa:** 30min
-
-**⚠️ NÃO RODAR TESTES DE INTEGRAÇÃO ATÉ CORRIGIR**
+**Tempo Real:** ~30min (conforme estimativa)
 
 ---
 

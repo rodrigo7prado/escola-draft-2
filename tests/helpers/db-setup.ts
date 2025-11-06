@@ -9,7 +9,9 @@
  * 3. Cascatas e foreign keys funcionam exatamente como em produção
  * 4. Lógica crítica de integridade de dados (Metodologia CIF)
  *
- * ISOLAMENTO: Limpa todos os dados entre testes (beforeEach/afterEach)
+ * ISOLAMENTO:
+ * - Usa banco separado (DATABASE_URL_TEST)
+ * - Limpa todos os dados entre testes (beforeEach/afterEach)
  *
  * @see docs/ciclos/MIGRACAO_ESPECIFICACAO.md - Seções V4, V5, V6
  */
@@ -19,13 +21,27 @@ import { PrismaClient } from '@prisma/client';
 // Cliente Prisma para testes (compartilhado entre todos os testes)
 let prismaTest: PrismaClient | null = null;
 
+// Validação obrigatória: DATABASE_URL_TEST deve estar configurada
+if (!process.env.DATABASE_URL_TEST) {
+  throw new Error(
+    '❌ DATABASE_URL_TEST não configurada!\n\n' +
+    'Configure no .env:\n' +
+    'DATABASE_URL_TEST="postgresql://postgres:postgres@localhost:5432/certificados_test?schema=public"\n\n' +
+    'Rode as migrations no banco de teste:\n' +
+    'DATABASE_URL=$DATABASE_URL_TEST pnpm prisma migrate deploy'
+  );
+}
+
 /**
  * Inicializa banco de dados de teste
  *
- * Cria conexão com o banco PostgreSQL real.
- * Usa DATABASE_URL do .env
+ * Cria conexão com o banco PostgreSQL de TESTE (certificados_test).
+ * Usa DATABASE_URL_TEST do .env
  *
- * IMPORTANTE: Só inicializa uma vez (singleton pattern)
+ * IMPORTANTE:
+ * - Só inicializa uma vez (singleton pattern)
+ * - Usa banco SEPARADO do principal (certificados_test vs certificados)
+ * - Isso garante que testes nunca afetam dados reais
  */
 export async function setupTestDatabase() {
   if (prismaTest) {
@@ -34,6 +50,11 @@ export async function setupTestDatabase() {
   }
 
   prismaTest = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL_TEST,
+      },
+    },
     log: process.env.DEBUG_TESTS ? ['query', 'error', 'warn'] : ['error'],
   });
 

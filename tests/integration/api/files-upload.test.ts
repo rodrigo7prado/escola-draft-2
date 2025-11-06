@@ -14,31 +14,41 @@
  * @see docs/ciclos/MIGRACAO_ESPECIFICACAO.md - Seções V2, V4
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  afterEach,
+} from "vitest";
 import {
   setupTestDatabase,
   teardownTestDatabase,
   clearTestDatabase,
   getTestPrisma,
   contarRegistros,
-} from '../../helpers/db-setup';
-import { CSV_VALIDO_3_ALUNOS } from '../../helpers/csv-fixtures';
-import { hashData, type ParsedCsv } from '@/lib/hash';
+} from "../../helpers/db-setup";
+import { CSV_VALIDO_3_ALUNOS } from "../../helpers/csv-fixtures";
+import { hashData, type ParsedCsv } from "@/lib/hash";
 
 // Função de parse CSV simplificada para testes
 function parseCsvLoose(text: string): ParsedCsv {
   const rawLines = text.split(/\r?\n/);
-  const lines = rawLines.map((l) => l.replace(/\uFEFF/g, "")).filter((l) => l.trim().length > 0);
+  const lines = rawLines
+    .map((l) => l.replace(/\uFEFF/g, ""))
+    .filter((l) => l.trim().length > 0);
   if (lines.length === 0) return { headers: [], rows: [] };
 
-  const headers = lines[0].split(',').map(h => h.trim());
+  const headers = lines[0].split(",").map((h) => h.trim());
   const rows: Record<string, string>[] = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(v => v.trim());
+    const values = lines[i].split(",").map((v) => v.trim());
     const row: Record<string, string> = {};
     headers.forEach((h, idx) => {
-      row[h] = values[idx] || '';
+      row[h] = values[idx] || "";
     });
     rows.push(row);
   }
@@ -50,7 +60,7 @@ function parseCsvLoose(text: string): ParsedCsv {
 // NOTA: Como não podemos testar Next.js route handlers diretamente,
 // vamos testar a lógica de negócio extraindo-a ou testando via HTTP
 
-describe('POST /api/files - Upload de CSV', () => {
+describe("POST /api/files - Upload de CSV", () => {
   beforeAll(async () => {
     await setupTestDatabase();
   });
@@ -59,26 +69,26 @@ describe('POST /api/files - Upload de CSV', () => {
     await teardownTestDatabase();
   });
 
-  // Limpar banco ANTES de cada teste (não depois)
+  // Limpar banco ANTES de cada teste
   beforeEach(async () => {
     await clearTestDatabase();
   });
 
-  // Limpar banco DEPOIS de cada teste também (para garantir)
+  // Limpar banco DEPOIS de cada teste
   afterEach(async () => {
     await clearTestDatabase();
   });
 
-  describe('V2.1: Validação básica de payload', () => {
+  describe("V2.1: Validação básica de payload", () => {
     it('deve rejeitar payload sem campo "data"', async () => {
       // Simular payload inválido
       const payload = {
-        fileName: 'teste.csv',
+        fileName: "teste.csv",
         // data está faltando
       };
 
       // TODO: Testar via HTTP request ou extrair lógica
-      expect(payload).not.toHaveProperty('data');
+      expect(payload).not.toHaveProperty("data");
     });
 
     it('deve rejeitar payload sem campo "fileName"', async () => {
@@ -88,12 +98,12 @@ describe('POST /api/files - Upload de CSV', () => {
         // fileName está faltando
       };
 
-      expect(payload).not.toHaveProperty('fileName');
+      expect(payload).not.toHaveProperty("fileName");
     });
   });
 
-  describe('V4.1: Criar ArquivoImportado', () => {
-    it('deve criar registro de ArquivoImportado no banco', async () => {
+  describe("V4.1: Criar ArquivoImportado", () => {
+    it("deve criar registro de ArquivoImportado no banco", async () => {
       const prisma = getTestPrisma();
       const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
       const dataHash = await hashData(csvData);
@@ -101,25 +111,25 @@ describe('POST /api/files - Upload de CSV', () => {
       // Simular criação (lógica da API)
       const arquivo = await prisma.arquivoImportado.create({
         data: {
-          nomeArquivo: 'teste.csv',
+          nomeArquivo: "teste.csv",
           hashArquivo: dataHash,
-          tipo: 'alunos',
-          status: 'ativo',
+          tipo: "alunos",
+          status: "ativo",
         },
       });
 
       expect(arquivo).toBeDefined();
       expect(arquivo.id).toBeTruthy();
-      expect(arquivo.nomeArquivo).toBe('teste.csv');
+      expect(arquivo.nomeArquivo).toBe("teste.csv");
       expect(arquivo.hashArquivo).toBe(dataHash);
-      expect(arquivo.status).toBe('ativo');
+      expect(arquivo.status).toBe("ativo");
 
       // Verificar que foi salvo no banco
       const count = await prisma.arquivoImportado.count();
       expect(count).toBe(1);
     });
 
-    it('deve calcular hash corretamente baseado no conteúdo', async () => {
+    it("deve calcular hash corretamente baseado no conteúdo", async () => {
       const prisma = getTestPrisma();
       const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
       const hash1 = await hashData(csvData);
@@ -131,8 +141,8 @@ describe('POST /api/files - Upload de CSV', () => {
     });
   });
 
-  describe('V4.2: Detectar duplicatas (V2.2.2)', () => {
-    it('deve detectar arquivo duplicado e retornar erro 409', async () => {
+  describe("V4.2: Detectar duplicatas (V2.2.2)", () => {
+    it("deve detectar arquivo duplicado e retornar erro 409", async () => {
       const prisma = getTestPrisma();
       const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
       const dataHash = await hashData(csvData);
@@ -140,10 +150,10 @@ describe('POST /api/files - Upload de CSV', () => {
       // Criar primeiro arquivo
       const arquivo1 = await prisma.arquivoImportado.create({
         data: {
-          nomeArquivo: 'teste1.csv',
+          nomeArquivo: "teste1.csv",
           hashArquivo: dataHash,
-          tipo: 'alunos',
-          status: 'ativo',
+          tipo: "alunos",
+          status: "ativo",
         },
       });
 
@@ -153,7 +163,7 @@ describe('POST /api/files - Upload de CSV', () => {
       const existing = await prisma.arquivoImportado.findFirst({
         where: {
           hashArquivo: dataHash,
-          status: 'ativo',
+          status: "ativo",
         },
       });
 
@@ -163,19 +173,52 @@ describe('POST /api/files - Upload de CSV', () => {
       // API deveria retornar erro 409 aqui
     });
 
-    // NOTA: Teste marcado como skip - comportamento esperado não implementado
-    // PROBLEMA: Sistema usa soft delete (status: excluido) mas constraint unique em hashArquivo
-    //           impede criar novo arquivo com mesmo hash
-    // ESPERADO: Hard delete (remover hash do banco) ou índice condicional (WHERE status = 'ativo')
-    // REFERÊNCIA: MIGRACAO_ESPECIFICACAO.md linha 466-468
-    // GAP: V2.2.3
-    it.skip('deve permitir upload se arquivo anterior foi deletado (status: excluido)', async () => {
-      // Comportamento não implementado ainda
+    it("deve permitir upload se arquivo anterior foi deletado (hard delete)", async () => {
+      const prisma = getTestPrisma();
+      const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
+      const dataHash = await hashData(csvData);
+
+      // 1. Criar primeiro arquivo
+      const arquivo1 = await prisma.arquivoImportado.create({
+        data: {
+          nomeArquivo: "primeiro.csv",
+          hashArquivo: dataHash,
+          tipo: "alunos",
+          status: "ativo",
+        },
+      });
+
+      expect(arquivo1).toBeDefined();
+
+      // 2. Hard delete do arquivo (remove hash do banco)
+      await prisma.arquivoImportado.delete({
+        where: { id: arquivo1.id },
+      });
+
+      // 3. Verificar que hash foi removido
+      const deletado = await prisma.arquivoImportado.findFirst({
+        where: { hashArquivo: dataHash },
+      });
+      expect(deletado).toBeNull();
+
+      // 4. Agora DEVE permitir criar novo arquivo com MESMO hash
+      const arquivo2 = await prisma.arquivoImportado.create({
+        data: {
+          nomeArquivo: "segundo.csv",
+          hashArquivo: dataHash,
+          tipo: "alunos",
+          status: "ativo",
+        },
+      });
+
+      expect(arquivo2).toBeDefined();
+      expect(arquivo2.id).not.toBe(arquivo1.id); // IDs diferentes
+      expect(arquivo2.hashArquivo).toBe(dataHash); // Mesmo hash OK
     });
   });
 
-  describe('V4.3: Criar LinhaImportada', () => {
-    it('deve criar registros de LinhaImportada para cada linha do CSV', async () => {
+  describe("V4.3: Criar LinhaImportada", () => {
+    it("deve criar registros de LinhaImportada para cada linha do CSV", async () => {
       const prisma = getTestPrisma();
       const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
       const dataHash = await hashData(csvData);
@@ -183,10 +226,10 @@ describe('POST /api/files - Upload de CSV', () => {
       // Criar arquivo
       const arquivo = await prisma.arquivoImportado.create({
         data: {
-          nomeArquivo: 'teste.csv',
+          nomeArquivo: "teste.csv",
           hashArquivo: dataHash,
-          tipo: 'alunos',
-          status: 'ativo',
+          tipo: "alunos",
+          status: "ativo",
         },
       });
 
@@ -201,8 +244,8 @@ describe('POST /api/files - Upload de CSV', () => {
             arquivoId: arquivo.id,
             numeroLinha: i,
             dadosOriginais: row as any,
-            identificadorChave: matricula || '',
-            tipoEntidade: 'aluno',
+            identificadorChave: matricula || "",
+            tipoEntidade: "aluno",
           },
         });
 
@@ -218,13 +261,13 @@ describe('POST /api/files - Upload de CSV', () => {
       // Verificar dadosOriginais (JSONB)
       const primeiraLinha = linhasCriadas[0];
       expect(primeiraLinha.dadosOriginais).toBeDefined();
-      expect(primeiraLinha.dadosOriginais).toHaveProperty('ALUNO');
-      expect(primeiraLinha.dadosOriginais).toHaveProperty('NOME');
+      expect(primeiraLinha.dadosOriginais).toHaveProperty("ALUNO");
+      expect(primeiraLinha.dadosOriginais).toHaveProperty("NOME");
     });
   });
 
-  describe('V4.4: Criar ou atualizar Aluno', () => {
-    it('deve criar registro de Aluno se não existir', async () => {
+  describe("V4.4: Criar ou atualizar Aluno", () => {
+    it("deve criar registro de Aluno se não existir", async () => {
       const prisma = getTestPrisma();
       const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
       const dataHash = await hashData(csvData);
@@ -232,10 +275,10 @@ describe('POST /api/files - Upload de CSV', () => {
       // Criar arquivo e linha
       const arquivo = await prisma.arquivoImportado.create({
         data: {
-          nomeArquivo: 'teste.csv',
+          nomeArquivo: "teste.csv",
           hashArquivo: dataHash,
-          tipo: 'alunos',
-          status: 'ativo',
+          tipo: "alunos",
+          status: "ativo",
         },
       });
 
@@ -245,28 +288,28 @@ describe('POST /api/files - Upload de CSV', () => {
           arquivoId: arquivo.id,
           numeroLinha: 0,
           dadosOriginais: primeiraRow as any,
-          identificadorChave: primeiraRow.ALUNO?.trim() || '',
-          tipoEntidade: 'aluno',
+          identificadorChave: primeiraRow.ALUNO?.trim() || "",
+          tipoEntidade: "aluno",
         },
       });
 
       // Criar aluno
       const aluno = await prisma.aluno.create({
         data: {
-          matricula: primeiraRow.ALUNO?.trim() || '',
+          matricula: primeiraRow.ALUNO?.trim() || "",
           nome: primeiraRow.NOME?.trim(),
           sexo: primeiraRow.SEXO?.trim(),
-          origemTipo: 'csv',
+          origemTipo: "csv",
           linhaOrigemId: linha.id,
           fonteAusente: false,
         },
       });
 
       expect(aluno).toBeDefined();
-      expect(aluno.matricula).toBe('123456789012345');
-      expect(aluno.nome).toBe('João da Silva');
-      expect(aluno.sexo).toBe('M');
-      expect(aluno.origemTipo).toBe('csv');
+      expect(aluno.matricula).toBe("123456789012345");
+      expect(aluno.nome).toBe("João da Silva");
+      expect(aluno.sexo).toBe("M");
+      expect(aluno.origemTipo).toBe("csv");
       expect(aluno.fonteAusente).toBe(false);
 
       // Verificar no banco
@@ -274,33 +317,33 @@ describe('POST /api/files - Upload de CSV', () => {
       expect(count).toBe(1);
     });
 
-    it('deve atualizar Aluno existente se já existir (upsert)', async () => {
+    it("deve atualizar Aluno existente se já existir (upsert)", async () => {
       const prisma = getTestPrisma();
 
       // Criar aluno inicial (manual)
       const alunoExistente = await prisma.aluno.create({
         data: {
-          matricula: '123456789012345',
-          nome: 'Nome Antigo',
-          origemTipo: 'manual',
+          matricula: "123456789012345",
+          nome: "Nome Antigo",
+          origemTipo: "manual",
           fonteAusente: false,
         },
       });
 
-      expect(alunoExistente.nome).toBe('Nome Antigo');
+      expect(alunoExistente.nome).toBe("Nome Antigo");
 
       // Simular atualização via CSV
       const alunoAtualizado = await prisma.aluno.update({
-        where: { matricula: '123456789012345' },
+        where: { matricula: "123456789012345" },
         data: {
-          nome: 'João da Silva',
-          sexo: 'M',
-          origemTipo: 'csv',
+          nome: "João da Silva",
+          sexo: "M",
+          origemTipo: "csv",
         },
       });
 
-      expect(alunoAtualizado.nome).toBe('João da Silva');
-      expect(alunoAtualizado.sexo).toBe('M');
+      expect(alunoAtualizado.nome).toBe("João da Silva");
+      expect(alunoAtualizado.sexo).toBe("M");
 
       // Deve ter apenas 1 registro (atualizado, não duplicado)
       const count = await prisma.aluno.count();
@@ -308,18 +351,18 @@ describe('POST /api/files - Upload de CSV', () => {
     });
   });
 
-  describe('V4.5: Criar Enturmacao', () => {
-    it('deve criar registro de Enturmacao para cada aluno', async () => {
+  describe("V4.5: Criar Enturmacao", () => {
+    it("deve criar registro de Enturmacao para cada aluno", async () => {
       const prisma = getTestPrisma();
       const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
 
       // Criar estrutura mínima
       const arquivo = await prisma.arquivoImportado.create({
         data: {
-          nomeArquivo: 'teste.csv',
+          nomeArquivo: "teste.csv",
           hashArquivo: await hashData(csvData),
-          tipo: 'alunos',
-          status: 'ativo',
+          tipo: "alunos",
+          status: "ativo",
         },
       });
 
@@ -329,16 +372,16 @@ describe('POST /api/files - Upload de CSV', () => {
           arquivoId: arquivo.id,
           numeroLinha: 0,
           dadosOriginais: primeiraRow as any,
-          identificadorChave: primeiraRow.ALUNO?.trim() || '',
-          tipoEntidade: 'aluno',
+          identificadorChave: primeiraRow.ALUNO?.trim() || "",
+          tipoEntidade: "aluno",
         },
       });
 
       const aluno = await prisma.aluno.create({
         data: {
-          matricula: primeiraRow.ALUNO?.trim() || '',
+          matricula: primeiraRow.ALUNO?.trim() || "",
           nome: primeiraRow.NOME?.trim(),
-          origemTipo: 'csv',
+          origemTipo: "csv",
           linhaOrigemId: linha.id,
           fonteAusente: false,
         },
@@ -348,23 +391,23 @@ describe('POST /api/files - Upload de CSV', () => {
       const enturmacao = await prisma.enturmacao.create({
         data: {
           alunoId: aluno.id,
-          anoLetivo: '2024', // Já limpo via limparValor()
+          anoLetivo: "2024", // Já limpo via limparValor()
           regime: 0,
-          modalidade: 'REGULAR',
-          turma: '3001',
-          serie: '3',
-          turno: 'MANHÃ',
-          origemTipo: 'csv',
+          modalidade: "REGULAR",
+          turma: "3001",
+          serie: "3",
+          turno: "MANHÃ",
+          origemTipo: "csv",
           linhaOrigemId: linha.id,
           fonteAusente: false,
         },
       });
 
       expect(enturmacao).toBeDefined();
-      expect(enturmacao.anoLetivo).toBe('2024');
-      expect(enturmacao.modalidade).toBe('REGULAR');
-      expect(enturmacao.turma).toBe('3001');
-      expect(enturmacao.serie).toBe('3');
+      expect(enturmacao.anoLetivo).toBe("2024");
+      expect(enturmacao.modalidade).toBe("REGULAR");
+      expect(enturmacao.turma).toBe("3001");
+      expect(enturmacao.serie).toBe("3");
 
       // Verificar no banco
       const count = await prisma.enturmacao.count();
@@ -372,8 +415,8 @@ describe('POST /api/files - Upload de CSV', () => {
     });
   });
 
-  describe('V4: Fluxo completo (end-to-end)', () => {
-    it('deve processar CSV completo: Arquivo → Linhas → Alunos → Enturmações', async () => {
+  describe("V4: Fluxo completo (end-to-end)", () => {
+    it("deve processar CSV completo: Arquivo → Linhas → Alunos → Enturmações", async () => {
       const prisma = getTestPrisma();
       const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
       const dataHash = await hashData(csvData);
@@ -381,10 +424,10 @@ describe('POST /api/files - Upload de CSV', () => {
       // 1. Criar arquivo
       const arquivo = await prisma.arquivoImportado.create({
         data: {
-          nomeArquivo: 'ata-2024.csv',
+          nomeArquivo: "ata-2024.csv",
           hashArquivo: dataHash,
-          tipo: 'alunos',
-          status: 'ativo',
+          tipo: "alunos",
+          status: "ativo",
         },
       });
 
@@ -399,8 +442,8 @@ describe('POST /api/files - Upload de CSV', () => {
             arquivoId: arquivo.id,
             numeroLinha: i,
             dadosOriginais: row as any,
-            identificadorChave: row.ALUNO?.trim() || '',
-            tipoEntidade: 'aluno',
+            identificadorChave: row.ALUNO?.trim() || "",
+            tipoEntidade: "aluno",
           },
         });
         linhas.push(linha);
@@ -415,10 +458,10 @@ describe('POST /api/files - Upload de CSV', () => {
 
         const aluno = await prisma.aluno.create({
           data: {
-            matricula: row.ALUNO?.trim() || '',
+            matricula: row.ALUNO?.trim() || "",
             nome: row.NOME?.trim(),
             sexo: row.SEXO?.trim(),
-            origemTipo: 'csv',
+            origemTipo: "csv",
             linhaOrigemId: linha.id,
             fonteAusente: false,
           },
@@ -427,13 +470,13 @@ describe('POST /api/files - Upload de CSV', () => {
         await prisma.enturmacao.create({
           data: {
             alunoId: aluno.id,
-            anoLetivo: '2024',
+            anoLetivo: "2024",
             regime: 0,
-            modalidade: 'REGULAR',
-            turma: '3001',
-            serie: '3',
-            turno: 'MANHÃ',
-            origemTipo: 'csv',
+            modalidade: "REGULAR",
+            turma: "3001",
+            serie: "3",
+            turno: "MANHÃ",
+            origemTipo: "csv",
             linhaOrigemId: linha.id,
             fonteAusente: false,
           },
@@ -442,11 +485,12 @@ describe('POST /api/files - Upload de CSV', () => {
 
       // 4. Verificar contagens finais
       const contagem = await contarRegistros();
+
       expect(contagem.arquivos).toBe(1);
       expect(contagem.linhas).toBe(3);
       expect(contagem.alunos).toBe(3);
       expect(contagem.enturmacoes).toBe(3);
-      expect(contagem.total).toBe(10); // 1 + 3 + 3 + 3
+      expect(contagem.total).toBe(10); // 1 + 3 + 3 + 3 (sem auditorias)
 
       // 5. Verificar relacionamentos (JOIN)
       const alunosComEnturmacoes = await prisma.aluno.findMany({

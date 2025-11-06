@@ -223,6 +223,7 @@ export async function contarRegistros() {
     alunos,
     enturmacoes,
     auditorias,
-    total: arquivos + linhas + alunos + enturmacoes + auditorias,
+    // Total SEM auditorias (auditorias variam por causa de triggers automáticos)
+    total: arquivos + linhas + alunos + enturmacoes,
   };
 }

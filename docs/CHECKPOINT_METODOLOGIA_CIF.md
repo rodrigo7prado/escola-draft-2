@@ -1,8 +1,8 @@
 # CHECKPOINT - Implementação Metodologia CIF
 
 **Data de início:** 2025-01-04
-**Última atualização:** 2025-11-05 (Sessão 5)
-**Status:** 🚧 TESTES DE INTEGRAÇÃO EM ANDAMENTO - 61/65 testes passando
+**Última atualização:** 2025-11-06 (Sessão 7)
+**Status:** 🚨 BLOQUEADO - Banco de testes precisa ser configurado antes de continuar
 
 ---
 
@@ -10,6 +10,9 @@
 
 ### 1. Documentação Fundacional
 - ✅ `docs/METODOLOGIA_CIF.md` - Guia completo da metodologia (54KB)
+  - **Atualizado (Sessão 7):** Adicionada seção "REGRA DE OURO: CIF é para FUNCIONALIDADES, não Infraestrutura"
+  - **Atualizado (Sessão 7):** Adicionada tabela comparativa CHECKPOINT vs CICLO
+  - **Motivo:** Clarificar distinção entre documentação funcional (CICLO) e de sessão (CHECKPOINT)
 - ✅ `docs/METODOLOGIA_CIF_FLUXO.md` - Guia de fluxo de trabalho (16KB)
 
 ### 2. Templates CIF
@@ -34,9 +37,35 @@
 
 ---
 
+## 🚨 PRIORIDADE 0 (BLOQUEADOR): Banco Separado para Testes
+
+**STATUS:** ❌ **CRÍTICO - TESTES APAGARAM DADOS REAIS**
+
+**Problema:**
+- Testes usam `DATABASE_URL` do `.env` (banco de desenvolvimento)
+- `clearTestDatabase()` executou `deleteMany()` no banco real
+- **Resultado:** 832 alunos, 1301 enturmações, 47 arquivos APAGADOS
+
+**Causa Raiz:**
+- `tests/helpers/db-setup.ts` cria PrismaClient sem variável separada
+- Não há `DATABASE_URL_TEST` configurada
+- Não há banco `certificados_test` separado
+
+**Solução Obrigatória (ANTES de rodar testes novamente):**
+1. Criar banco PostgreSQL separado: `certificados_test`
+2. Adicionar no `.env`: `DATABASE_URL_TEST="postgresql://postgres:postgres@localhost:5432/certificados_test?schema=public"`
+3. Modificar `db-setup.ts` para usar `process.env.DATABASE_URL_TEST`
+4. Rodar migrations no banco de teste: `DATABASE_URL=$DATABASE_URL_TEST pnpm prisma migrate deploy`
+
+**Estimativa:** 30min
+
+**⚠️ NÃO RODAR TESTES DE INTEGRAÇÃO ATÉ CORRIGIR**
+
+---
+
 ## 🎯 PRÓXIMA SESSÃO: Finalizar Testes de Integração
 
-### OPÇÃO 1: Corrigir isolamento dos testes (Recomendado)
+### OPÇÃO 1: Corrigir isolamento dos testes
 
 **Objetivo:** Corrigir os 4 testes de integração que estão falhando por constraint violations.
 
@@ -147,15 +176,17 @@
    - 54 testes unitários implementados (100% passando)
    - Funções críticas testadas: limparValor, limparCamposEnturmacao, hashData
 
-7. 🚧 ~~Implementar testes de integração (API + banco)~~ **EM ANDAMENTO** (Sessão 5)
+7. 🚧 ~~Implementar testes de integração (API + banco)~~ **BLOQUEADO** (Sessão 5-6)
    - ✅ Helpers de banco implementados (PostgreSQL real + limpeza entre testes)
    - ✅ Fixtures de CSV criadas (CSV_VALIDO_3_ALUNOS com 3 alunos)
    - ✅ Arquivo de teste criado: `tests/integration/api/files-upload.test.ts`
-   - ✅ 11 testes de integração implementados (7 passando, 4 com erros de isolamento)
-   - ⏳ **Pendente:** Corrigir isolamento entre testes (constraint unique violations)
-   - ⏳ **Pendente:** Implementar testes de delete (V6) e edge cases (V7)
+   - ✅ 11 testes de integração implementados (9 passando, 2 com erros de isolamento)
+   - 🚨 **BLOQUEADOR:** Testes apagaram dados reais (832 alunos, 1301 enturmações)
+   - ⏳ **Próximo:** Configurar banco separado antes de continuar
 
-8. ⏳ Corrigir bugs críticos (V5.3.3, V8.1.2, V2.4.1)
+8. ⏳ Configurar banco separado para testes (PRIORIDADE 0)
+
+9. ⏳ Corrigir bugs críticos (V5.3.3, V8.1.2, V2.4.1)
 
 9. ⏳ Implementar detecção de edge case #9 (dados órfãos no banco sem CSV)
 
@@ -166,12 +197,24 @@
 ```
 Continue implementando a Metodologia CIF onde paramos.
 Leia o arquivo docs/CHECKPOINT_METODOLOGIA_CIF.md.
+IMPORTANTE: Ver PRIORIDADE 0 no topo - banco de testes precisa ser configurado.
 ```
 
-Claude deve:
-1. Ler `docs/CHECKPOINT_METODOLOGIA_CIF.md` (este arquivo)
-2. Ler o template `docs/templates/CIF_CICLO.template.md`
-3. **Criar `docs/ciclos/MIGRACAO_CICLO.md`** com entrada inicial de implementação
+**Tarefas da Sessão 7:**
+1. ✅ Ler `docs/CHECKPOINT_METODOLOGIA_CIF.md` (este arquivo)
+2. ✅ Aperfeiçoar `docs/METODOLOGIA_CIF.md`:
+   - Adicionada seção "REGRA DE OURO: CIF é para FUNCIONALIDADES, não Infraestrutura"
+   - Adicionada tabela comparativa CHECKPOINT vs CICLO (propósito, duração, conteúdo)
+   - Objetivo: Reduzir verbosidade e focar documentação em mudanças funcionais
+
+**Tarefas da Sessão 8:**
+1. **Configurar banco separado para testes (PRIORIDADE 0)**
+   - Criar banco PostgreSQL: `certificados_test`
+   - Adicionar `DATABASE_URL_TEST` no `.env`
+   - Modificar `tests/helpers/db-setup.ts` para usar `DATABASE_URL_TEST`
+   - Rodar migrations no banco de teste
+2. Rodar testes de integração (validar que não apagam dados)
+3. Corrigir isolamento de testes (se necessário)
 
 ---
 

@@ -46,17 +46,34 @@ A metodologia garante que TODA funcionalidade complexa tenha:
 
 ## ESTRUTURA DA METODOLOGIA
 
-### 4 Níveis de Documentação
+### 4 Níveis de Documentação + CHECKPOINT
 
 ```
-NÍVEL 1: CONCEITO                    (Para humanos - O QUÊ e POR QUÊ)
+NÍVEL 1: CONCEITO                    (Funcionalidade - O QUÊ e POR QUÊ)
   ↓
-NÍVEL 2: ESPECIFICAÇÃO               (Para testes - Checklist executável)
+NÍVEL 2: ESPECIFICAÇÃO               (Funcionalidade - Checklist executável)
   ↓
-NÍVEL 3: TÉCNICO                     (Para desenvolvedores - COMO)
+NÍVEL 3: TÉCNICO                     (Funcionalidade - COMO)
   ↓
-NÍVEL 4: CICLO DE VIDA               (Para histórico - QUANDO e MUDANÇAS)
+NÍVEL 4: CICLO                       (Funcionalidade - Histórico permanente)
+
+CHECKPOINT                           (Sessão - Memória temporária)
 ```
+
+### ⚠️ IMPORTANTE: CHECKPOINT vs CICLO
+
+| Aspecto | CHECKPOINT | CICLO |
+|---------|-----------|-------|
+| **Propósito** | Continuidade entre **sessões** | Histórico da **funcionalidade** |
+| **Duração** | Temporário (descartado após conclusão) | Permanente |
+| **Detalhamento** | Detalhado (contexto para retomar) | Conciso (marcos relevantes) |
+| **Conteúdo** | Estado atual, bloqueadores, próximos passos | Mudanças na funcionalidade |
+| **Pode ter infraestrutura?** | ✅ Sim (se bloqueia sessão) | ❌ Nunca |
+| **Finalidade** | Memória de curto prazo (Claude) | Facilitar refatorações futuras |
+
+**Exemplo - Banco de testes:**
+- ✅ **CHECKPOINT:** "Bloqueado: testes apagam dados. Próximo: criar certificados_test"
+- ❌ **CICLO:** Não documentar (infraestrutura, não é mudança na funcionalidade)
 
 ### 1. CONCEITO (`*_CONCEITO.md`)
 
@@ -418,6 +435,66 @@ Veja a aplicação completa da metodologia:
 - Claude pode seguir checklist sistematicamente
 - Rastreabilidade (V1.1.1 → teste → código)
 - Menos ambiguidade = melhor código gerado
+
+---
+
+## ⚠️ REGRA DE OURO: CIF é para FUNCIONALIDADES, não Infraestrutura
+
+**CIF documenta COMPORTAMENTO e LÓGICA DE NEGÓCIO, não infraestrutura.**
+
+### O QUE documentar no CIF:
+- ✅ Validações de dados (CPF, RG, campos obrigatórios)
+- ✅ Regras de negócio (cálculo de notas, aprovação)
+- ✅ Fluxos de usuário (upload → processamento → exibição)
+- ✅ Mudanças funcionais (novo filtro, novo campo)
+- ✅ Decisões de UX (por que modal em vez de página)
+
+### O QUE NÃO documentar no CIF:
+- ❌ Configuração de banco de dados (PostgreSQL vs SQLite)
+- ❌ Setup de testes (banco de testes, fixtures)
+- ❌ Configuração de ferramentas (Vitest, ESLint)
+- ❌ Detalhes de deploy (Docker, ambiente)
+- ❌ Dependências técnicas (versões de libs)
+
+### Onde documentar infraestrutura:
+- **Comentários no código:** Decisões técnicas pontuais
+- **README.md:** Setup inicial, variáveis de ambiente
+- **CHECKPOINT.md:** Se bloqueia sessão (temporário)
+
+### Mapeamento Obrigatório (apenas funcionalidades):
+- Validação nova → `*_ESPECIFICACAO.md` (adicionar item + marcar [x] após teste)
+- Mudança funcional → `*_CICLO.md` (nova entrada concisa)
+- Decisão de lógica → `*_TECNICO.md` (seção ADRs)
+- Bloqueador de sessão → `CHECKPOINT.md` (infraestrutura OK aqui)
+
+### Checklist Pós-Implementação:
+- [ ] É mudança funcional? → Documentar em CICLO (conciso)
+- [ ] Tem nova validação? → Adicionar em ESPECIFICACAO + teste
+- [ ] Decisão de arquitetura funcional? → Documentar em TECNICO
+- [ ] Bloqueia sessão? → Registrar em CHECKPOINT
+- [ ] É infraestrutura? → Comentário no código ou README
+
+---
+
+## 📝 PRINCÍPIO DE CONCISÃO
+
+**Documentação CIF deve ser completa, mas não verbosa.**
+
+### Diretrizes:
+- Escreva o **mínimo necessário** para entender 6 meses depois
+- Evite exemplos de erros passados (não é diário)
+- Use listas/tabelas ao invés de parágrafos longos
+- Corte narrativas desnecessárias
+- Templates são guias, não contratos (adapte ao contexto)
+
+### Balanceamento:
+- ✅ Decisões, motivos, consequências
+- ✅ O que fazer, onde está, como validar
+- ❌ Histórias sobre como chegamos lá
+- ❌ Múltiplos exemplos do mesmo ponto
+- ❌ Repetição de informações já óbvias
+
+**Meta:** Outra pessoa (ou você no futuro) entende rapidamente sem precisar ler código.
 
 ---
 

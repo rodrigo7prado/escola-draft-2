@@ -1474,6 +1474,35 @@ export function limparCamposEnturmacao(dados: Record<string, string>) {
 
 ---
 
+### Decisão 5: PostgreSQL Real para Testes de Integração
+
+**Data:** 2025-11-05
+
+**Contexto:** Precisávamos testar operações de banco (criação, update, cascade deletes) com fidelidade total à produção.
+
+**Opções consideradas:**
+
+1. **SQLite em memória** - Rápido, isolado, sem dependências
+2. **PostgreSQL real** ✅ - Fidelidade total, mas precisa banco separado
+
+**Decisão:** **PostgreSQL real com banco separado (`certificados_test`)**
+
+**Motivos:**
+- Sistema usa features PostgreSQL-specific (JSONB, arrays, índices complexos)
+- Comportamento de cascatas e FKs idêntico à produção
+- Testes validam lógica crítica de integridade (Metodologia CIF)
+
+**Consequências:**
+- ✅ Confiança total nos testes
+- ⚠️ **CRÍTICO:** Necessário banco separado (DATABASE_URL_TEST)
+- ⚠️ Testes mais lentos que SQLite
+
+**Implementação:**
+- `tests/helpers/db-setup.ts` - PostgreSQL connection + cleanup
+- **PENDENTE:** Criar `certificados_test` + variável DATABASE_URL_TEST
+
+---
+
 ## DEPENDÊNCIAS
 
 ### Dependências de Produção

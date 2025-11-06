@@ -4,6 +4,7 @@
 
 | Data       | Tipo            | Resumo                                                                   | Autor          |
 | ---------- | --------------- | ------------------------------------------------------------------------ | -------------- |
+| 2025-11-05 | 🧪 Testes       | Testes de integração (61/65 passando) + problema crítico banco descoberto | Claude/Rodrigo |
 | 2025-11-05 | 🧪 Testes       | Configuração completa de testes automatizados (Vitest + Husky) + bug fix | Claude/Rodrigo |
 | 2025-01-04 | ♻️ Refatoração  | Extração de funções utilitárias CSV + edge case #9 documentado           | Claude/Rodrigo |
 | 2025-01-04 | 📝 Documentação | Criação completa da documentação CIF (Conceito, Especificação, Técnico)  | Claude/Rodrigo |
@@ -24,6 +25,27 @@
 ---
 
 ## ENTRADAS (Ordem cronológica reversa)
+
+---
+
+### 2025-11-05 - 🧪 Testes de Integração + 🚨 Problema Crítico de Banco
+
+**Autor:** Claude (Anthropic) + Rodrigo Prado
+
+**Contexto:** Implementação de testes de integração (API + banco) conforme Metodologia CIF.
+
+**Mudanças:**
+- ✅ Criado `tests/helpers/db-setup.ts` (PostgreSQL connection + cleanup)
+- ✅ Criado `tests/helpers/csv-fixtures.ts` (CSV_VALIDO_3_ALUNOS)
+- ✅ Criado `tests/integration/api/files-upload.test.ts` (11 testes, 61/65 passando)
+- ✅ Documentada decisão PostgreSQL real (ADR-005 em MIGRACAO_TECNICO.md)
+
+**🚨 Problema Crítico Descoberto:**
+Testes apagaram dados reais (832 alunos, 1301 enturmações) - `clearTestDatabase()` usa banco de desenvolvimento ao invés de banco separado.
+
+**Impacto:** **BLOQUEADOR** - testes não podem rodar até corrigir.
+
+**Solução pendente:** Criar `certificados_test` + DATABASE_URL_TEST
 
 ---
 

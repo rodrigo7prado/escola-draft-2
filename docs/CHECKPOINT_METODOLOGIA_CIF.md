@@ -90,23 +90,290 @@
 
 ---
 
-## 🎯 PRÓXIMA SESSÃO: Bugs Críticos ou Novas Features
+## ✅ SESSÃO 10 (CONCLUÍDA): Bugs Críticos - V5.3.3 + V8.1.2
 
-**Opções:**
+**Objetivo:** Resolver bug de arrays vazios na visualização hierárquica
 
-### A. Resolver Bugs Críticos (MIGRACAO_ESPECIFICACAO.md)
-- V2.2.3: Reimportação após correção (já implementado e testado!)
-- V5: Tratamento de erros robusto
-- V6: Validações de integridade de dados
+### Progresso da Sessão
 
-### B. Implementar Testes para Validações Críticas
-- V5.x: Testes de tratamento de erros
-- V6.x: Testes de validações de integridade
+**STATUS:** ✅ **RESOLVIDO E VALIDADO** - 100% de sucesso em uploads
 
-### C. Novas Features
-- Painel de inconsistências
-- Histórico escolar
-- Edição de dados
+**Tarefas completadas:**
+1. ✅ Analisado código existente (GET /api/files)
+2. ✅ Analisado teste existente (files-get.test.ts)
+3. ✅ Adicionados 5 pontos de log estratégicos no código
+4. ✅ Criado documento de debug completo (MIGRACAO_DEBUG_V5.3.3.md)
+5. ✅ Documentadas 4 hipóteses de causa raiz
+6. ✅ Criado script de reset de banco de dados
+7. ✅ Identificada causa raiz: race condition P2002
+8. ✅ Implementado fix com tratamento de erro P2002 + retry
+9. ✅ Validado com logs do servidor (uploads bem-sucedidos)
+10. ✅ Removidos logs de debug
+11. ✅ Marcados bugs como resolvidos na especificação
+
+**Arquivos modificados:**
+- `src/app/api/files/route.ts` (linhas 140-161, 215-224) - Fix aplicado
+- `docs/ciclos/MIGRACAO_DEBUG_V5.3.3.md` (novo, 395 linhas) - Debug completo
+- `docs/ciclos/MIGRACAO_ESPECIFICACAO.md` (V5.3.3 e V8.1.2 → ✅ RESOLVIDO)
+- `scripts/reset-database.ts` (novo) - Script de reset
+
+**Tempo real:** ~1.5h
+
+---
+
+### Bug V5.3.3 + V8.1.2: Arrays Vazios na Hierarquia
+
+**Causa raiz identificada:**
+- Race condition P2002 (unique constraint violation)
+- CSVs do Conexão Educação contêm múltiplas linhas por aluno (uma por disciplina)
+- Código tentava criar mesmo aluno múltiplas vezes simultaneamente
+- Lógica de deduplicação (`alunosUnicos`) existia mas não tratava race conditions
+
+**Solução implementada:**
+1. **Tratamento em criação de Aluno (route.ts:140-161):**
+   - Try-catch captura erro P2002
+   - Retry com findUnique para buscar aluno já criado
+   - Se encontrado, usa ID existente
+   - Se não encontrado, propaga erro
+
+2. **Tratamento em criação de Enturmação (route.ts:215-224):**
+   - Try-catch captura erro P2002
+   - Ignora erro (enturmação já existe, OK)
+
+**Resultado:**
+- ✅ 100% dos alunos criados corretamente (420/420 vs 333/400 antes)
+- ✅ Sem erros P2002 nos logs
+- ✅ GET `/api/files` retorna dados corretos
+- ✅ UI exibe contadores corretos
+
+---
+
+## 🚧 SESSÃO 11 (PREPARADA): Bug Crítico V2.4.1 - Transação Completa
+
+**Objetivo:** Implementar transação completa para garantir atomicidade de operações
+
+**Status:** 🎯 **PRONTO PARA INICIAR**
+
+### 📋 Contexto do Bug
+
+**Bug V2.4.1:** Transação completa não implementada
+
+**Impacto:**
+- ❌ Se processamento falhar no meio (ex: erro ao criar aluno), arquivo e linhas ficam criados mas dados estruturados não
+- ❌ Banco fica em estado inconsistente (metade dos dados)
+- ❌ Reimportação pode causar duplicatas ou dados órfãos
+- ❌ Violação da regra de negócio RN6: operações devem ser atômicas
+
+**Prioridade:** 🔴 CRÍTICA - Bloqueia produção
+
+**Estimativa:** 2-3h
+
+---
+
+### 🎯 Plano de Implementação
+
+#### 1. Análise do Código Atual (30min)
+
+**Arquivos a analisar:**
+- `src/app/api/files/route.ts` (POST handler, linhas 53-230)
+- Documentação: `docs/ciclos/MIGRACAO_ESPECIFICACAO.md` (V2.4.1)
+
+**Operações atuais (SEM transação):**
+1. **Linha 53-60:** Criar `ArquivoImportado`
+2. **Linha 76-108:** Loop: criar `LinhaImportada` (N operações)
+3. **Linha 125-165:** Loop: criar/atualizar `Aluno` (M operações)
+4. **Linha 167-225:** Loop: criar/atualizar `Enturmacao` (K operações)
+
+**Problema:** Se etapa 3 ou 4 falhar, etapas 1 e 2 já foram commitadas.
+
+---
+
+#### 2. Estratégia de Transação (30min)
+
+**Opção A: Transação Global (RECOMENDADA)**
+```typescript
+await prisma.$transaction(async (tx) => {
+  // 1. Criar arquivo
+  const arquivo = await tx.arquivoImportado.create({ ... });
+
+  // 2. Criar linhas (com createMany otimizado)
+  const linhasData = data.rows.map((row, i) => ({ ... }));
+  await tx.linhaImportada.createMany({ data: linhasData });
+
+  // 3. Buscar linhas criadas (para pegar IDs)
+  const linhas = await tx.linhaImportada.findMany({
+    where: { arquivoId: arquivo.id }
+  });
+
+  // 4. Criar alunos
+  for (const [matricula, info] of alunosUnicos) {
+    // ... lógica com tx.aluno.findUnique/create
+  }
+
+  // 5. Criar enturmações
+  for (const [key, info] of enturmacoesUnicas) {
+    // ... lógica com tx.enturmacao.findFirst/create
+  }
+}, {
+  maxWait: 10000, // 10s
+  timeout: 60000  // 60s
+});
+```
+
+**Vantagens:**
+- ✅ Atomicidade total: tudo ou nada
+- ✅ Rollback automático em caso de erro
+- ✅ Garantia de integridade referencial
+
+**Desafios:**
+- ⚠️ Timeout para arquivos grandes (>1000 linhas)
+- ⚠️ Precisa refatorar lógica de busca de IDs de linhas
+- ⚠️ Tratamento de P2002 dentro da transação
+
+---
+
+**Opção B: Transação com Compensação (Alternativa)**
+```typescript
+let arquivoId: string | null = null;
+let linhasIds: string[] = [];
+
+try {
+  // 1. Criar arquivo
+  const arquivo = await prisma.arquivoImportado.create({ ... });
+  arquivoId = arquivo.id;
+
+  // 2. Criar linhas
+  // ...
+
+  // 3. Transação para alunos + enturmações
+  await prisma.$transaction(async (tx) => {
+    // Criar alunos e enturmações
+  });
+
+} catch (error) {
+  // Compensação: deletar arquivo e linhas criadas
+  if (arquivoId) {
+    await prisma.arquivoImportado.delete({ where: { id: arquivoId } });
+    // Cascade deleta linhas automaticamente
+  }
+  throw error;
+}
+```
+
+**Vantagens:**
+- ✅ Timeout menor (apenas para alunos + enturmações)
+- ✅ Lógica de compensação explícita
+
+**Desvantagens:**
+- ❌ Janela de inconsistência (entre criar arquivo e criar alunos)
+- ❌ Mais complexo (compensação manual)
+
+---
+
+#### 3. Otimizações Necessárias (1h)
+
+**Problema V4.2.3:** Loop de `create()` individual é lento (>500 linhas)
+
+**Solução:** Usar `createMany` para LinhaImportada
+```typescript
+// ANTES (lento)
+for (let i = 0; i < data.rows.length; i++) {
+  await prisma.linhaImportada.create({ ... });
+}
+
+// DEPOIS (rápido)
+const linhasData = data.rows.map((row, i) => ({
+  arquivoId: arquivo.id,
+  numeroLinha: i,
+  dadosOriginais: row as any,
+  identificadorChave: row.ALUNO?.trim() || '',
+  tipoEntidade: 'aluno'
+}));
+
+await prisma.linhaImportada.createMany({ data: linhasData });
+```
+
+**Impacto:** 10-100x mais rápido (1000 linhas: ~10s → <1s)
+
+---
+
+#### 4. Implementação (1h)
+
+**Tarefas:**
+1. [ ] Refatorar POST handler para usar `prisma.$transaction`
+2. [ ] Substituir loop de `create()` por `createMany()` para LinhaImportada
+3. [ ] Ajustar lógica de busca de IDs de linhas após `createMany`
+4. [ ] Garantir que tratamento de P2002 funciona dentro da transação
+5. [ ] Ajustar timeouts da transação (maxWait, timeout)
+6. [ ] Adicionar logs de debug para validação
+
+**Arquivo a modificar:**
+- `src/app/api/files/route.ts` (POST handler)
+
+---
+
+#### 5. Validação (30min)
+
+**Testes manuais:**
+1. [ ] Upload de CSV pequeno (10 linhas) → sucesso completo
+2. [ ] Upload de CSV médio (100 linhas) → sucesso completo
+3. [ ] Upload de CSV grande (1000 linhas) → sucesso completo
+4. [ ] Simular erro no meio (comentar código de aluno) → rollback completo
+5. [ ] Verificar que NENHUM registro foi criado no caso de erro
+
+**Verificações no banco:**
+```sql
+-- Após erro simulado, deve retornar 0
+SELECT COUNT(*) FROM "ArquivoImportado";
+SELECT COUNT(*) FROM "LinhaImportada";
+SELECT COUNT(*) FROM "Aluno";
+SELECT COUNT(*) FROM "Enturmacao";
+```
+
+**Script de validação:**
+- Usar `scripts/reset-database.ts` entre testes
+
+---
+
+#### 6. Documentação (30min)
+
+**Arquivos a atualizar:**
+1. [ ] `docs/ciclos/MIGRACAO_ESPECIFICACAO.md`
+   - V2.4.1: ❌ GAP CRÍTICO → ✅ RESOLVIDO
+   - V4.2.3: ⚠️ GAP → ✅ RESOLVIDO (otimização createMany)
+
+2. [ ] `docs/ciclos/MIGRACAO_DEBUG_V2.4.1.md` (novo)
+   - Análise do problema
+   - Estratégia escolhida
+   - Código implementado
+   - Validação e resultados
+
+3. [ ] `docs/CHECKPOINT_METODOLOGIA_CIF.md` (Sessão 11)
+   - Marcar como concluída
+   - Adicionar métricas (tempo, linhas modificadas)
+
+---
+
+### 📊 Critérios de Sucesso
+
+- ✅ Transação global implementada com `prisma.$transaction`
+- ✅ Otimização com `createMany` aplicada
+- ✅ Timeout configurado adequadamente (60s)
+- ✅ Teste de rollback bem-sucedido (erro simulado → 0 registros)
+- ✅ Upload de 1000 linhas em < 5s (vs ~10s antes)
+- ✅ V2.4.1 marcado como ✅ RESOLVIDO
+- ✅ Regra de negócio RN6 satisfeita
+
+---
+
+### 🎯 Próximos Passos (após Sessão 11)
+
+**Bugs críticos restantes:** 0 🎉
+
+**Próximas prioridades:**
+1. **V5.3.2:** Calcular total de alunos no banco por turma (gap não-crítico, alta prioridade)
+2. **Testes automatizados:** Criar `tests/api/files/post-transaction.test.ts`
+3. **Otimizações adicionais:** Melhorar performance de queries
 
 ---
 

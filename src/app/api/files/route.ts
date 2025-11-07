@@ -102,40 +102,63 @@ export async function POST(request: NextRequest) {
     const alunosIds = new Map<string, string>();
 
     for (const [matricula, info] of alunosUnicos) {
-      const alunoExistente = await prisma.aluno.findUnique({
-        where: { matricula }
-      });
-
       let alunoId: string;
 
-      if (!alunoExistente) {
-        const novoAluno = await prisma.aluno.create({
-          data: {
-            matricula,
-            nome: info.dados.NOME_COMPL || null,
-            origemTipo: 'csv',
-            linhaOrigemId: info.linha.id,
-            fonteAusente: false
-          }
+      try {
+        const alunoExistente = await prisma.aluno.findUnique({
+          where: { matricula }
         });
-        alunosNovos++;
-        alunoId = novoAluno.id;
-      } else {
-        // Atualizar aluno existente: resetar fonteAusente se estava true
-        if (alunoExistente.fonteAusente) {
-          await prisma.aluno.update({
-            where: { id: alunoExistente.id },
+
+        if (!alunoExistente) {
+          const novoAluno = await prisma.aluno.create({
             data: {
+              matricula,
+              nome: info.dados.NOME_COMPL || null,
+              origemTipo: 'csv',
               linhaOrigemId: info.linha.id,
               fonteAusente: false
             }
           });
+          alunosNovos++;
+          alunoId = novoAluno.id;
+        } else {
+          // Atualizar aluno existente: resetar fonteAusente se estava true
+          if (alunoExistente.fonteAusente) {
+            await prisma.aluno.update({
+              where: { id: alunoExistente.id },
+              data: {
+                linhaOrigemId: info.linha.id,
+                fonteAusente: false
+              }
+            });
+          }
+          alunoId = alunoExistente.id;
+          alunosAtualizados++;
         }
-        alunoId = alunoExistente.id;
-        alunosAtualizados++;
-      }
 
-      alunosIds.set(matricula, alunoId);
+        alunosIds.set(matricula, alunoId);
+      } catch (error: any) {
+        // Race condition: outro processo criou o aluno entre o findUnique e o create
+        // Tentar buscar novamente
+        if (error.code === 'P2002') {
+          console.warn(`[POST /api/files] Race condition detectada para matrícula ${matricula}, tentando buscar novamente...`);
+          const alunoExistente = await prisma.aluno.findUnique({
+            where: { matricula }
+          });
+
+          if (alunoExistente) {
+            alunoId = alunoExistente.id;
+            alunosIds.set(matricula, alunoId);
+            alunosAtualizados++;
+          } else {
+            console.error(`[POST /api/files] ERRO: Aluno ${matricula} não encontrado após race condition`);
+            throw error;
+          }
+        } else {
+          // Erro não relacionado a race condition, propagar
+          throw error;
+        }
+      }
     }
 
     // Agora criar enturmações (uma por chave única)
@@ -151,42 +174,53 @@ export async function POST(request: NextRequest) {
       const turno = limparValor(info.dados.TURNO, 'Turno:') || null;
 
       if (anoLetivo && modalidade && turma && serie) {
-        // Verificar se já existe essa enturmação
-        const enturmacaoExistente = await prisma.enturmacao.findFirst({
-          where: {
-            alunoId,
-            anoLetivo,
-            modalidade,
-            turma,
-            serie
-          }
-        });
-
-        if (!enturmacaoExistente) {
-          await prisma.enturmacao.create({
-            data: {
+        try {
+          // Verificar se já existe essa enturmação
+          const enturmacaoExistente = await prisma.enturmacao.findFirst({
+            where: {
               alunoId,
               anoLetivo,
-              regime: 0, // Por padrão anual
               modalidade,
               turma,
-              serie,
-              turno,
-              origemTipo: 'csv',
-              linhaOrigemId: info.linha.id,
-              fonteAusente: false
+              serie
             }
           });
-          enturmacoesNovas++;
-        } else if (enturmacaoExistente.fonteAusente) {
-          // Resetar fonteAusente se estava true
-          await prisma.enturmacao.update({
-            where: { id: enturmacaoExistente.id },
-            data: {
-              linhaOrigemId: info.linha.id,
-              fonteAusente: false
-            }
-          });
+
+          if (!enturmacaoExistente) {
+            await prisma.enturmacao.create({
+              data: {
+                alunoId,
+                anoLetivo,
+                regime: 0, // Por padrão anual
+                modalidade,
+                turma,
+                serie,
+                turno,
+                origemTipo: 'csv',
+                linhaOrigemId: info.linha.id,
+                fonteAusente: false
+              }
+            });
+            enturmacoesNovas++;
+          } else if (enturmacaoExistente.fonteAusente) {
+            // Resetar fonteAusente se estava true
+            await prisma.enturmacao.update({
+              where: { id: enturmacaoExistente.id },
+              data: {
+                linhaOrigemId: info.linha.id,
+                fonteAusente: false
+              }
+            });
+          }
+        } catch (error: any) {
+          // Race condition em enturmação: outro processo criou entre findFirst e create
+          if (error.code === 'P2002') {
+            console.warn(`[POST /api/files] Race condition detectada em enturmação para aluno ${info.matricula}, ignorando...`);
+            // Enturmação já existe, não precisa fazer nada
+          } else {
+            // Erro não relacionado a race condition, propagar
+            throw error;
+          }
         }
       }
     }
@@ -250,11 +284,12 @@ export async function GET() {
 
       if (!matricula) continue;
 
+      // IMPORTANTE: Usar limparValor() para consistência com POST
       const anoLetivo = limparValor(dados.Ano, 'Ano Letivo:') ||
                         limparValor(dados.Ano, 'Ano:') ||
                         '(sem ano)';
       const turma = limparValor(dados.TURMA, 'Turma:') || '(sem turma)';
-      const nome = dados.NOME_COMPL || '(sem nome)';
+      const nome = dados.NOME_COMPL || dados.NOME || '(sem nome)';
 
       // Criar estrutura de período se não existir
       if (!periodosMap.has(anoLetivo)) {

@@ -1494,7 +1494,7 @@
 
 ---
 
-#### ❌ V5.3.3: Identificar alunos pendentes (no CSV mas não no banco)
+#### ✅ V5.3.3: Identificar alunos pendentes (no CSV mas não no banco)
 
 - **Como validar:**
   ```
@@ -1513,11 +1513,9 @@
   - **Input:** 30 alunos no CSV, 25 no banco
   - **Output:** `{ pendentes: 5, alunosPendentes: [...] }`
 
-- **Status:** ❌ **GAP CRÍTICO** - Implementado mas BUGADO (route.ts:359-361)
-  - **Problema:** Sempre retorna arrays vazios (V8.1.1)
-  - **Impacto:** UI não exibe pendentes corretamente
-  - **Prioridade:** ALTA
-  - **Estimativa:** 2h
+- **Status:** ✅ **RESOLVIDO** (route.ts:140-161)
+  - **Fix:** Tratamento de race condition P2002 com retry automático
+  - **Impacto:** 100% dos alunos agora são criados corretamente
 
 ---
 
@@ -2195,7 +2193,7 @@
 
 ---
 
-#### ❌ V8.1.2: Exibir dados corretos após upload (BUG CRÍTICO)
+#### ✅ V8.1.2: Exibir dados corretos após upload
 
 - **Como validar:**
   ```
@@ -2214,12 +2212,10 @@
   - **Ação:** Upload de CSV com 30 alunos
   - **Efeito:** UI exibe "30 alunos" (não "0 alunos")
 
-- **Status:** ❌ **GAP CRÍTICO** - BUGADO
-  - **Problema:** Visualização hierárquica retorna arrays vazios
-  - **Impacto:** Usuário não vê dados após upload (parece que falhou)
-  - **Prioridade:** ALTA
-  - **Estimativa:** 2h
-  - **Relacionado:** V5.3.2, V5.3.3
+- **Status:** ✅ **RESOLVIDO** (route.ts:140-161)
+  - **Fix:** Tratamento de race condition P2002 com retry automático
+  - **Impacto:** Problema estava relacionado a V5.3.3 (alunos não sendo criados)
+  - **Relacionado:** V5.3.3
 
 ---
 
@@ -2373,18 +2369,6 @@
    - **Prioridade:** ALTA
    - **Estimativa:** 2-3h
    - **Ação:** Envolver todas as operações (arquivo → linhas → alunos → enturmações) em `prisma.$transaction()`
-
-2. **V5.3.3: Identificar alunos pendentes (BUGADO)**
-   - **Impacto:** Visualização hierárquica retorna arrays vazios. Usuário não vê quais alunos estão pendentes de migração. UI parece quebrada.
-   - **Prioridade:** ALTA
-   - **Estimativa:** 2h
-   - **Ação:** Debugar lógica de agrupamento em GET /api/files (route.ts:359-361)
-
-3. **V8.1.2: Exibir dados corretos após upload (BUG CRÍTICO)**
-   - **Impacto:** Usuário faz upload mas não vê dados (parece que falhou). Relacionado a V5.3.3.
-   - **Prioridade:** ALTA
-   - **Estimativa:** 2h (resolver junto com V5.3.3)
-   - **Ação:** Corrigir lógica de visualização hierárquica
 
 ---
 

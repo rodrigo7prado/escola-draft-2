@@ -90,6 +90,32 @@ export function criarFormDataTeste(arquivo: File): FormData {
 }
 
 /**
+ * Parser CSV simplificado para testes
+ *
+ * Converte string CSV em objeto ParsedCsv com headers e rows.
+ * Usado para preparar dados de teste antes de enviar para API.
+ */
+export function parseCsvLoose(text: string): { headers: string[]; rows: Record<string, string>[] } {
+  const rawLines = text.split(/\r?\n/);
+  const lines = rawLines
+    .map((l) => l.replace(/\uFEFF/g, ''))
+    .filter((l) => l.trim());
+
+  const [headerLine, ...dataLines] = lines;
+  const headers = headerLine.split(',');
+  const rows = dataLines.map((line) => {
+    const values = line.split(',');
+    const row: Record<string, string> = {};
+    headers.forEach((header, i) => {
+      row[header] = values[i] || '';
+    });
+    return row;
+  });
+
+  return { headers, rows };
+}
+
+/**
  * Dados de aluno válido (objeto já parseado)
  *
  * Útil para testes de validação de dados sem precisar parsear CSV.

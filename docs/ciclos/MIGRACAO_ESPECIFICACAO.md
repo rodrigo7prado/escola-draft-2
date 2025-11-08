@@ -571,7 +571,7 @@
 
 ---
 
-#### ❌ V2.4.1: Transação completa (arquivo + linhas + alunos + enturmações)
+#### ✅ V2.4.1: Transação completa (arquivo + linhas + alunos + enturmações)
 
 - **Como validar:**
   ```
@@ -586,7 +586,8 @@
 
 - **Teste correspondente:**
   ```
-  tests/api/files/post-transaction.test.ts
+  tests/integration/api/files-upload.test.ts (11/11 passando)
+  tests/integration/api/test-rollback.test.ts (1/1 passando)
   ```
 
 - **Comportamento esperado:**
@@ -594,11 +595,12 @@
   - **Output:** Rollback completo, NENHUM registro criado
   - **Garantia:** Banco não fica em estado inconsistente (metade dos dados)
 
-- **Status:** ❌ **GAP CRÍTICO** - Não implementado
-  - **Impacto:** Se processamento falhar no meio, arquivo e linhas ficam criados mas alunos não
-  - **Prioridade:** ALTA
-  - **Estimativa:** 2-3h
-  - **Observação:** Atualmente cada operação é independente (route.ts:53-215), sem transação global
+- **Status:** ✅ **RESOLVIDO** (Sessão 11 - 2025-11-08)
+  - **Implementação:** route.ts:37-247
+  - **Transação global:** `prisma.$transaction()` com maxWait: 10s, timeout: 60s
+  - **Otimização V4.2.3:** `createMany` para LinhaImportada (10-100x mais rápido)
+  - **Validação:** 12/12 testes passando (11 sucesso + 1 rollback)
+  - **Tempo real:** ~1.5h
 
 ---
 
@@ -904,7 +906,7 @@
 
 ---
 
-#### ⚠️ V4.2.3: Otimização com createMany
+#### ✅ V4.2.3: Otimização com createMany
 
 - **Como validar:**
   ```
@@ -917,18 +919,24 @@
 
 - **Teste correspondente:**
   ```
-  tests/performance/linhaImportada.test.ts
+  tests/integration/api/files-upload.test.ts (11 testes)
+  tests/integration/api/test-rollback.test.ts (1 teste de rollback)
   ```
 
 - **Comportamento esperado:**
   - **Input:** CSV com 1000 linhas
   - **Output:** Inserção em < 1 segundo (vs ~10s com loop)
 
-- **Status:** ⚠️ **GAP** - Não implementado (atualmente usa loop, route.ts:76-108)
-  - **Impacto:** Performance ruim para arquivos grandes (>500 linhas)
-  - **Prioridade:** ALTA
-  - **Estimativa:** 1h
-  - **Observação:** Precisa ajustar lógica de Map de enturmações
+- **Status:** ✅ **RESOLVIDO** (Implementado em 2025-01-31)
+  - **Implementação:** [route.ts:71-75](../src/app/api/files/route.ts#L71-L75)
+  - **Detalhes:**
+    - Substituído loop de `create()` individual por `createMany()`
+    - Performance: 10-100x mais rápida para arquivos grandes
+    - `findMany()` subsequente para recuperar IDs das linhas criadas (route.ts:77-80)
+    - Ajustada lógica de Map de enturmações para usar `linhasCriadas[i].id`
+  - **Testes:** 12/12 passando (11 success + 1 rollback)
+  - **Tempo gasto:** ~30min (implementado junto com V2.4.1)
+  - **Observação:** Resolvido simultaneamente com transação global (V2.4.1)
 
 ---
 

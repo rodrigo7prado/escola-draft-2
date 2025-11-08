@@ -148,11 +148,39 @@
 
 ---
 
-## 🚧 SESSÃO 11 (PREPARADA): Bug Crítico V2.4.1 - Transação Completa
+## ✅ SESSÃO 11 (CONCLUÍDA): Bug Crítico V2.4.1 - Transação Completa
 
 **Objetivo:** Implementar transação completa para garantir atomicidade de operações
 
-**Status:** 🎯 **PRONTO PARA INICIAR**
+**Status:** ✅ **RESOLVIDO E VALIDADO** - 12/12 testes passando (11 success + 1 rollback)
+
+### Progresso da Sessão
+
+**Tarefas completadas:**
+1. ✅ Analisado código atual do POST handler
+2. ✅ Refatorado POST handler para usar `prisma.$transaction` global
+3. ✅ Substituído loop de `create()` por `createMany()` para LinhaImportada (V4.2.3)
+4. ✅ Ajustada lógica de busca de IDs de linhas após `createMany`
+5. ✅ Configurados timeouts adequados (maxWait: 10s, timeout: 60s)
+6. ✅ Validado com testes de regressão (11/11 passando)
+7. ✅ Criado teste de rollback específico (1/1 passando)
+8. ✅ Centralizada função `parseCsvLoose()` em helpers (eliminada duplicação)
+9. ✅ Atualizado MIGRACAO_ESPECIFICACAO.md (V2.4.1 e V4.2.3 → ✅ RESOLVIDO)
+10. ✅ Criado documento de debug completo (MIGRACAO_DEBUG_V2.4.1.md)
+11. ✅ Atualizado CHECKPOINT (este arquivo)
+
+**Arquivos modificados:**
+- `src/app/api/files/route.ts` (linhas 37-247) - Transação global implementada
+- `tests/integration/api/test-rollback.test.ts` (novo, 80 linhas) - Teste de rollback
+- `tests/helpers/csv-fixtures.ts` (linhas 92-116) - Função `parseCsvLoose()` centralizada
+- `tests/integration/api/files-upload.test.ts` (linhas 26-34) - Removida duplicação
+- `docs/ciclos/MIGRACAO_ESPECIFICACAO.md` (V2.4.1 e V4.2.3 → ✅ RESOLVIDO)
+- `docs/ciclos/MIGRACAO_DEBUG_V2.4.1.md` (novo, ~400 linhas) - Debug completo
+- `docs/CHECKPOINT_METODOLOGIA_CIF.md` (Sessão 11 concluída)
+
+**Tempo real:** ~3h30min
+
+---
 
 ### 📋 Contexto do Bug
 

@@ -99,7 +99,6 @@ CHECKPOINT                           (Sessão - Memória temporária)
 **Conteúdo:**
 - Cada validação numerada (V1.1.1, V1.1.2, ...)
 - Para cada validação:
-  - [ ] Checkbox (marcado quando implementado E testado)
   - Descrição clara do que validar
   - **Como validar** (lógica esperada)
   - **Teste correspondente** (caminho do arquivo)
@@ -107,9 +106,9 @@ CHECKPOINT                           (Sessão - Memória temporária)
 
 **Princípios:**
 1. **Cada item DEVE ter teste correspondente**
-2. **Apenas marcar [x] quando teste passar**
-3. **Checklist é a fonte da verdade** (código segue checklist, não o contrário)
-4. **Organizado em camadas** (validação de entrada → processamento → saída)
+2. **Checklist é a fonte da verdade** (código segue checklist, não o contrário)
+3. **Organizado em camadas** (validação de entrada → processamento → saída)
+4. **ESPECIFICAÇÃO é write-once** (escrever ao planejar, NÃO atualizar após implementar)
 
 **Público:** Desenvolvedores, QA, Claude (IA assistente)
 
@@ -176,7 +175,6 @@ CHECKPOINT                           (Sessão - Memória temporária)
    - Criar checklist de validações baseado no que funciona
    - Escrever testes para cobrir checklist
    - Refatorar código se necessário para melhorar testabilidade
-   - Marcar itens [x] conforme testes passam
 
 4. DOCUMENTAÇÃO TÉCNICA (1 dia)
    - Escrever *_TECNICO.md baseado na implementação final
@@ -184,6 +182,7 @@ CHECKPOINT                           (Sessão - Memória temporária)
 
 5. PRODUÇÃO
    - Iniciar *_CICLO.md com entrada de criação inicial
+   - Atualizar CHECKPOINT ao final de cada sessão de trabalho
    - Qualquer mudança futura: TESTE ANTES
 ```
 
@@ -225,25 +224,17 @@ CHECKPOINT                           (Sessão - Memória temporária)
 ```
 1. Atualizar *_CONCEITO.md (se escopo mudar)
 
-2. Adicionar validações ao *_ESPECIFICACAO.md
-   - [ ] V3.8.1 Nova validação de CPF único
-   - Teste: tests/integration/unique-cpf.test.ts
-
-3. Escrever teste (Red)
+2. Escrever teste (Red)
    - Criar arquivo de teste
    - Rodar: deve FALHAR (ainda não implementado)
 
-4. Implementar feature (Green)
+3. Implementar feature (Green)
    - Escrever código mínimo para passar
 
-5. Refatorar (Refactor)
+4. Refatorar (Refactor)
    - Melhorar código mantendo testes verdes
 
-6. Marcar [x] no checklist
-
-7. Atualizar *_TECNICO.md (se arquitetura mudar)
-
-8. Adicionar entrada no *_CICLO.md
+5. Atualizar CHECKPOINT ao final da sessão
 ```
 
 ---
@@ -461,14 +452,14 @@ Veja a aplicação completa da metodologia:
 - **README.md:** Setup inicial, variáveis de ambiente
 - **CHECKPOINT.md:** Se bloqueia sessão (temporário)
 
-### Mapeamento Obrigatório (apenas funcionalidades):
-- Validação nova → `*_ESPECIFICACAO.md` (adicionar item + marcar [x] após teste)
-- Mudança funcional → `*_CICLO.md` (nova entrada concisa)
-- Decisão de lógica → `*_TECNICO.md` (seção ADRs)
+### Pós-Implementação:
+✅ **ÚNICA ação obrigatória:** Atualizar CHECKPOINT ao final da sessão
 
-### Checklist Pós-Implementação:
-- [ ] É mudança funcional? → Documentar em CICLO (conciso)
-- [ ] Tem nova validação? → Adicionar em ESPECIFICACAO + teste
+❌ **NÃO atualizar:**
+- ESPECIFICAÇÃO (write-once, não mexer)
+- GAPS ou REGRAS DE NEGÓCIO (não existe mais)
+- DEBUG documents (não criar)
+
 ---
 
 ## 📝 PRINCÍPIO DE CONCISÃO

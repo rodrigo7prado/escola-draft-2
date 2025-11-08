@@ -30,31 +30,8 @@ import {
   getTestPrisma,
   contarRegistros,
 } from "../../helpers/db-setup";
-import { CSV_VALIDO_3_ALUNOS } from "../../helpers/csv-fixtures";
+import { CSV_VALIDO_3_ALUNOS, parseCsvLoose } from "../../helpers/csv-fixtures";
 import { hashData, type ParsedCsv } from "@/lib/hash";
-
-// Função de parse CSV simplificada para testes
-function parseCsvLoose(text: string): ParsedCsv {
-  const rawLines = text.split(/\r?\n/);
-  const lines = rawLines
-    .map((l) => l.replace(/\uFEFF/g, ""))
-    .filter((l) => l.trim().length > 0);
-  if (lines.length === 0) return { headers: [], rows: [] };
-
-  const headers = lines[0].split(",").map((h) => h.trim());
-  const rows: Record<string, string>[] = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(",").map((v) => v.trim());
-    const row: Record<string, string> = {};
-    headers.forEach((h, idx) => {
-      row[h] = values[idx] || "";
-    });
-    rows.push(row);
-  }
-
-  return { headers, rows };
-}
 
 // Importar a lógica da API (simularemos a chamada)
 // NOTA: Como não podemos testar Next.js route handlers diretamente,

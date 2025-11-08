@@ -34,204 +34,219 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Criar arquivo importado
-    const arquivo = await prisma.arquivoImportado.create({
-      data: {
-        nomeArquivo: fileName,
-        hashArquivo: dataHash,
-        tipo: 'alunos',
-        status: 'ativo'
-      }
-    });
-
-    // Função limparValor() agora importada de @/lib/csv
-
-    // Criar linhas importadas e agrupar por aluno+enturmação
-    type ChaveEnturmacao = string; // `${matricula}|${anoLetivo}|${turma}`
-    const enturmacoesMap = new Map<ChaveEnturmacao, any>();
-
-    for (let i = 0; i < data.rows.length; i++) {
-      const row = data.rows[i];
-      const matricula = row.ALUNO?.trim();
-
-      if (!matricula) continue;
-
-      // Criar linha importada
-      const linha = await prisma.linhaImportada.create({
+    // ===== TRANSAÇÃO GLOBAL: Atomicidade garantida =====
+    // Se QUALQUER operação falhar, TUDO é revertido
+    const resultado = await prisma.$transaction(async (tx) => {
+      // 1. Criar arquivo importado
+      const arquivo = await tx.arquivoImportado.create({
         data: {
-          arquivoId: arquivo.id,
-          numeroLinha: i,
-          dadosOriginais: row as any,
-          identificadorChave: matricula,
-          tipoEntidade: 'aluno'
+          nomeArquivo: fileName,
+          hashArquivo: dataHash,
+          tipo: 'alunos',
+          status: 'ativo'
         }
       });
 
-      // Extrair dados de enturmação DESTA linha
-      const anoLetivo = limparValor(row.Ano, 'Ano Letivo:') || limparValor(row.Ano, 'Ano:');
-      const turma = limparValor(row.TURMA, 'Turma:');
+      // 2. Preparar dados das linhas (OTIMIZAÇÃO: createMany em vez de loop)
+      const linhasData = data.rows.map((row, i) => ({
+        arquivoId: arquivo.id,
+        numeroLinha: i,
+        dadosOriginais: row as any,
+        identificadorChave: row.ALUNO?.trim() || '',
+        tipoEntidade: 'aluno' as const
+      }));
 
-      // Criar chave única: matrícula + ano + turma
-      const chave: ChaveEnturmacao = `${matricula}|${anoLetivo}|${turma}`;
+      // Criar todas as linhas de uma vez (10-100x mais rápido)
+      await tx.linhaImportada.createMany({
+        data: linhasData
+      });
 
-      // Guardar APENAS se for a primeira linha dessa combinação
-      if (!enturmacoesMap.has(chave)) {
-        enturmacoesMap.set(chave, {
-          matricula,
-          linha,
-          dados: row
-        });
-      }
-    }
+      // 3. Buscar linhas criadas (createMany não retorna IDs)
+      const linhasCriadas = await tx.linhaImportada.findMany({
+        where: { arquivoId: arquivo.id },
+        orderBy: { numeroLinha: 'asc' }
+      });
 
-    // Criar ou atualizar alunos e suas enturmações
-    let alunosNovos = 0;
-    let alunosAtualizados = 0;
-    let enturmacoesNovas = 0;
+      // 4. Mapear linhas por número (para acessar dados originais)
+      const linhasPorNumero = new Map(
+        linhasCriadas.map(linha => [linha.numeroLinha, linha])
+      );
 
-    // Agrupar alunos únicos primeiro (para criar apenas uma vez)
-    const alunosUnicos = new Map<string, any>();
-    for (const [, info] of enturmacoesMap) {
-      const matricula = info.matricula;
-      if (!alunosUnicos.has(matricula)) {
-        alunosUnicos.set(matricula, info);
-      }
-    }
+      // 5. Agrupar por aluno+enturmação (evitar duplicatas)
+      type ChaveEnturmacao = string; // `${matricula}|${anoLetivo}|${turma}`
+      const enturmacoesMap = new Map<ChaveEnturmacao, any>();
 
-    // Criar/atualizar alunos
-    const alunosIds = new Map<string, string>();
+      for (let i = 0; i < data.rows.length; i++) {
+        const row = data.rows[i];
+        const matricula = row.ALUNO?.trim();
+        if (!matricula) continue;
 
-    for (const [matricula, info] of alunosUnicos) {
-      let alunoId: string;
+        const linha = linhasPorNumero.get(i);
+        if (!linha) continue;
 
-      try {
-        const alunoExistente = await prisma.aluno.findUnique({
-          where: { matricula }
-        });
+        // Extrair dados de enturmação
+        const anoLetivo = limparValor(row.Ano, 'Ano Letivo:') || limparValor(row.Ano, 'Ano:');
+        const turma = limparValor(row.TURMA, 'Turma:');
 
-        if (!alunoExistente) {
-          const novoAluno = await prisma.aluno.create({
-            data: {
-              matricula,
-              nome: info.dados.NOME_COMPL || null,
-              origemTipo: 'csv',
-              linhaOrigemId: info.linha.id,
-              fonteAusente: false
-            }
+        // Chave única: matrícula + ano + turma
+        const chave: ChaveEnturmacao = `${matricula}|${anoLetivo}|${turma}`;
+
+        // Guardar APENAS primeira ocorrência
+        if (!enturmacoesMap.has(chave)) {
+          enturmacoesMap.set(chave, {
+            matricula,
+            linha,
+            dados: row
           });
-          alunosNovos++;
-          alunoId = novoAluno.id;
-        } else {
-          // Atualizar aluno existente: resetar fonteAusente se estava true
-          if (alunoExistente.fonteAusente) {
-            await prisma.aluno.update({
-              where: { id: alunoExistente.id },
-              data: {
-                linhaOrigemId: info.linha.id,
-                fonteAusente: false
-              }
-            });
-          }
-          alunoId = alunoExistente.id;
-          alunosAtualizados++;
         }
+      }
 
-        alunosIds.set(matricula, alunoId);
-      } catch (error: any) {
-        // Race condition: outro processo criou o aluno entre o findUnique e o create
-        // Tentar buscar novamente
-        if (error.code === 'P2002') {
-          console.warn(`[POST /api/files] Race condition detectada para matrícula ${matricula}, tentando buscar novamente...`);
-          const alunoExistente = await prisma.aluno.findUnique({
+      // 6. Agrupar alunos únicos
+      const alunosUnicos = new Map<string, any>();
+      for (const [, info] of enturmacoesMap) {
+        const matricula = info.matricula;
+        if (!alunosUnicos.has(matricula)) {
+          alunosUnicos.set(matricula, info);
+        }
+      }
+
+      // 7. Criar/atualizar alunos
+      let alunosNovos = 0;
+      let alunosAtualizados = 0;
+      const alunosIds = new Map<string, string>();
+
+      for (const [matricula, info] of alunosUnicos) {
+        let alunoId: string;
+
+        try {
+          const alunoExistente = await tx.aluno.findUnique({
             where: { matricula }
           });
 
-          if (alunoExistente) {
-            alunoId = alunoExistente.id;
-            alunosIds.set(matricula, alunoId);
-            alunosAtualizados++;
-          } else {
-            console.error(`[POST /api/files] ERRO: Aluno ${matricula} não encontrado após race condition`);
-            throw error;
-          }
-        } else {
-          // Erro não relacionado a race condition, propagar
-          throw error;
-        }
-      }
-    }
-
-    // Agora criar enturmações (uma por chave única)
-    for (const [, info] of enturmacoesMap) {
-      const alunoId = alunosIds.get(info.matricula);
-      if (!alunoId) continue;
-
-      // Extrair dados de enturmação
-      const anoLetivo = limparValor(info.dados.Ano, 'Ano Letivo:') || limparValor(info.dados.Ano, 'Ano:');
-      const modalidade = limparValor(info.dados.MODALIDADE, 'Modalidade:');
-      const turma = limparValor(info.dados.TURMA, 'Turma:');
-      const serie = limparValor(info.dados.SERIE, 'Série:');
-      const turno = limparValor(info.dados.TURNO, 'Turno:') || null;
-
-      if (anoLetivo && modalidade && turma && serie) {
-        try {
-          // Verificar se já existe essa enturmação
-          const enturmacaoExistente = await prisma.enturmacao.findFirst({
-            where: {
-              alunoId,
-              anoLetivo,
-              modalidade,
-              turma,
-              serie
-            }
-          });
-
-          if (!enturmacaoExistente) {
-            await prisma.enturmacao.create({
+          if (!alunoExistente) {
+            const novoAluno = await tx.aluno.create({
               data: {
-                alunoId,
-                anoLetivo,
-                regime: 0, // Por padrão anual
-                modalidade,
-                turma,
-                serie,
-                turno,
+                matricula,
+                nome: info.dados.NOME_COMPL || null,
                 origemTipo: 'csv',
                 linhaOrigemId: info.linha.id,
                 fonteAusente: false
               }
             });
-            enturmacoesNovas++;
-          } else if (enturmacaoExistente.fonteAusente) {
-            // Resetar fonteAusente se estava true
-            await prisma.enturmacao.update({
-              where: { id: enturmacaoExistente.id },
-              data: {
-                linhaOrigemId: info.linha.id,
-                fonteAusente: false
-              }
-            });
-          }
-        } catch (error: any) {
-          // Race condition em enturmação: outro processo criou entre findFirst e create
-          if (error.code === 'P2002') {
-            console.warn(`[POST /api/files] Race condition detectada em enturmação para aluno ${info.matricula}, ignorando...`);
-            // Enturmação já existe, não precisa fazer nada
+            alunosNovos++;
+            alunoId = novoAluno.id;
           } else {
-            // Erro não relacionado a race condition, propagar
+            // Atualizar se fonteAusente
+            if (alunoExistente.fonteAusente) {
+              await tx.aluno.update({
+                where: { id: alunoExistente.id },
+                data: {
+                  linhaOrigemId: info.linha.id,
+                  fonteAusente: false
+                }
+              });
+            }
+            alunoId = alunoExistente.id;
+            alunosAtualizados++;
+          }
+
+          alunosIds.set(matricula, alunoId);
+        } catch (error: any) {
+          // Race condition: tentar buscar novamente
+          if (error.code === 'P2002') {
+            console.warn(`[POST /api/files] Race condition detectada para matrícula ${matricula}`);
+            const alunoExistente = await tx.aluno.findUnique({
+              where: { matricula }
+            });
+
+            if (alunoExistente) {
+              alunoId = alunoExistente.id;
+              alunosIds.set(matricula, alunoId);
+              alunosAtualizados++;
+            } else {
+              console.error(`[POST /api/files] ERRO: Aluno ${matricula} não encontrado após P2002`);
+              throw error;
+            }
+          } else {
             throw error;
           }
         }
       }
-    }
 
-    return NextResponse.json({
-      arquivo,
-      linhasImportadas: data.rows.length,
-      alunosNovos,
-      alunosAtualizados,
-      enturmacoesNovas
-    }, { status: 201 });
+      // 8. Criar enturmações
+      let enturmacoesNovas = 0;
+
+      for (const [, info] of enturmacoesMap) {
+        const alunoId = alunosIds.get(info.matricula);
+        if (!alunoId) continue;
+
+        const anoLetivo = limparValor(info.dados.Ano, 'Ano Letivo:') || limparValor(info.dados.Ano, 'Ano:');
+        const modalidade = limparValor(info.dados.MODALIDADE, 'Modalidade:');
+        const turma = limparValor(info.dados.TURMA, 'Turma:');
+        const serie = limparValor(info.dados.SERIE, 'Série:');
+        const turno = limparValor(info.dados.TURNO, 'Turno:') || null;
+
+        if (anoLetivo && modalidade && turma && serie) {
+          try {
+            const enturmacaoExistente = await tx.enturmacao.findFirst({
+              where: {
+                alunoId,
+                anoLetivo,
+                modalidade,
+                turma,
+                serie
+              }
+            });
+
+            if (!enturmacaoExistente) {
+              await tx.enturmacao.create({
+                data: {
+                  alunoId,
+                  anoLetivo,
+                  regime: 0,
+                  modalidade,
+                  turma,
+                  serie,
+                  turno,
+                  origemTipo: 'csv',
+                  linhaOrigemId: info.linha.id,
+                  fonteAusente: false
+                }
+              });
+              enturmacoesNovas++;
+            } else if (enturmacaoExistente.fonteAusente) {
+              await tx.enturmacao.update({
+                where: { id: enturmacaoExistente.id },
+                data: {
+                  linhaOrigemId: info.linha.id,
+                  fonteAusente: false
+                }
+              });
+            }
+          } catch (error: any) {
+            if (error.code === 'P2002') {
+              console.warn(`[POST /api/files] Race condition em enturmação para aluno ${info.matricula}`);
+            } else {
+              throw error;
+            }
+          }
+        }
+      }
+
+      return {
+        arquivo,
+        linhasImportadas: data.rows.length,
+        alunosNovos,
+        alunosAtualizados,
+        enturmacoesNovas
+      };
+    }, {
+      maxWait: 10000, // 10s máximo de espera para iniciar
+      timeout: 60000  // 60s timeout total
+    });
+    // ===== FIM DA TRANSAÇÃO =====
+
+    return NextResponse.json(resultado, { status: 201 });
 
   } catch (error) {
     console.error('Erro ao fazer upload:', error);

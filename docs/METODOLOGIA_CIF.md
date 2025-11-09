@@ -46,16 +46,18 @@ A metodologia garante que TODA funcionalidade complexa tenha:
 
 ## ESTRUTURA DA METODOLOGIA
 
-### 4 Níveis de Documentação + CHECKPOINT
+### 5 Níveis de Documentação + CHECKPOINT
 
 ```
 NÍVEL 1: CONCEITO                    (Funcionalidade - O QUÊ e POR QUÊ)
   ↓
-NÍVEL 2: ESPECIFICAÇÃO               (Funcionalidade - Checklist executável)
+NÍVEL 2: DESCOBERTA                  (Funcionalidade - Perguntas e análise colaborativa) ← NOVO
   ↓
-NÍVEL 3: TÉCNICO                     (Funcionalidade - COMO)
+NÍVEL 3: ESPECIFICAÇÃO               (Funcionalidade - Checklist executável)
   ↓
-NÍVEL 4: CICLO                       (Funcionalidade - Histórico permanente)
+NÍVEL 4: TÉCNICO                     (Funcionalidade - COMO)
+  ↓
+NÍVEL 5: CICLO                       (Funcionalidade - Histórico permanente)
 
 CHECKPOINT                           (Sessão - Memória temporária)
 ```
@@ -92,7 +94,37 @@ CHECKPOINT                           (Sessão - Memória temporária)
 
 ---
 
-### 2. ESPECIFICAÇÃO (`*_ESPECIFICACAO.md`) ⭐ CORAÇÃO DA METODOLOGIA
+### 2. DESCOBERTA (`*_DESCOBERTA.md`) ⭐ PREVINE DECISÕES PREMATURAS
+
+**Objetivo:** Checklist de perguntas para análise colaborativa antes de especificar
+
+**Conteúdo:**
+- Perguntas críticas sobre dados de origem (estrutura, formatos)
+- Análise de mapeamento (campos, transformações necessárias)
+- Definição de validações e regras de negócio
+- Planejamento de UX (fluxos, pontos de entrada)
+- Decisões de arquitetura (persistência, rastreabilidade)
+- Definição de MVP e roadmap
+
+**Princípios:**
+1. **Baseado em exemplos reais** (não assumir estruturas)
+2. **Colaborativo** (desenvolvedor + cliente definem juntos)
+3. **Documentação viva** (atualizar conforme descobertas)
+4. **Evita retrabalho** (especificar apenas após entender completamente)
+
+**Quando usar:**
+- ✅ Funcionalidades com dados externos (formatos desconhecidos)
+- ✅ Integrações com sistemas de terceiros
+- ✅ Features complexas com muitas incógnitas
+- ❌ Funcionalidades com requisitos já claros e definidos
+
+**Público:** Desenvolvedor e cliente/stakeholder (processo colaborativo)
+
+**Exemplo:** [docs/ciclos/IMPORTACAO_ESTRUTURADA_DESCOBERTA.md](./ciclos/IMPORTACAO_ESTRUTURADA_DESCOBERTA.md)
+
+---
+
+### 3. ESPECIFICAÇÃO (`*_ESPECIFICACAO.md`) ⭐ CORAÇÃO DA METODOLOGIA
 
 **Objetivo:** Checklist executável de validações que DEVEM ser testadas
 
@@ -116,7 +148,7 @@ CHECKPOINT                           (Sessão - Memória temporária)
 
 ---
 
-### 3. TÉCNICO (`*_TECNICO.md`)
+### 4. TÉCNICO (`*_TECNICO.md`)
 
 **Objetivo:** Documentar COMO está implementado (arquitetura, APIs, funções)
 
@@ -134,7 +166,7 @@ CHECKPOINT                           (Sessão - Memória temporária)
 
 ---
 
-### 4. CICLO DE VIDA (`*_CICLO.md`)
+### 5. CICLO DE VIDA (`*_CICLO.md`)
 
 **Objetivo:** Registro cronológico de mudanças, refatorações, bugs corrigidos
 
@@ -536,9 +568,10 @@ Veja a aplicação completa da metodologia:
 **CIF = Checklist Executável + Testes + Documentação em Camadas**
 
 1. ✅ **CONCEITO:** O que é, por que existe (linguagem natural)
-2. ✅ **ESPECIFICAÇÃO:** Checklist de validações → testes (executável)
-3. ✅ **TÉCNICO:** Como está implementado (arquitetura)
-4. ✅ **CICLO:** Histórico de mudanças (rastreabilidade)
+2. ⭐ **DESCOBERTA:** Perguntas e análise colaborativa (previne decisões prematuras)
+3. ✅ **ESPECIFICAÇÃO:** Checklist de validações → testes (executável)
+4. ✅ **TÉCNICO:** Como está implementado (arquitetura)
+5. ✅ **CICLO:** Histórico de mudanças (rastreabilidade)
 
 **Quando usar:** Features complexas com alta integridade de dados
 **Quando não usar:** Protótipos, features triviais, experimentação

@@ -46,13 +46,9 @@ describe("POST /api/files - Upload de CSV", () => {
     await teardownTestDatabase();
   });
 
-  // Limpar banco ANTES de cada teste
+  // OTIMIZAÇÃO: Limpar banco apenas UMA VEZ (beforeEach)
+  // Não precisa de afterEach porque o próximo teste limpa antes de rodar
   beforeEach(async () => {
-    await clearTestDatabase();
-  });
-
-  // Limpar banco DEPOIS de cada teste
-  afterEach(async () => {
     await clearTestDatabase();
   });
 

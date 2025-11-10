@@ -7,8 +7,17 @@ export default defineConfig({
     // Ambiente de teste (happy-dom é mais leve que jsdom)
     environment: 'happy-dom',
 
-    // Pool de execução - vmThreads para compatibilidade com crypto
-    pool: 'vmThreads',
+    // Pool explícito para evitar cache de config antiga
+    pool: 'threads',
+
+    // OTIMIZAÇÃO: Rodar testes em paralelo de forma mais agressiva
+    // Cada suite de testes roda em paralelo (describe blocks)
+    // Reduz tempo total significativamente
+    fileParallelism: true,
+
+    // OTIMIZAÇÃO: Máximo de workers = número de CPUs
+    // Isso maximiza uso de recursos
+    maxWorkers: undefined, // undefined = auto-detect CPUs
 
     // Arquivos de setup global
     setupFiles: ['./tests/setup.ts'],
@@ -37,14 +46,25 @@ export default defineConfig({
       ],
     },
 
-    // Timeout (padrão: 5s)
-    testTimeout: 10000,
+    // OTIMIZAÇÃO: Timeout aumentado para testes de DB
+    // Mas não tanto para não mascarar problemas reais
+    testTimeout: 15000,
 
-    // Mostrar output mais detalhado
-    reporters: ['verbose'],
+    // OTIMIZAÇÃO: Reporter mais rápido (dot ao invés de verbose)
+    // verbose é lento pois imprime cada teste individualmente
+    reporters: process.env.CI ? ['dot'] : ['verbose'],
 
     // Globals (permite usar expect, describe, etc sem import)
     globals: true,
+
+    // OTIMIZAÇÃO: Pool options para threads
+    poolOptions: {
+      threads: {
+        // Máximo de threads simultâneas
+        maxThreads: undefined, // auto-detect
+        minThreads: 1,
+      },
+    },
   },
 
   // Resolver alias (para imports como @/components)

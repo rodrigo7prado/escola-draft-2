@@ -12,7 +12,9 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
-    "prepare": "husky"
+    "prepare": "husky",
+    "migrate:all": "bash scripts/migrate-all.sh deploy",
+    "migrate:dev": "bash scripts/migrate-all.sh dev"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",

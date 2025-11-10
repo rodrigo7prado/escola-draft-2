@@ -445,7 +445,47 @@ function FiltrosCertificacao() {
 ### 6. PACKAGE MANAGER
 **SEMPRE usar `pnpx` ao invés de `npx`**
 
-### 7. PARSING DE CSV - FUNÇÃO CRÍTICA
+### 7. GESTÃO DE MIGRATIONS (CRÍTICO)
+**IMPORTANTE:** Este projeto usa DOIS bancos de dados - principal e testes.
+
+**Configuração (.env):**
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/certificados?schema=public"
+DATABASE_URL_TEST="postgresql://postgres:postgres@localhost:5432/certificados_test?schema=public"
+```
+
+**⚠️ REGRA OBRIGATÓRIA: SEMPRE aplicar migrations em AMBOS os bancos**
+
+**Comandos corretos a usar:**
+```bash
+# ✅ Aplicar migrations pendentes em AMBOS os bancos
+pnpm migrate:all
+
+# ✅ Criar nova migration e aplicar em AMBOS
+pnpm migrate:dev "nome_da_migration"
+
+# ❌ NUNCA use apenas:
+# prisma migrate dev    (só aplica no banco principal)
+# prisma migrate deploy (só aplica no banco especificado)
+```
+
+**Script automatizado:**
+- Localização: [`scripts/migrate-all.sh`](scripts/migrate-all.sh)
+- Aplica automaticamente em ambos os bancos
+- Verifica status final de ambos
+
+**Checklist obrigatório ao trabalhar com migrations:**
+1. ✅ Sempre usar `pnpm migrate:dev` ao criar novas migrations
+2. ✅ Antes de rodar testes, verificar sincronização com `pnpm migrate:all`
+3. ✅ NUNCA assumir que existe apenas um banco
+4. ✅ NUNCA usar comandos Prisma diretos (use os scripts do package.json)
+
+**Por que isso é crítico:**
+- Testes rodam no banco `certificados_test`, não no principal
+- Se migrations não forem aplicadas no banco de testes, os testes falham
+- Erro comum: "column does not exist" nos testes mesmo existindo no banco principal
+
+### 8. PARSING DE CSV - FUNÇÃO CRÍTICA
 **IMPORTANTE:** Arquivos CSV do sistema Conexão Educação vêm com PREFIXOS nos valores.
 
 **Problema:**

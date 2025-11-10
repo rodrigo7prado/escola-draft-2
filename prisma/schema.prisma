@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,31 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================================================
-// CAMADA 1: ORIGEM DOS DADOS (Imutável)
-// ============================================================================
-
-// Metadados dos arquivos CSV importados
 model ArquivoImportado {
-  id            String   @id @default(uuid())
-  nomeArquivo   String
-  tipo          String   // 'alunos', 'notas', etc
-  dataDownload  DateTime? // Data de download do sistema original (se disponível)
-  dataUpload    DateTime @default(now())
-  hashArquivo   String   @unique // Para detectar duplicatas
-  status        String   @default("ativo") // 'ativo', 'excluido', 'substituido'
-
-  // Metadados de exclusão
-  excluidoEm    DateTime?
-  excluidoPor   String?
-  observacao    String?  @db.Text
-
-  // Relacionamentos
-  linhas        LinhaImportada[]
-
-  // Timestamps
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String           @id @default(uuid())
+  nomeArquivo  String
+  tipo         String
+  dataDownload DateTime?
+  dataUpload   DateTime         @default(now())
+  hashArquivo  String           @unique
+  status       String           @default("ativo")
+  excluidoEm   DateTime?
+  excluidoPor  String?
+  observacao   String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  linhas       LinhaImportada[]
 
   @@index([hashArquivo])
   @@index([dataUpload])
@@ -42,22 +28,17 @@ model ArquivoImportado {
   @@map("arquivos_importados")
 }
 
-// Cada linha de CSV importada (JSONB imutável)
 model LinhaImportada {
-  id                  String   @id @default(uuid())
-  arquivoId           String
-  numeroLinha         Int
-  dadosOriginais      Json     // JSONB com todos os campos como vieram do CSV
-  identificadorChave  String?  // Matrícula, código da turma, etc
-  tipoEntidade        String   // 'aluno', 'turma', 'nota', etc
-
-  // Relacionamentos
-  arquivo             ArquivoImportado @relation(fields: [arquivoId], references: [id], onDelete: Cascade)
-  alunos              Aluno[]
-  enturmacoes         Enturmacao[]
-
-  // Timestamps
-  createdAt           DateTime @default(now())
+  id                 String           @id @default(uuid())
+  arquivoId          String
+  numeroLinha        Int
+  dadosOriginais     Json
+  identificadorChave String?
+  tipoEntidade       String
+  createdAt          DateTime         @default(now())
+  alunos             Aluno[]
+  enturmacoes        Enturmacao[]
+  arquivo            ArquivoImportado @relation(fields: [arquivoId], references: [id], onDelete: Cascade)
 
   @@index([arquivoId])
   @@index([identificadorChave])
@@ -65,96 +46,67 @@ model LinhaImportada {
   @@map("linhas_importadas")
 }
 
-// ============================================================================
-// CAMADA 2: ENTIDADES ESTRUTURADAS (Editáveis)
-// ============================================================================
-
-// Aluno - Tabela principal estruturada
 model Aluno {
-  id                    String   @id @default(uuid())
-  matricula             String   @unique @db.VarChar(15)
-
-  // Dados cadastrais
-  nome                  String?  @db.VarChar(200)
-  nomeSocial            String?  @db.VarChar(200)
-  sexo                  String?  @db.VarChar(1)
-  dataNascimento        DateTime? @db.Date
-  estadoCivil           String?  @db.VarChar(50)
-  paisNascimento        String?  @db.VarChar(100)
-  nacionalidade         String?  @db.VarChar(50)
-  naturalidade          String?  @db.VarChar(100)
-  uf                    String?  @db.VarChar(2)
-  necessidadeEspecial   String?  @db.VarChar(200)
-
-  // Documentos
-  tipoDocumento         String?  @db.VarChar(20)
-  rg                    String?  @db.VarChar(20)
-  complementoIdentidade String?  @db.VarChar(100)
-  estadoEmissao         String?  @db.VarChar(2)
-  rgOrgaoEmissor        String?  @db.VarChar(20)
-  rgDataEmissao         DateTime? @db.Date
-  cpf                   String?  @db.VarChar(14)
-
-  // Filiação
-  nomeMae               String?  @db.VarChar(200)
-  cpfMae                String?  @db.VarChar(14)
-  nomePai               String?  @db.VarChar(200)
-  cpfPai                String?  @db.VarChar(14)
-
-  // Contato
-  email                 String?  @db.VarChar(100)
-
-  // Certidão Civil
-  tipoCertidaoCivil     String?  @db.VarChar(50)
-  numeroCertidaoCivil   String?  @db.VarChar(100)
-  ufCartorio            String?  @db.VarChar(2)
-  municipioCartorio     String?  @db.VarChar(100)
-  nomeCartorio          String?  @db.VarChar(200)
-  numeroTermo           String?  @db.VarChar(50)
-  dataEmissaoCertidao   DateTime? @db.Date
-  estadoCertidao        String?  @db.VarChar(2)
-  folhaCertidao         String?  @db.VarChar(20)
-  livroCertidao         String?  @db.VarChar(20)
-
-  // Dados escolares
-  dataConclusaoEnsinoMedio  DateTime? @db.Date
-
-  // Dados do Ensino Fundamental
-  efInstituicao         String?  @db.VarChar(200)
-  efMunicipioEstado     String?  @db.VarChar(100)
-  efAnoConclusao        Int?
-  efNumeroPagina        String?  @db.VarChar(20)
-  efDataEmissao         DateTime? @db.Date
-
-  // Campos adicionais (não vêm do CSV)
-  dadosConferidos       Boolean  @default(false)
-  conferidoEm           DateTime?
-  conferidoPor          String?
-  certificacao          Boolean  @default(false)
-  observacoes           String?  @db.VarChar(1000)
-
-  // Importação Estruturada por Texto (CIF)
-  dadosOriginais                    Json?     @db.JsonB  // Dados estruturados consolidados (parseados)
-  textoBrutoDadosPessoais           String?   @db.Text   // Página 1 (texto não estruturado)
-  textoBrutoDadosEscolares          String?   @db.Text   // Página 2 (texto não estruturado)
-  dataImportacaoTextoDadosPessoais  DateTime?
+  id                                String          @id @default(uuid())
+  matricula                         String          @unique @db.VarChar(15)
+  nome                              String?         @db.VarChar(200)
+  sexo                              String?         @db.VarChar(1)
+  dataNascimento                    DateTime?       @db.Date
+  nacionalidade                     String?         @db.VarChar(50)
+  naturalidade                      String?         @db.VarChar(100)
+  uf                                String?         @db.VarChar(2)
+  rg                                String?         @db.VarChar(20)
+  rgOrgaoEmissor                    String?         @db.VarChar(20)
+  rgDataEmissao                     DateTime?       @db.Date
+  cpf                               String?         @db.VarChar(14)
+  nomeMae                           String?         @db.VarChar(200)
+  nomePai                           String?         @db.VarChar(200)
+  dataConclusaoEnsinoMedio          DateTime?       @db.Date
+  efInstituicao                     String?         @db.VarChar(200)
+  efMunicipioEstado                 String?         @db.VarChar(100)
+  efAnoConclusao                    Int?
+  efNumeroPagina                    String?         @db.VarChar(20)
+  efDataEmissao                     DateTime?       @db.Date
+  dadosConferidos                   Boolean         @default(false)
+  conferidoEm                       DateTime?
+  conferidoPor                      String?
+  certificacao                      Boolean         @default(false)
+  observacoes                       String?         @db.VarChar(1000)
+  origemTipo                        String
+  linhaOrigemId                     String?
+  fonteAusente                      Boolean         @default(false)
+  fonteAusenteCiente                Boolean         @default(false)
+  criadoEm                          DateTime        @default(now())
+  criadoPor                         String?
+  atualizadoEm                      DateTime        @updatedAt
+  atualizadoPor                     String?
+  dadosOriginais                    Json?
   dataImportacaoTextoDadosEscolares DateTime?
-
-  // Metadados de origem
-  origemTipo            String   // 'csv' ou 'manual'
-  linhaOrigemId         String?  // FK para LinhaImportada (null se manual)
-  fonteAusente          Boolean  @default(false)
-  fonteAusenteCiente    Boolean  @default(false)
-
-  // Relacionamentos
-  linhaOrigem           LinhaImportada? @relation(fields: [linhaOrigemId], references: [id], onDelete: SetNull)
-  enturmacoes           Enturmacao[]
-
-  // Auditoria
-  criadoEm              DateTime @default(now())
-  criadoPor             String?
-  atualizadoEm          DateTime @updatedAt
-  atualizadoPor         String?
+  dataImportacaoTextoDadosPessoais  DateTime?
+  textoBrutoDadosEscolares          String?
+  textoBrutoDadosPessoais           String?
+  tipoDocumento                     String?         @db.VarChar(20)
+  complementoIdentidade             String?         @db.VarChar(100)
+  cpfMae                            String?         @db.VarChar(14)
+  cpfPai                            String?         @db.VarChar(14)
+  dataEmissaoCertidao               DateTime?       @db.Date
+  email                             String?         @db.VarChar(100)
+  estadoCertidao                    String?         @db.VarChar(2)
+  estadoCivil                       String?         @db.VarChar(50)
+  estadoEmissao                     String?         @db.VarChar(2)
+  folhaCertidao                     String?         @db.VarChar(20)
+  livroCertidao                     String?         @db.VarChar(20)
+  municipioCartorio                 String?         @db.VarChar(100)
+  necessidadeEspecial               String?         @db.VarChar(200)
+  nomeCartorio                      String?         @db.VarChar(200)
+  nomeSocial                        String?         @db.VarChar(200)
+  numeroCertidaoCivil               String?         @db.VarChar(100)
+  numeroTermo                       String?         @db.VarChar(50)
+  paisNascimento                    String?         @db.VarChar(100)
+  tipoCertidaoCivil                 String?         @db.VarChar(50)
+  ufCartorio                        String?         @db.VarChar(2)
+  linhaOrigem                       LinhaImportada? @relation(fields: [linhaOrigemId], references: [id])
+  enturmacoes                       Enturmacao[]
 
   @@index([matricula])
   @@index([nome])
@@ -163,31 +115,22 @@ model Aluno {
   @@map("alunos")
 }
 
-// Enturmação - Registros dos períodos letivos estudados pelo aluno na escola
 model Enturmacao {
-  id                String   @id @default(uuid())
-  alunoId           String
-
-  // Identificação do período letivo estudado na escola
-  anoLetivo         String   @db.VarChar(10)
-  regime            Int      @default(0) // 0=anual, 1=1º semestre, 2=2º semestre
-  modalidade        String   @db.VarChar(100)
-  turma             String   @db.VarChar(50)
-  serie             String   @db.VarChar(10)
-  turno             String?  @db.VarChar(20)
-
-  // Metadados de origem
-  origemTipo        String   // 'csv' ou 'manual'
-  linhaOrigemId     String?
-  fonteAusente      Boolean  @default(false)
-
-  // Relacionamentos
-  aluno             Aluno              @relation(fields: [alunoId], references: [id], onDelete: Cascade)
-  linhaOrigem       LinhaImportada?    @relation(fields: [linhaOrigemId], references: [id], onDelete: SetNull)
-
-  // Timestamps
-  criadoEm          DateTime @default(now())
-  atualizadoEm      DateTime @updatedAt
+  id            String          @id @default(uuid())
+  alunoId       String
+  anoLetivo     String          @db.VarChar(10)
+  regime        Int             @default(0)
+  modalidade    String          @db.VarChar(100)
+  turma         String          @db.VarChar(50)
+  serie         String          @db.VarChar(10)
+  turno         String?         @db.VarChar(20)
+  origemTipo    String
+  linhaOrigemId String?
+  criadoEm      DateTime        @default(now())
+  atualizadoEm  DateTime        @updatedAt
+  fonteAusente  Boolean         @default(false)
+  aluno         Aluno           @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  linhaOrigem   LinhaImportada? @relation(fields: [linhaOrigemId], references: [id])
 
   @@index([alunoId])
   @@index([anoLetivo])
@@ -196,19 +139,14 @@ model Enturmacao {
   @@map("enturmacoes")
 }
 
-// ============================================================================
-// CAMADA 3: AUDITORIA
-// ============================================================================
-
-// Registro automático de todas as mudanças
 model Auditoria {
   id              String   @id @default(uuid())
   tabela          String   @db.VarChar(50)
   registroId      String
-  operacao        String   @db.VarChar(10) // 'INSERT', 'UPDATE', 'DELETE'
+  operacao        String   @db.VarChar(10)
   dadosAntes      Json?
   dadosDepois     Json?
-  camposAlterados String[] // Array com nomes dos campos que mudaram
+  camposAlterados String[]
   usuarioId       String?
   timestamp       DateTime @default(now())
 

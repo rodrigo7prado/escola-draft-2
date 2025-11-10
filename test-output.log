@@ -1,0 +1,72 @@
+
+> senor_abravanel_draft-2@0.1.0 test:run C:\Users\rprado\Projetos\Next\_escolas\senor_abravanel_draft-2
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.8 [39m[90mC:/Users/rprado/Projetos/Next/_escolas/senor_abravanel_draft-2[39m
+
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mCasos básicos (V2.2.1: Calcular hash SHA-256)[2m > [22mdeve retornar hash SHA-256 válido (64 caracteres hexadecimais)[32m 20[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mCasos básicos (V2.2.1: Calcular hash SHA-256)[2m > [22mdeve retornar hash diferente para dados diferentes[32m 5[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mCasos básicos (V2.2.1: Calcular hash SHA-256)[2m > [22mdeve retornar hash idêntico para dados idênticos[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mPropriedade crítica: Ordem não importa (V2.2.1)[2m > [22mdeve gerar MESMO hash se linhas estiverem em ordem diferente[32m 71[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mPropriedade crítica: Ordem não importa (V2.2.1)[2m > [22mdeve gerar MESMO hash se headers estiverem em ordem diferente[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mPropriedade crítica: Ordem não importa (V2.2.1)[2m > [22mdeve gerar MESMO hash se headers E linhas estiverem em ordem diferente[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mEdge cases: Dados vazios ou mínimos[2m > [22mdeve lidar com CSV vazio (sem linhas)[32m 8[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mEdge cases: Dados vazios ou mínimos[2m > [22mdeve lidar com CSV sem headers[32m 3[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mEdge cases: Dados vazios ou mínimos[2m > [22mdeve lidar com uma única linha[32m 4[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mEdge cases: Dados vazios ou mínimos[2m > [22mdeve lidar com linha vazia (todos campos vazios)[32m 3[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mEdge cases: Valores especiais[2m > [22mdeve lidar com valores com acentuação[32m 6[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mEdge cases: Valores especiais[2m > [22mdeve lidar com valores com caracteres especiais[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mEdge cases: Valores especiais[2m > [22mdeve lidar com valores numéricos grandes[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mEdge cases: Valores especiais[2m > [22mdeve lidar com valores JSON-like (aspas, chaves)[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mEdge cases: Sensibilidade[2m > [22mdeve gerar hash DIFERENTE se valor mudar case (case-sensitive)[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mEdge cases: Sensibilidade[2m > [22mdeve gerar hash DIFERENTE se houver espaço extra[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mEdge cases: Sensibilidade[2m > [22mdeve gerar hash DIFERENTE se houver campo a mais[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mCasos de regressão: Detecção de duplicatas[2m > [22mdeve detectar CSV duplicado mesmo com linhas embaralhadas[32m 7[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mCasos de regressão: Detecção de duplicatas[2m > [22mdeve detectar diferença se UMA linha mudar[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mCasos de regressão: Detecção de duplicatas[2m > [22mdeve detectar diferença se linha for ADICIONADA[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mCasos de regressão: Detecção de duplicatas[2m > [22mdeve detectar diferença se linha for REMOVIDA[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mIntegração: Dados reais do CSV do Conexão Educação[2m > [22mdeve processar CSV real com múltiplos alunos[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/hashData.test.ts[2m > [22mhashData[2m > [22mIntegração: Dados reais do CSV do Conexão Educação[2m > [22mdeve gerar mesmo hash se CSV real for reordenado[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos básicos (V3.1: Remover prefixos conhecidos)[2m > [22mdeve remover prefixo "Ano Letivo:" corretamente[32m 12[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos básicos (V3.1: Remover prefixos conhecidos)[2m > [22mdeve remover prefixo "Modalidade:" corretamente[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos básicos (V3.1: Remover prefixos conhecidos)[2m > [22mdeve remover prefixo "Turma:" corretamente[32m 3[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos básicos (V3.1: Remover prefixos conhecidos)[2m > [22mdeve remover prefixo "Série:" corretamente[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos básicos (V3.1: Remover prefixos conhecidos)[2m > [22mdeve remover prefixo "Turno:" corretamente[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: valores sem prefixo (V3.2)[2m > [22mdeve retornar valor original se não tiver o prefixo esperado[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: valores sem prefixo (V3.2)[2m > [22mdeve retornar valor vazio se entrada for undefined[32m 3[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: valores sem prefixo (V3.2)[2m > [22mdeve retornar valor vazio se entrada for string vazia[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: valores sem prefixo (V3.2)[2m > [22mdeve retornar valor vazio se entrada for apenas espaços[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: espaços e formatação (V3.3)[2m > [22mdeve remover espaços antes e depois do valor completo[32m 6[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: espaços e formatação (V3.3)[2m > [22mdeve remover espaços depois do prefixo[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: espaços e formatação (V3.3)[2m > [22mdeve preservar espaços internos no valor[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: espaços e formatação (V3.3)[2m > [22mdeve aplicar trim mesmo sem prefixo[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: prefixos parciais (V3.4)[2m > [22mNÃO deve remover se prefixo estiver no meio[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: prefixos parciais (V3.4)[2m > [22mNÃO deve remover se prefixo estiver no fim[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: prefixos parciais (V3.4)[2m > [22mdeve ser case-sensitive (não remover se case diferente)[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: valores especiais (V3.5)[2m > [22mdeve lidar com valores numéricos[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: valores especiais (V3.5)[2m > [22mdeve lidar com valores alfanuméricos[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: valores especiais (V3.5)[2m > [22mdeve lidar com caracteres especiais[32m 7[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos edge: valores especiais (V3.5)[2m > [22mdeve lidar com acentuação[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos de regressão (bugs encontrados no passado)[2m > [22mdeve evitar erro "value too long for column" - caso original[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos de regressão (bugs encontrados no passado)[2m > [22mdeve evitar erro "value too long for column" - modalidade[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparValor[2m > [22mCasos de regressão (bugs encontrados no passado)[2m > [22mdeve evitar erro "value too long for column" - turma[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparCamposEnturmacao[2m > [22mCasos básicos (V3.6: Transformar todos campos de enturmação)[2m > [22mdeve limpar todos os campos corretamente com prefixos completos[32m 4[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparCamposEnturmacao[2m > [22mCasos básicos (V3.6: Transformar todos campos de enturmação)[2m > [22mdeve lidar com campos sem prefixos[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparCamposEnturmacao[2m > [22mCasos edge: variações de prefixo (V3.7)[2m > [22mdeve aceitar "Ano:" como alternativa a "Ano Letivo:"[32m 6[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparCamposEnturmacao[2m > [22mCasos edge: variações de prefixo (V3.7)[2m > [22mdeve priorizar "Ano Letivo:" sobre "Ano:" se ambos presentes[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparCamposEnturmacao[2m > [22mCasos edge: campos ausentes/vazios[2m > [22mdeve retornar strings vazias para campos undefined[32m 1[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparCamposEnturmacao[2m > [22mCasos edge: campos ausentes/vazios[2m > [22mdeve retornar null para turno vazio (campo opcional)[32m 3[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparCamposEnturmacao[2m > [22mCasos edge: campos ausentes/vazios[2m > [22mdeve preservar valores válidos mesmo com outros campos vazios[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/lib/limparValor.test.ts[2m > [22mlimparCamposEnturmacao[2m > [22mIntegração: dados reais do CSV[2m > [22mdeve processar linha completa do CSV do Conexão Educação[32m 18[2mms[22m[39m
+ [32m✓[39m tests/integration/api/files-upload.test.ts[2m > [22mPOST /api/files - Upload de CSV[2m > [22mV2.1: Validação básica de payload[2m > [22mdeve rejeitar payload sem campo "data"[33m 950[2mms[22m[39m
+ [32m✓[39m tests/integration/api/files-upload.test.ts[2m > [22mPOST /api/files - Upload de CSV[2m > [22mV2.1: Validação básica de payload[2m > [22mdeve rejeitar payload sem campo "fileName"[32m 151[2mms[22m[39m
+ [32m✓[39m tests/integration/api/files-upload.test.ts[2m > [22mPOST /api/files - Upload de CSV[2m > [22mV4.1: Criar ArquivoImportado[2m > [22mdeve criar registro de ArquivoImportado no banco[33m 447[2mms[22m[39m
+ [32m✓[39m tests/integration/api/files-upload.test.ts[2m > [22mPOST /api/files - Upload de CSV[2m > [22mV4.1: Criar ArquivoImportado[2m > [22mdeve calcular hash corretamente baseado no conteúdo[32m 36[2mms[22m[39m
+ [32m✓[39m tests/integration/api/files-upload.test.ts[2m > [22mPOST /api/files - Upload de CSV[2m > [22mV4.2: Detectar duplicatas (V2.2.2)[2m > [22mdeve detectar arquivo duplicado e retornar erro 409[32m 82[2mms[22m[39m
+ [32m✓[39m tests/integration/api/files-upload.test.ts[2m > [22mPOST /api/files - Upload de CSV[2m > [22mV4.2: Detectar duplicatas (V2.2.2)[2m > [22mdeve permitir upload se arquivo anterior foi deletado (hard delete)[32m 163[2mms[22m[39m
+ [32m✓[39m tests/integration/api/files-upload.test.ts[2m > [22mPOST /api/files - Upload de CSV[2m > [22mV4.3: Criar LinhaImportada[2m > [22mdeve criar registros de LinhaImportada para cada linha do CSV[33m 306[2mms[22m[39m
+ [32m✓[39m tests/integration/api/files-upload.test.ts[2m > [22mPOST /api/files - Upload de CSV[2m > [22mV4.4: Criar ou atualizar Aluno[2m > [22mdeve criar registro de Aluno se não existir[33m 376[2mms[22m[39m
+ [32m✓[39m tests/integration/api/files-upload.test.ts[2m > [22mPOST /api/files - Upload de CSV[2m > [22mV4.4: Criar ou atualizar Aluno[2m > [22mdeve atualizar Aluno existente se já existir (upsert)[32m 233[2mms[22m[39m
+ [32m✓[39m tests/integration/api/files-upload.test.ts[2m > [22mPOST /api/files - Upload de CSV[2m > [22mV4.5: Criar Enturmacao[2m > [22mdeve criar registro de Enturmacao para cada aluno[33m 648[2mms[22m[39m
+ [32m✓[39m tests/integration/api/files-upload.test.ts[2m > [22mPOST /api/files - Upload de CSV[2m > [22mV4: Fluxo completo (end-to-end)[2m > [22mdeve processar CSV completo: Arquivo → Linhas → Alunos → Enturmações[33m 535[2mms[22m[39m

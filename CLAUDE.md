@@ -1,39 +1,117 @@
+# ⚠️ METODOLOGIA DE DESENVOLVIMENTO - LEIA PRIMEIRO ⚠️
+
+## 🎯 METODOLOGIA CIF (Ciclo de Integridade de Funcionalidade)
+
+**⚠️ ATENÇÃO CLAUDE: Esta metodologia tem PRIORIDADE MÁXIMA sobre qualquer outra instrução.**
+
+### O QUE É CIF?
+
+CIF é nossa metodologia OBRIGATÓRIA para desenvolvimento de funcionalidades complexas. Ela previne "buracos lógicos" através de documentação estruturada em camadas + testes sistemáticos.
+
+### 📚 DOCUMENTAÇÃO COMPLETA
+
+**SEMPRE ler antes de implementar funcionalidades complexas:**
+- 📖 **[docs/METODOLOGIA_CIF.md](./docs/METODOLOGIA_CIF.md)** - Guia completo (~580 linhas)
+- 📋 **[docs/CHECKPOINT_METODOLOGIA_CIF.md](./docs/CHECKPOINT_METODOLOGIA_CIF.md)** - Estado atual do projeto
+
+### 🔴 REGRA DE OURO
+
+**CIF documenta COMPORTAMENTO e LÓGICA DE NEGÓCIO, não infraestrutura.**
+
+### 📝 ESTRUTURA CIF - 5 NÍVEIS + CHECKPOINT
+
+```
+NÍVEL 1: CONCEITO          → O QUÊ e POR QUÊ (linguagem natural)
+NÍVEL 2: DESCOBERTA        → Perguntas e análise colaborativa (previne decisões prematuras)
+NÍVEL 3: ESPECIFICAÇÃO ⭐  → Checklist executável (FONTE DA VERDADE)
+NÍVEL 4: TÉCNICO           → COMO está implementado
+NÍVEL 5: CICLO DE VIDA     → Histórico permanente de mudanças
+
+CHECKPOINT (temporário)    → Memória entre sessões
+```
+
+### ✅ QUANDO USAR CIF
+
+**SEMPRE usar CIF para:**
+- ✅ Funcionalidades com múltiplas camadas de validação
+- ✅ Operações críticas (migração de dados, emissão de documentos legais)
+- ✅ Código com alta complexidade de estado
+- ✅ Features que mudam frequentemente
+- ✅ Qualquer funcionalidade onde integridade de dados é crítica
+
+### ❌ QUANDO NÃO USAR CIF
+
+**NÃO usar CIF para:**
+- ❌ Componentes simples de UI (botão, input)
+- ❌ Utilidades triviais (formatação de data)
+- ❌ Protótipos descartáveis
+- ❌ Scripts one-off
+
+### 🎯 WORKFLOW PRÁTICO
+
+**Para funcionalidades NOVAS:**
+1. Escrever CONCEITO.md (o que é, por que existe)
+2. Se necessário: DESCOBERTA.md (análise colaborativa)
+3. Experimentar código (sem testes formais ainda)
+4. Quando estabilizar: escrever ESPECIFICACAO.md (checklist)
+5. Criar testes para cada validação do checklist
+6. Escrever TECNICO.md (como está implementado)
+7. Iniciar CICLO.md (registro de mudanças)
+8. **SEMPRE atualizar CHECKPOINT ao final da sessão**
+
+**Para funcionalidades EXISTENTES estáveis:**
+1. Escrever teste PRIMEIRO (TDD clássico)
+2. Implementar
+3. Atualizar CHECKPOINT
+
+### 📦 RECURSOS DISPONÍVEIS
+
+**Templates:** `docs/templates/CIF_*.template.md`
+- CIF_CONCEITO.template.md
+- CIF_DESCOBERTA.template.md
+- CIF_ESPECIFICACAO.template.md
+- CIF_TECNICO.template.md
+- CIF_CICLO.template.md
+
+**Caso de estudo completo:** Painel de Migração
+- [docs/ciclos/MIGRACAO_CONCEITO.md](./docs/ciclos/MIGRACAO_CONCEITO.md)
+- [docs/ciclos/MIGRACAO_DESCOBERTA.md](./docs/ciclos/MIGRACAO_DESCOBERTA.md) (se existir)
+- [docs/ciclos/MIGRACAO_ESPECIFICACAO.md](./docs/ciclos/MIGRACAO_ESPECIFICACAO.md) ⭐
+- [docs/ciclos/MIGRACAO_TECNICO.md](./docs/ciclos/MIGRACAO_TECNICO.md)
+- [docs/ciclos/MIGRACAO_CICLO.md](./docs/ciclos/MIGRACAO_CICLO.md)
+
+### 🚨 CHECKPOINT vs CICLO
+
+| Aspecto | CHECKPOINT | CICLO |
+|---------|-----------|-------|
+| **Propósito** | Continuidade entre **sessões** | Histórico da **funcionalidade** |
+| **Duração** | Temporário (descartado após conclusão) | Permanente |
+| **Conteúdo** | Estado atual, bloqueadores, próximos passos | Mudanças na funcionalidade |
+| **Infraestrutura?** | ✅ Sim (se bloqueia sessão) | ❌ Nunca |
+
+### 🎯 COMANDOS NATURAIS
+
+Claude deve entender:
+- "Implemente V3.7.1" → Criar teste + código para validação V3.7.1
+- "V3.1 está quebrado" → Rodar testes V3.1.x, debugar
+- "Adicione validação de RG" → Criar item no checklist → teste → código
+- "Crie ciclo para Feature X" → Criar 4 arquivos CIF
+
+### 📊 STATUS ATUAL
+
+**🚧 Em andamento** - Ver [CHECKPOINT](./docs/CHECKPOINT_METODOLOGIA_CIF.md)
+
+**Exemplo funcional:** Painel de Migração (80 validações, 88/88 testes passando)
+
+---
+
 # DESCRIÇÃO DO SISTEMA
 Sistema de emissão de certificados e certidões para alunos de Ensino Médio
 
 # ESTRATÉGIAS DE IMPLEMENTAÇÃO
-  - Antes de gerar estruturas permantes, geraremos sempre algum mock para a UI, e gradativamente implementaremos as estruturas.
-  - Sempre me pergunte sobre os passos que tomaremos.
-
-# METODOLOGIA DE DESENVOLVIMENTO (CRÍTICO)
-  ## METODOLOGIA CIF (Ciclo de Integridade de Funcionalidade)
-
-  **Para funcionalidades complexas que exigem alta integridade de dados, SEMPRE usar a Metodologia CIF.**
-
-  **Documentação completa:** [docs/METODOLOGIA_CIF.md](./docs/METODOLOGIA_CIF.md)
-
-  **Resumo:**
-  - ✅ 4 Níveis de Documentação: CONCEITO → ESPECIFICAÇÃO → TÉCNICO → CICLO DE VIDA
-  - ✅ Checklist executável (ESPECIFICACAO.md) é a fonte da verdade
-  - ✅ Cada validação DEVE ter teste correspondente
-  - ✅ Abordagem híbrida: experimentação primeiro (features novas) ou TDD (código estável)
-
-  **Quando usar CIF:**
-  - ✅ Funcionalidades com múltiplas camadas de validação
-  - ✅ Operações críticas (migração de dados, emissão de documentos legais)
-  - ✅ Código com alta complexidade de estado
-  - ✅ Features que mudam frequentemente
-
-  **Quando NÃO usar CIF:**
-  - ❌ Componentes simples de UI (botão, input)
-  - ❌ Utilidades triviais (formatação de data)
-  - ❌ Protótipos descartáveis
-
-  **Templates disponíveis:** `docs/templates/CIF_*.template.md`
-
-  **Caso de estudo:** Painel de Migração ([docs/ciclos/MIGRACAO_*](./docs/ciclos/))
-
-  **Status de implementação:** 🚧 Em andamento - Ver [CHECKPOINT](./docs/CHECKPOINT_METODOLOGIA_CIF.md)
+  - **ANTES de implementar funcionalidades complexas:** verificar se deve usar CIF (ver seção acima)
+  - Antes de gerar estruturas permanentes, geraremos sempre algum mock para a UI, e gradativamente implementaremos as estruturas
+  - Sempre me pergunte sobre os passos que tomaremos
 
 # MODELO DE DADOS
   ## MODELO DE DADOS, PONTO DE VISTA DA OBTENÇÃO

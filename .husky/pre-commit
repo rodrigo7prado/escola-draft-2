@@ -1,22 +1,17 @@
 #!/usr/bin/env sh
 
 # Pre-commit hook: Rodar testes antes do commit
-# TEMPORARIAMENTE DESABILITADO - testes muito lentos
 
 echo ""
-echo "⚠️  Pre-commit hook desabilitado temporariamente"
-echo "💡 Lembre-se de rodar 'pnpm test:run' manualmente antes de fazer push"
+echo "🧪 Rodando testes..."
+pnpm test:run
 
-# echo ""
-# echo "🧪 Rodando testes..."
-# pnpm test:run
-#
-# if [ $? -ne 0 ]; then
-#   echo ""
-#   echo "❌ Testes falharam! Commit bloqueado."
-#   echo "💡 Corrija os erros e tente novamente."
-#   exit 1
-# fi
-#
-# echo ""
-# echo "✅ Todos os testes passaram!"
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Testes falharam! Commit bloqueado."
+  echo "💡 Corrija os erros e tente novamente."
+  exit 1
+fi
+
+echo ""
+echo "✅ Todos os testes passaram!"

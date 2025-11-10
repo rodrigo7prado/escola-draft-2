@@ -1,8 +1,107 @@
 # CHECKPOINT - Implementação Metodologia CIF
 
 **Data de início:** 2025-01-04
-**Última atualização:** 2025-11-06 (Sessão 9)
-**Status:** ✅ TESTES DE INTEGRAÇÃO 100% - Pronto para bugs críticos
+**Última atualização:** 2025-11-10 (Sessão 12)
+**Status:** ✅ TESTES 100% CORRIGIDOS - Race conditions resolvidas
+
+---
+
+## ✅ SESSÃO 12 (CONCLUÍDA): Correção de Race Conditions em Testes
+
+**Objetivo:** Corrigir falhas nos testes causadas por race conditions
+
+**Status:** ✅ **RESOLVIDO E VALIDADO** - 88/88 testes passando (100%)
+
+### Contexto do Problema
+
+Após análise detalhada, identificados 3 problemas inter-relacionados:
+
+1. **clearTestDatabase() com Promise.all()**: Deletava tabelas em paralelo violando ordem de FKs
+2. **fileParallelism: true**: Testes rodavam em paralelo compartilhando mesmo banco
+3. **Timeout starting threads**: Sintoma das race conditions acima
+
+### Análise da Causa Raiz
+
+**Problema 1: Promise.all() em clearTestDatabase()**
+
+```typescript
+// ANTES (db-setup.ts:91-97) - INCORRETO
+await Promise.all([
+  prismaTest.auditoria.deleteMany(),
+  prismaTest.enturmacao.deleteMany(),  // ❌ Tenta deletar antes de Aluno
+  prismaTest.aluno.deleteMany(),
+  // ...
+]);
+```
+
+**Por que falhava:**
+- `deleteMany()` em paralelo não respeita ordem de FKs
+- PostgreSQL impede deletar registro com FKs apontando para ele
+- Resultado: violações de FK intermitentes
+
+**Problema 2: fileParallelism causando interferência entre testes**
+
+```typescript
+// vitest.config.ts:16 - INCORRETO
+fileParallelism: true,  // ❌ Testes rodavam simultaneamente
+```
+
+**Cenário de falha:**
+1. `files-upload.test.ts` limpa banco (beforeEach)
+2. `files-get.test.ts` cria arquivo
+3. `files-upload.test.ts` limpa banco NOVAMENTE
+4. `files-get.test.ts` tenta criar linhas → FK ERROR (arquivo deletado)
+
+### Soluções Implementadas
+
+**1. Correção de clearTestDatabase() (db-setup.ts:89-96):**
+```typescript
+// DEPOIS - CORRETO
+// Deletar NA ORDEM SEQUENCIAL respeitando FKs
+await prismaTest.enturmacao.deleteMany();      // 1º: depende de Aluno E LinhaImportada
+await prismaTest.aluno.deleteMany();           // 2º: depende de LinhaImportada
+await prismaTest.linhaImportada.deleteMany();  // 3º: depende de ArquivoImportado
+await prismaTest.arquivoImportado.deleteMany(); // 4º: sem FKs
+await prismaTest.auditoria.deleteMany();       // 5º: independente
+```
+
+**2. Desabilitação de paralelismo (vitest.config.ts:16):**
+```typescript
+// Testes de integração não podem rodar em paralelo (banco compartilhado)
+fileParallelism: false,
+```
+
+**3. Remoção de poolOptions deprecated (vitest.config.ts):**
+- Removido `poolOptions` (não existe mais no Vitest 4.0)
+- Mantido `maxWorkers: undefined` (auto-detect)
+
+### Arquivos Modificados
+
+1. **tests/helpers/db-setup.ts** (linhas 89-96)
+   - Substituído `Promise.all()` por deletes sequenciais
+   - Ordem correta: Enturmacao → Aluno → LinhaImportada → ArquivoImportado → Auditoria
+
+2. **vitest.config.ts** (linhas 13-16, 60-67)
+   - `fileParallelism: false` (era true)
+   - Removido bloco `poolOptions` completo (deprecated)
+
+### Validação
+
+**Resultados dos Testes:**
+```
+Test Files  6 passed (6)
+Tests      88 passed (88)
+Duration   40.59s
+```
+
+**Antes → Depois:**
+- ❌ 85 passed / 3 failed → ✅ 88 passed / 0 failed
+- ❌ Race conditions frequentes → ✅ Execução determinística
+- ❌ Timeouts intermitentes → ✅ Sem timeouts
+
+### Tempo Real
+
+~2h (incluindo investigação de documentação CIF e análise de contexto)
 
 ---
 

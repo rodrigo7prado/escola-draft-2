@@ -7,17 +7,18 @@ export default defineConfig({
     // Ambiente de teste (happy-dom é mais leve que jsdom)
     environment: 'happy-dom',
 
-    // Pool explícito para evitar cache de config antiga
-    pool: 'threads',
+    // Pool: 'forks' é mais estável no Windows (evita segfaults)
+    // 'threads' pode causar crash com crypto/banco de dados
+    pool: 'forks',
 
-    // OTIMIZAÇÃO: Rodar testes em paralelo de forma mais agressiva
-    // Cada suite de testes roda em paralelo (describe blocks)
-    // Reduz tempo total significativamente
-    fileParallelism: true,
+    // IMPORTANTE: Desabilitar paralelismo para testes de integração com banco
+    // Testes que usam o mesmo banco não podem rodar em paralelo (race conditions)
+    // clearTestDatabase() em um teste afeta outros testes rodando simultaneamente
+    fileParallelism: false,
 
-    // OTIMIZAÇÃO: Máximo de workers = número de CPUs
-    // Isso maximiza uso de recursos
-    maxWorkers: undefined, // undefined = auto-detect CPUs
+    // OTIMIZAÇÃO: Limitar workers para evitar crash no Windows
+    // undefined = auto-detect, mas pode causar problemas com muitos workers
+    maxWorkers: 1, // Modo sequencial garante estabilidade
 
     // Arquivos de setup global
     setupFiles: ['./tests/setup.ts'],
@@ -56,15 +57,6 @@ export default defineConfig({
 
     // Globals (permite usar expect, describe, etc sem import)
     globals: true,
-
-    // OTIMIZAÇÃO: Pool options para threads
-    poolOptions: {
-      threads: {
-        // Máximo de threads simultâneas
-        maxThreads: undefined, // auto-detect
-        minThreads: 1,
-      },
-    },
   },
 
   // Resolver alias (para imports como @/components)

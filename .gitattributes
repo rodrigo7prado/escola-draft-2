@@ -1,0 +1,42 @@
+# Git attributes for line ending normalization
+
+# Scripts shell devem sempre usar LF (Linux/Mac style)
+*.sh text eol=lf
+
+# Husky hooks devem sempre usar LF
+.husky/* text eol=lf
+
+# Scripts Bash devem usar LF
+*.bash text eol=lf
+
+# Auto detect text files and normalize to LF in repository
+* text=auto eol=lf
+
+# Explicitly declare text files
+*.md text
+*.txt text
+*.json text
+*.yml text
+*.yaml text
+*.toml text
+
+# Source code
+*.js text
+*.jsx text
+*.ts text
+*.tsx text
+*.css text
+*.scss text
+*.html text
+
+# Binary files (don't normalize)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

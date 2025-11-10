@@ -86,15 +86,14 @@ export async function clearTestDatabase() {
     throw new Error('Banco de teste não inicializado. Chame setupTestDatabase() primeiro.');
   }
 
-  // OTIMIZAÇÃO: Usar Promise.all para deletar em paralelo
-  // Isso é seguro porque o Prisma respeita foreign keys automaticamente
-  await Promise.all([
-    prismaTest.auditoria.deleteMany(),
-    prismaTest.enturmacao.deleteMany(),
-    prismaTest.aluno.deleteMany(),
-    prismaTest.linhaImportada.deleteMany(),
-    prismaTest.arquivoImportado.deleteMany(),
-  ]);
+  // IMPORTANTE: Deletar NA ORDEM SEQUENCIAL respeitando FKs
+  // Promise.all() causava race conditions e violações de FK
+  // Ordem: do mais dependente para o menos dependente (não confundir com CASCADE)
+  await prismaTest.enturmacao.deleteMany();      // 1º: depende de Aluno E LinhaImportada
+  await prismaTest.aluno.deleteMany();           // 2º: depende de LinhaImportada
+  await prismaTest.linhaImportada.deleteMany();  // 3º: depende de ArquivoImportado
+  await prismaTest.arquivoImportado.deleteMany(); // 4º: sem FKs para outras tabelas
+  await prismaTest.auditoria.deleteMany();       // 5º: sem FKs (independente)
 }
 
 /**

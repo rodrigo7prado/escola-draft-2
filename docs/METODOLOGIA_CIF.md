@@ -583,11 +583,79 @@ Veja a aplicação completa da metodologia:
 
 ---
 
+## 🎨 REFATORAÇÕES DE UI EM FUNCIONALIDADES CIF
+
+**Quando refatorar interface de funcionalidade CIF, seguir Protocolo de Frontend integrado.**
+
+### Fluxo Obrigatório
+
+1. **PROTOCOLO FRONTEND:** Seguir 3 fases (Captura Visual → Análise → Componentização)
+2. **CIF - ATUALIZAR DOCUMENTAÇÃO:**
+   - **TECNICO.md:** Atualizar seção de componentes
+   - **CICLO.md:** Registrar mudança visual (data, motivo, impacto)
+   - **ESPECIFICACAO.md:** Apenas se validações visuais mudarem
+3. **CHECKPOINT:** Registrar refatoração com screenshots e componentes modificados
+
+### Documentação Necessária
+
+**No TECNICO.md:**
+- Atualizar seção "Componentes" com novos componentes criados/modificados
+- Listar componentes genéricos reutilizados de `ui/`
+- Documentar decisões de componentização
+
+**No CICLO.md:**
+```markdown
+### [Data] - Refatoração Visual: [Nome]
+
+**Motivo:** [Por que foi necessário]
+
+**Mudanças:**
+- Componentes criados: [lista]
+- Componentes modificados: [lista]
+- Componentes genéricos reutilizados: [lista]
+
+**Impacto:**
+- ✅ Melhoria de UX: [descrição]
+- ✅ Redução de código duplicado: [percentual]
+- ⚠️ Breaking changes: [se houver]
+
+**Arquivos modificados:**
+- [lista completa com linhas]
+
+**Protocolo Frontend aplicado:** ✅ Sim (Fases 1-3)
+```
+
+**No CHECKPOINT:**
+- Seção "🎨 REFATORAÇÕES VISUAIS (Sessão X)"
+- Screenshots antes/depois
+- Referência ao CICLO.md atualizado
+
+### Quando NÃO Atualizar ESPECIFICACAO.md
+
+- ❌ Apenas mudanças visuais (cores, espaçamento, layout)
+- ❌ Componentização de código existente
+- ❌ Melhorias de UX sem alterar validações
+
+### Quando ATUALIZAR ESPECIFICACAO.md
+
+- ✅ Novas validações visuais (ex: campo obrigatório)
+- ✅ Mudança em fluxo de interação (ex: modal → página)
+- ✅ Adição/remoção de campos de dados
+
+### Referência Completa
+
+Ver: [CLAUDE.md - Integração CIF + Protocolo Frontend](../CLAUDE.md#🔗-integração-cif--protocolo-de-frontend)
+
+Ver: [PROTOCOLO_FRONTEND.md](./PROTOCOLO_FRONTEND.md) - Guia completo em 3 fases
+
+---
+
 ## RECURSOS ADICIONAIS
 
 - [Guia de Fluxo de Trabalho](./METODOLOGIA_CIF_FLUXO.md) - Quando usar TDD vs TAD
 - [Templates](./templates/) - Arquivos vazios para copiar
 - [Exemplo: Painel de Migração](./ciclos/) - Caso de estudo completo
+- [Protocolo de Frontend](./PROTOCOLO_FRONTEND.md) - Refatorações visuais em 3 fases
 
 ---
 

@@ -2,6 +2,11 @@
 
 **⚠️ ATENÇÃO CLAUDE: Este protocolo é OBRIGATÓRIO antes de qualquer refatoração de UI.**
 
+**🔗 INTEGRAÇÃO CIF:** Se a refatoração for em funcionalidade CIF, seguir também:
+- **[CLAUDE.md - Integração CIF + Protocolo Frontend](../CLAUDE.md#🔗-integração-cif--protocolo-de-frontend)**
+- Atualizar TECNICO.md + CICLO.md da funcionalidade
+- Registrar no CHECKPOINT com screenshots e componentes modificados
+
 ---
 
 ## 🎯 OBJETIVO

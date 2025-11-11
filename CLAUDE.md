@@ -166,6 +166,201 @@ Claude deve entender:
 
 ---
 
+## 🔗 INTEGRAÇÃO: CIF + PROTOCOLO DE FRONTEND
+
+**⚠️ REGRA OBRIGATÓRIA: Refatorações visuais SEMPRE devem ser indexadas ao CHECKPOINT**
+
+### 🎯 QUANDO APLICAR AMBOS OS PROTOCOLOS
+
+| Situação | CIF | Protocolo Frontend | CHECKPOINT |
+|----------|-----|-------------------|------------|
+| **Refatoração visual de funcionalidade CIF** | ✅ Sim | ✅ Sim | ✅ Obrigatório |
+| **Nova funcionalidade complexa com UI** | ✅ Sim | ✅ Sim | ✅ Obrigatório |
+| **Refatoração visual isolada (sem lógica)** | ❌ Não | ✅ Sim | ⚠️ Opcional* |
+| **Bug visual em funcionalidade CIF** | ⚠️ CICLO** | ✅ Sim | ✅ Obrigatório |
+
+*Opcional mas recomendado se mudança for significativa
+**Registrar no CICLO da funcionalidade + seguir Protocolo Frontend
+
+### 📝 FLUXO INTEGRADO: Refatoração Visual em Funcionalidade CIF
+
+**Exemplo:** Refatorar UI do Fluxo de Certificação (funcionalidade existente)
+
+```
+1. PROTOCOLO FRONTEND - FASE 1: Captura Visual
+   └─> Usuário fornece screenshots (antes/depois, contexto)
+
+2. PROTOCOLO FRONTEND - FASE 2: Análise Estruturada
+   ├─> Ler componentes hierarquicamente
+   ├─> Mapear visual → código
+   ├─> ✅ Checklist de compreensão
+   └─> Identificar componentização
+
+3. PROTOCOLO FRONTEND - FASE 3: Componentização
+   ├─> Buscar componentes existentes em ui/
+   ├─> Decidir: genérico (ui/) vs personalizado (components/)
+   ├─> Refatorar incrementalmente
+   └─> Validar visualmente
+
+4. CIF - ATUALIZAR DOCUMENTAÇÃO
+   ├─> TECNICO.md: atualizar seção de componentes
+   ├─> CICLO.md: registrar mudança visual
+   └─> ESPECIFICACAO.md: apenas se validações visuais mudarem
+
+5. CHECKPOINT - REGISTRAR SESSÃO (OBRIGATÓRIO)
+   ├─> Seção "Refatorações Visuais" no CHECKPOINT
+   ├─> Screenshots antes/depois
+   ├─> Componentes criados/modificados
+   ├─> Referência ao CICLO.md atualizado
+   └─> Link para Protocolo Frontend aplicado
+```
+
+### 🗂️ TEMPLATE DE CHECKPOINT PARA REFATORAÇÕES VISUAIS
+
+**Adicionar esta seção ao CHECKPOINT sempre que houver refatoração visual:**
+
+```markdown
+## 🎨 REFATORAÇÕES VISUAIS (Sessão X)
+
+**Funcionalidade:** [Nome da funcionalidade CIF]
+
+**Objetivo:** [Descrição breve da refatoração]
+
+**Protocolo Frontend Aplicado:** ✅ Sim (Fases 1-3 completas)
+
+### Captura Visual
+- **Screenshots antes:** [links ou descrição]
+- **Screenshots depois:** [links ou descrição]
+- **Contexto:** [navegação, tamanho, interações]
+
+### Análise Estruturada
+- **Componentes analisados:** [lista de arquivos lidos]
+- **Checklist de compreensão:** ✅ Completo
+- **Oportunidades identificadas:**
+  - [ ] Componentização de X
+  - [ ] Reutilização de Y de ui/
+  - [ ] Criação de novo genérico Z
+
+### Componentização Executada
+- **Componentes genéricos criados:** [ui/ComponenteNovo.tsx]
+- **Componentes genéricos reutilizados:** [ui/Button, ui/Input]
+- **Componentes personalizados modificados:** [components/Filtros.tsx]
+- **Arquivos modificados:** [lista completa com linhas]
+
+### Atualização CIF
+- ✅ **TECNICO.md:** Seção de componentes atualizada (linhas X-Y)
+- ✅ **CICLO.md:** Entrada adicionada (data, mudança, impacto)
+- ⬜ **ESPECIFICACAO.md:** Não alterado (apenas visual)
+
+### Validação Visual
+- ✅ Layout preservado
+- ✅ Responsividade mantida
+- ✅ Interações funcionando
+- ✅ Estados corretos (loading, error, empty)
+
+**Tempo Real:** ~Xh
+```
+
+### 🚨 CHECKLIST OBRIGATÓRIO: Claude ao Fazer Refatoração Visual
+
+**ANTES de iniciar:**
+
+```
+□ Usuário forneceu screenshots? (FASE 1 do Protocolo Frontend)
+□ Identifiquei se a funcionalidade tem ciclo CIF?
+   └─> Se SIM: preparar para atualizar TECNICO.md + CICLO.md
+   └─> Se NÃO: apenas seguir Protocolo Frontend
+□ Li hierarquia completa de componentes? (FASE 2)
+□ Completei checklist de compreensão? (FASE 2)
+□ Busquei componentes genéricos existentes em ui/? (FASE 3)
+```
+
+**DURANTE refatoração:**
+
+```
+□ Estou componentizando ao invés de duplicar código?
+□ Estou reutilizando componentes genéricos existentes?
+□ Decidi corretamente: genérico (ui/) vs personalizado (components/)?
+□ Estou validando visualmente após cada mudança incremental?
+```
+
+**DEPOIS de concluir:**
+
+```
+□ Atualizei TECNICO.md da funcionalidade? (se CIF)
+□ Registrei mudança no CICLO.md? (se CIF)
+□ Criei/atualizei seção "Refatorações Visuais" no CHECKPOINT?
+□ Incluí screenshots antes/depois no CHECKPOINT?
+□ Listei componentes criados/modificados?
+□ Solicitei validação visual final do usuário?
+```
+
+### 📋 EXEMPLOS DE INTEGRAÇÃO
+
+#### Exemplo 1: Refatoração de Fluxo de Certificação (Funcionalidade CIF)
+
+**Situação:** Refatorar DadosAlunoEditavel.tsx para componentizar campos
+
+**Passos:**
+
+1. ✅ **PROTOCOLO FRONTEND:**
+   - FASE 1: Usuário fornece screenshot do formulário atual
+   - FASE 2: Claude lê DadosAlunoEditavel.tsx + identifica campos duplicados
+   - FASE 3: Claude busca FormField/Input em ui/, refatora usando genéricos
+
+2. ✅ **CIF - ATUALIZAR:**
+   - `docs/ciclos/FLUXO_CERTIFICACAO_TECNICO.md`: atualizar seção de componentes
+   - `docs/ciclos/FLUXO_CERTIFICACAO_CICLO.md`: adicionar entrada "Refatoração visual: componentização de campos"
+
+3. ✅ **CHECKPOINT:**
+   - Criar seção "🎨 REFATORAÇÕES VISUAIS (Sessão X)"
+   - Screenshots antes/depois
+   - Lista de componentes: DadosAlunoEditavel.tsx (modificado), FormField (reutilizado)
+   - Referência: `docs/ciclos/FLUXO_CERTIFICACAO_CICLO.md#entrada-2025-xx-xx`
+
+#### Exemplo 2: Bug Visual em Painel de Migração (Funcionalidade CIF)
+
+**Situação:** Arrays vazios na visualização hierárquica (V5.3.3)
+
+**Passos:**
+
+1. ✅ **CIF - CICLO.md:**
+   - Registrar bug no CICLO: "Bug visual V5.3.3: arrays vazios"
+   - Motivo, solução implementada, testes afetados
+
+2. ✅ **PROTOCOLO FRONTEND (se necessário refatoração):**
+   - FASE 1-3: Seguir protocolo se houver mudança visual
+   - Se apenas fix de lógica: pular protocolo
+
+3. ✅ **CHECKPOINT:**
+   - Seção "🎨 REFATORAÇÕES VISUAIS" (se houve mudança visual)
+   - OU seção "🐛 BUGS CORRIGIDOS" (se apenas lógica)
+   - Sempre referenciar CICLO.md atualizado
+
+### 🎯 BENEFÍCIOS DA INTEGRAÇÃO
+
+1. **Rastreabilidade completa:**
+   - CHECKPOINT registra O QUE mudou visualmente
+   - CICLO registra POR QUE mudou
+   - TECNICO registra COMO ficou implementado
+
+2. **Componentização documentada:**
+   - CHECKPOINT lista componentes criados/reutilizados
+   - TECNICO atualizado com novos componentes
+   - Fácil encontrar padrões para reutilizar
+
+3. **Continuidade entre sessões:**
+   - Próxima sessão sabe exatamente o estado da UI
+   - Screenshots no CHECKPOINT facilitam contexto visual
+   - Não precisa "adivinhar" como está a interface
+
+4. **Qualidade visual garantida:**
+   - Protocolo Frontend previne quebra de layout
+   - Checklist obrigatório garante análise completa
+   - Validação visual incremental reduz bugs
+
+---
+
 # 🎯 FUNCIONALIDADES IMPLEMENTADAS
 
 ## ✅ 1. PAINEL DE MIGRAÇÃO (100% documentado via CIF)

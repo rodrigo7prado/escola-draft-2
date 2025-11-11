@@ -1,14 +1,14 @@
 #!/usr/bin/env sh
 
-# Pre-commit hook: Rodar testes antes do commit
+# Pre-push hook: Rodar testes antes do push
 
 echo ""
-echo "🧪 Rodando testes..."
+echo "🧪 Rodando testes antes do push..."
 pnpm test:run
 
 if [ $? -ne 0 ]; then
   echo ""
-  echo "❌ Testes falharam! Commit bloqueado."
+  echo "❌ Testes falharam! Push bloqueado."
   echo "💡 Corrija os erros e tente novamente."
   exit 1
 fi

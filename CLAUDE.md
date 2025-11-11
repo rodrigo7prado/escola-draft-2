@@ -105,6 +105,67 @@ Claude deve entender:
 
 ---
 
+## 🖼️ PROTOCOLO DE REFATORAÇÃO DE FRONT-END
+
+**⚠️ ANTES de refatorar UI, SEMPRE seguir:**
+
+📖 **[docs/PROTOCOLO_FRONTEND.md](./docs/PROTOCOLO_FRONTEND.md)** - Protocolo completo (~600 linhas)
+
+### RESUMO RÁPIDO (3 FASES)
+
+**FASE 1: CAPTURA VISUAL** *(Usuário fornece)*
+- Screenshots do estado atual
+- Screenshots do resultado desejado (se aplicável)
+- Contexto de uso (navegação, tamanho, interações)
+
+**FASE 2: ANÁLISE ESTRUTURADA** *(Claude executa)*
+- Leitura hierárquica completa (componente → filhos → hooks)
+- Mapeamento visual → código (cada elemento da screenshot)
+- ✅ Checklist obrigatório de compreensão
+- ✅ Identificar oportunidades de componentização
+- ✅ Buscar componentes genéricos existentes em `ui/`
+
+**FASE 3: COMPONENTIZAÇÃO E REFATORAÇÃO** *(Claude executa)*
+- ✅ **SEMPRE componentizar** (se aparece 2x, componentizar)
+- ✅ **Buscar existentes PRIMEIRO** (Glob em `ui/`, evitar duplicação)
+- ✅ **Decidir tipo:** Genérico (`ui/`) vs Personalizado (`components/`)
+- ✅ **Refatorar incrementalmente** (1 componente por vez, validar visualmente)
+
+### DECISÃO: GENÉRICO vs PERSONALIZADO
+
+**Componente GENÉRICO (`ui/`):**
+- ✅ Reutilizável em múltiplos contextos
+- ✅ SEM lógica de negócio
+- ✅ Altamente configurável (props)
+- ✅ Padrão de design system
+- **Exemplos:** Button, Input, Modal, FormField, Badge
+
+**Componente PERSONALIZADO (`components/`):**
+- ✅ Lógica de negócio específica
+- ✅ Integração com hooks de domínio
+- ✅ Combinação complexa de genéricos
+- ✅ Layout específico da funcionalidade
+- **Exemplos:** FiltrosCertificacao, ListaAlunosCertificacao
+
+### HIERARQUIA DE REUTILIZAÇÃO
+
+```
+1º: Usar componente genérico existente (ui/)
+2º: Estender componente genérico com props
+3º: Criar novo componente genérico (se reutilizável)
+4º: Criar componente personalizado (se lógica específica)
+5º: Código inline (EVITAR - apenas casos únicos)
+```
+
+### PRINCÍPIO FUNDAMENTAL
+
+> **SEMPRE componentizar. SEMPRE reutilizar. NUNCA duplicar.**
+>
+> **Se um padrão aparece 2 vezes, COMPONENTIZAR.**
+> **Se pode ser genérico, CRIAR em `ui/` para reutilização futura.**
+
+---
+
 # 🎯 FUNCIONALIDADES IMPLEMENTADAS
 
 ## ✅ 1. PAINEL DE MIGRAÇÃO (100% documentado via CIF)

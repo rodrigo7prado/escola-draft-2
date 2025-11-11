@@ -2,13 +2,13 @@
 
 ## ÍNDICE DE ENTRADAS
 
-| Data       | Tipo            | Resumo                                                                   | Autor          |
-| ---------- | --------------- | ------------------------------------------------------------------------ | -------------- |
+| Data       | Tipo            | Resumo                                                                    | Autor          |
+| ---------- | --------------- | ------------------------------------------------------------------------- | -------------- |
 | 2025-11-05 | 🧪 Testes       | Testes de integração (61/65 passando) + problema crítico banco descoberto | Claude/Rodrigo |
-| 2025-11-05 | 🧪 Testes       | Configuração completa de testes automatizados (Vitest + Husky) + bug fix | Claude/Rodrigo |
-| 2025-01-04 | ♻️ Refatoração  | Extração de funções utilitárias CSV + edge case #9 documentado           | Claude/Rodrigo |
-| 2025-01-04 | 📝 Documentação | Criação completa da documentação CIF (Conceito, Especificação, Técnico)  | Claude/Rodrigo |
-| 2025-01-04 | 🆕 Criação      | Implementação inicial do Painel de Migração (70% das validações)         | Rodrigo Prado  |
+| 2025-11-05 | 🧪 Testes       | Configuração completa de testes automatizados (Vitest + Husky) + bug fix  | Claude/Rodrigo |
+| 2025-01-04 | ♻️ Refatoração  | Extração de funções utilitárias CSV + edge case #9 documentado            | Claude/Rodrigo |
+| 2025-01-04 | 📝 Documentação | Criação completa da documentação CIF (Conceito, Especificação, Técnico)   | Claude/Rodrigo |
+| 2025-01-04 | 🆕 Criação      | Implementação inicial do Painel de Migração (70% das validações)          | Rodrigo Prado  |
 
 **Legenda de Tipos:**
 
@@ -35,6 +35,7 @@
 **Contexto:** Implementação de testes de integração (API + banco) conforme Metodologia CIF.
 
 **Mudanças:**
+
 - ✅ Criado `tests/helpers/db-setup.ts` (PostgreSQL connection + cleanup)
 - ✅ Criado `tests/helpers/csv-fixtures.ts` (CSV_VALIDO_3_ALUNOS)
 - ✅ Criado `tests/integration/api/files-upload.test.ts` (11 testes, 61/65 passando)
@@ -206,7 +207,7 @@ import { limparValor } from "@/lib/csv";
 
 **Contexto:**
 
-Painel de Migração foi implementado e está funcional, mas sem documentação formal. Isso dificultava manutenção, onboarding de novos desenvolvedores e identificação sistemática de bugs/gaps. Decisão de aplicar **Metodologia CIF (Ciclo de Integridade de Funcionalidade)** retrospectivamente para:
+Painel de Migração foi implementado e está funcional, mas sem documentação formal. Isso dificultava manutenção, onboarding de novos desenvolvedores e identificação sistemática de bugs/gaps. Decisão de aplicar **Metodologia CIF (Ciclo de Integridade de Funcionalidades)** retrospectivamente para:
 
 1. Documentar completamente a funcionalidade existente
 2. Identificar gaps críticos e não-críticos

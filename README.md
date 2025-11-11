@@ -1,336 +1,299 @@
-# 🎓 Sistema de Emissão de Certificados e Certidões - Ensino Médio
+# Sistema de Emissão de Certificados
 
-Sistema web para gerenciamento e emissão de certificados, certidões e históricos escolares para alunos concluintes do Ensino Médio.
-
----
-
-## 📋 Índice
-
-- [Sobre o Projeto](#sobre-o-projeto)
-- [Funcionalidades](#funcionalidades)
-- [Stack Tecnológica](#stack-tecnológica)
-- [Documentação](#documentação)
-- [Desenvolvimento](#desenvolvimento)
-- [Deploy em Produção](#deploy-em-produção)
-- [Arquitetura](#arquitetura)
-- [Estrutura do Projeto](#estrutura-do-projeto)
+Sistema interno para emissão de certificados e certidões de alunos concluintes do Ensino Médio.
 
 ---
 
-## 📖 Sobre o Projeto
+## 🎯 CONTEXTO RÁPIDO (para Claude)
 
-Este sistema foi desenvolvido para escolas que utilizam o **Sistema Conexão Educação da SEEDUC-RJ**, permitindo:
-
-- Importação de dados de arquivos CSV/XML do sistema oficial
-- Organização de alunos por período letivo, modalidade e turma
-- Verificação automatizada de pendências e inconsistências
-- Emissão de certificados e certidões de conclusão
-- Gestão de históricos escolares
-- Controle de fluxo de impressão de documentos
-
-### Público-Alvo
-
-- **Usuários finais:** Secretarias escolares, coordenadores pedagógicos (leigos em tecnologia)
-- **Ambiente:** Rede intranet de escolas públicas
-- **Manutenção:** Mínima, visita anual de técnico de TI
+**Sistema:** Emissão de Certificados, Certidões e Histórico Escolar para escolas do Ensino Médio
+**Usuários:** Secretárias escolares e funcionários de secretaria (leigos em TI)
+**Dados:** Importados via CSV + texto estruturado do sistema oficial
 
 ---
 
-## ✨ Funcionalidades
+## 🏗️ STACK TECNOLÓGICA
 
-### Implementadas ✅
-
-- [x] Upload múltiplo de arquivos CSV
-- [x] Detecção automática de duplicatas por hash
-- [x] Organização hierárquica de dados (Período → Modalidade → Turma)
-- [x] Ordenação inteligente de turmas (por parte numérica)
-- [x] Gerenciamento de arquivos carregados (adicionar/remover)
-- [x] Exclusão de dados por período ou modalidade
-- [x] Interface responsiva e acessível
-
-### Em Desenvolvimento 🚧
-
-- [ ] Migração para PostgreSQL (substituir localStorage)
-- [ ] Busca avançada de alunos (nome, matrícula, wildcards)
-- [ ] Verificação de pendências em 5 níveis
-- [ ] Edição de dados dos alunos
-- [ ] Emissão de certificados (visualização e impressão)
-- [ ] Emissão de certidões
-- [ ] Impressão em lote por turma
-- [ ] Relatórios de status e pendências
-- [ ] Sistema de backup automático
+- **Frontend:** Next.js 15 + React 19 + TypeScript + Tailwind CSS
+- **Backend:** Next.js API Routes
+- **Banco de Dados:** PostgreSQL (DOIS bancos: `certificados` + `certificados_test`)
+- **ORM:** Prisma 6.18
+- **Testes:** Vitest (54 unitários + 88 integração = 142 testes)
+- **Package Manager:** pnpm (NUNCA usar npm)
 
 ---
 
-## 🛠️ Stack Tecnológica
+## ⚙️ CONFIGURAÇÃO
 
-### Frontend
-- **Next.js 15** (App Router)
-- **React 19**
-- **TypeScript**
-- **Tailwind CSS**
+### Banco de Dados (CRÍTICO)
 
-### Backend (em implementação)
-- **Next.js API Routes**
-- **PostgreSQL** (banco de dados)
-- **Prisma** (ORM)
+**⚠️ SEMPRE usar DOIS bancos:**
 
-### Deploy
-- **Docker** + **Docker Compose**
-- **Windows Server** (ou workstation com Windows 10/11)
-
-### Armazenamento Atual (Temporário)
-- **localStorage** (será substituído por PostgreSQL)
-
----
-
-## 📚 Documentação
-
-Guias completos para diferentes perfis de usuário:
-
-| Documento | Público | Descrição |
-|-----------|---------|-----------|
-| **[INSTALACAO.md](./INSTALACAO.md)** | Técnico de TI | Guia passo-a-passo para instalação inicial (uma única vez) |
-| **[MANUAL_USUARIO.md](./MANUAL_USUARIO.md)** | Usuários finais | Como usar o sistema no dia-a-dia |
-| **[EMERGENCIA.md](./EMERGENCIA.md)** | Todos | Soluções rápidas para problemas comuns |
-| **[MANUTENCAO.md](./MANUTENCAO.md)** | Técnico de TI | Manutenção preventiva, backup, atualização |
-| **[CLAUDE.md](./CLAUDE.md)** | Desenvolvedores | Especificações técnicas e regras de negócio |
-
----
-
-## 💻 Desenvolvimento
-
-### Pré-requisitos
-
-- Node.js 18+ ou Bun
-- npm/yarn/pnpm/bun
-- Docker Desktop (para desenvolvimento com PostgreSQL)
-
-### Instalação Local
+**Migrations (OBRIGATÓRIO aplicar em AMBOS):**
 
 ```bash
-# Clonar repositório
-git clone [url-do-repositorio]
-cd senor_abravanel_draft-2
-
-# Instalar dependências
-npm install
-# ou
-bun install
-
-# Copiar variáveis de ambiente
-cp .env.example .env.local
-
-# Rodar desenvolvimento
-npm run dev
-# ou
-bun dev
+pnpm migrate:all         # Aplica migrations em ambos os bancos
+pnpm migrate:dev "nome"  # Cria nova migration e aplica em ambos
 ```
 
-Abra [http://localhost:3000](http://localhost:3000) no navegador.
-
-### Estrutura de Pastas
-
-```
-src/
-├── app/                 # Next.js App Router
-│   ├── page.tsx        # Página inicial
-│   └── api/            # API Routes (futuro)
-├── components/         # Componentes React
-│   ├── ui/             # Componentes genéricos (Modal, Tabs)
-│   ├── DropCsv.tsx     # Upload de CSV
-│   └── MigrateUploads.tsx  # Painel de migração
-└── lib/                # Utilitários (futuro)
-```
-
-### Scripts Disponíveis
+### Comandos de Desenvolvimento
 
 ```bash
 # Desenvolvimento
-npm run dev
+pnpm dev              # Inicia servidor (http://localhost:3000)
 
-# Build para produção
-npm run build
+# Testes
+pnpm test             # Todos os testes (142 testes)
+pnpm test:unit        # Apenas unitários (54 testes)
+pnpm test:integration # Apenas integração (88 testes)
+pnpm test:watch       # Modo watch
 
-# Executar produção
-npm start
+# Banco de dados
+pnpm prisma studio    # Visualizar banco principal
+DATABASE_URL=$DATABASE_URL_TEST pnpm prisma studio  # Banco de testes
 
 # Linting
-npm run lint
-
-# Type checking
-npm run type-check
+pnpm lint
+pnpm format
 ```
 
 ---
 
-## 🚀 Deploy em Produção
-
-### Arquitetura de Deploy
+## 📁 ESTRUTURA DO PROJETO
 
 ```
-┌─────────────────────────────────┐
-│  Computador Servidor (Windows)  │
-│                                 │
-│  ┌───────────────────────────┐ │
-│  │  Docker Desktop           │ │
-│  │  ┌──────────┬──────────┐ │ │
-│  │  │ Next.js  │PostgreSQL│ │ │
-│  │  │  :3000   │  :5432   │ │ │
-│  │  └──────────┴──────────┘ │ │
-│  └───────────────────────────┘ │
-└─────────────────────────────────┘
-          │
-    Rede Intranet
-          │
-    ┌─────┴─────┐
-    ▼           ▼
-[Cliente]   [Cliente]
-(browser)   (browser)
-```
+src/
+  app/
+    page.tsx                    # Página inicial (tudo integrado via abas)
+    api/
+      files/route.ts            # POST/GET/DELETE - Upload e migração de CSVs
+      filtros/route.ts          # GET - Opções hierárquicas (ano, turma, etc)
+      alunos/route.ts           # GET - Busca de alunos com filtros
+  components/
+    ui/                         # Componentes genéricos reutilizáveis
+      Tabs.tsx, Modal.tsx, ButtonGroup.tsx, FormField.tsx, Input.tsx, etc.
+    FluxoCertificacao.tsx       # Container principal do fluxo
+    FiltrosCertificacao.tsx     # Filtros de período/turma
+    DadosAlunoEditavel.tsx      # Painel de dados do aluno (7 seções)
+    MigrateUploads.tsx          # Upload e migração de CSVs
+  hooks/
+    useFiltrosCertificacao.ts   # Lógica de filtros
+    useAlunosCertificacao.ts    # Busca de alunos
+  lib/
+    prisma.ts                   # Cliente Prisma
+    csv.ts                      # Utilidades CSV (limparValor, limparCamposEnturmacao)
+  tests/
+    unit/                       # 54 testes unitários
+    integration/                # 88 testes de integração
+    helpers/                    # db-setup.ts, csv-fixtures.ts
 
-### Passo-a-Passo
+prisma/
+  schema.prisma               # Modelos: Aluno, Enturmacao, ArquivoImportado, etc.
+  migrations/                 # Migrations (7 arquivos)
 
-1. **Instalar Docker Desktop** no computador servidor (Windows)
-2. **Copiar projeto** para `C:\Sistemas\sistema-certificados`
-3. **Configurar variáveis** no arquivo `.env`
-4. **Iniciar sistema** com `iniciar-sistema.bat`
-5. **Acessar** de qualquer computador da rede em `http://[ip-servidor]:3000`
+docs/
+  METODOLOGIA_CIF.md          # Metodologia de desenvolvimento (~580 linhas)
+  CHECKPOINT_METODOLOGIA_CIF.md  # Estado atual do projeto
+  ciclos/                     # Documentação de funcionalidades (CIF)
+    MIGRACAO_*                # Painel de Migração (CONCEITO, ESPECIFICACAO, TECNICO, CICLO)
+    IMPORTACAO_ESTRUTURADA_*  # Importação por texto (CONCEITO, DESCOBERTA, ESPECIFICACAO, TECNICO, CICLO, CHECKPOINT)
+  templates/                  # Templates CIF (CONCEITO, DESCOBERTA, ESPECIFICACAO, TECNICO, CICLO)
 
-Veja guia completo em **[INSTALACAO.md](./INSTALACAO.md)**.
-
----
-
-## 🏗️ Arquitetura
-
-### Modelo de Dados (Conceitual)
-
-```
-Período Letivo (2020, 2021, 2022...)
-  └─ Modalidade (Regular, EJA, Novo EM...)
-      └─ Turma (1001, 1002, 3001...)
-          └─ Aluno
-              ├─ Dados Pessoais
-              ├─ Dados Documentais
-              ├─ Histórico Escolar
-              │   └─ Períodos Curriculares (séries)
-              │       └─ Componentes Curriculares (disciplinas)
-              │           ├─ Pontuação
-              │           └─ Frequência
-              └─ Pendências
-```
-
-### Fluxo de Dados
-
-1. **Importação** → CSV do Conexão Educação
-2. **Validação** → Estrutura + Headers + Duplicatas
-3. **Hash** → Detecção de arquivos idênticos
-4. **Armazenamento** → PostgreSQL (em implementação)
-5. **Processamento** → Organização hierárquica
-6. **Verificação** → 5 níveis de pendências
-7. **Resolução** → Correção de inconsistências
-8. **Emissão** → Certificados e certidões
-
-### Níveis de Verificação de Pendências
-
-1. **Banco de Dados e Migração** - Integridade dos dados importados
-2. **Entrega de Documentos** - Documentação física dos alunos
-3. **Consistência de Dados** - Dados completos para emissão
-4. **Histórico Escolar** - Aprovações, pontos, frequência
-5. **Tarefas de Impressão** - Controle de impressões
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-senor_abravanel_draft-2/
-├── public/              # Assets estáticos
-├── src/
-│   ├── app/            # Next.js App Router
-│   │   ├── page.tsx    # Página inicial
-│   │   ├── layout.tsx  # Layout raiz
-│   │   └── globals.css # Estilos globais
-│   └── components/
-│       ├── ui/         # Componentes genéricos
-│       │   ├── Tabs.tsx
-│       │   └── Modal.tsx
-│       ├── DropCsv.tsx
-│       └── MigrateUploads.tsx
-├── docker-compose.yml  # (futuro) Configuração Docker
-├── Dockerfile          # (futuro) Build da aplicação
-├── prisma/             # (futuro) Schema do banco
-│   └── schema.prisma
-├── .env.example        # Exemplo de variáveis de ambiente
-├── CLAUDE.md           # Especificações técnicas
-├── INSTALACAO.md       # Guia de instalação
-├── MANUAL_USUARIO.md   # Manual do usuário
-├── EMERGENCIA.md       # Guia de emergência
-├── MANUTENCAO.md       # Guia de manutenção
-└── README.md           # Este arquivo
+scripts/
+  migrate-all.sh              # Aplica migrations em ambos os bancos
+  reset-database.ts           # Reset completo do banco
+  check-data.ts               # Verificar dados no banco
 ```
 
 ---
 
-## 🧪 Testes
+## 🗂️ ARQUITETURA DE BANCO DE DADOS
 
-_Em planejamento. Pretende-se implementar:_
+### 3 Camadas (Ver detalhes: [docs/ciclos/MIGRACAO_TECNICO.md](./docs/ciclos/MIGRACAO_TECNICO.md))
 
-- Testes unitários (Vitest)
-- Testes de integração (Playwright)
-- Testes de componentes (Testing Library)
+**CAMADA 1: Origem (Imutável)**
 
----
+- `ArquivoImportado` - Metadados de CSVs (hash SHA-256, nome, status)
+- `LinhaImportada` - Dados brutos em JSONB
 
-## 🤝 Contribuindo
+**CAMADA 2: Estruturada (Editável)**
 
-Este é um projeto fechado/privado para uso interno de escolas.
+- `Aluno` - Dados pessoais, documentos, naturalidade, filiação, ensino médio/fundamental
+- `Enturmacao` - Relaciona Aluno → Turma → Período letivo (1-N, múltiplas enturmações por aluno)
 
-Para suporte técnico:
-- Consulte **[EMERGENCIA.md](./EMERGENCIA.md)** primeiro
-- Entre em contato com o desenvolvedor responsável
+**CAMADA 3: Auditoria**
 
----
+- `Auditoria` - Registro de alterações nas entidades
 
-## 📜 Licença
+### Princípios Importantes
 
-Todos os direitos reservados. Uso restrito para fins educacionais.
-
----
-
-## 🔮 Roadmap
-
-### Versão 1.1 (Q1 2025)
-- [x] Sistema de abas multinível
-- [x] Upload múltiplo de arquivos
-- [ ] Migração para PostgreSQL
-- [ ] API Routes completas
-
-### Versão 1.2 (Q2 2025)
-- [ ] Busca avançada de alunos
-- [ ] Edição de dados
-- [ ] Verificação de pendências (5 níveis)
-
-### Versão 2.0 (Q3 2025)
-- [ ] Emissão de certificados
-- [ ] Emissão de certidões
-- [ ] Impressão em lote
-- [ ] Relatórios avançados
-
-### Versão 2.1 (Q4 2025)
-- [ ] Assinatura digital
-- [ ] Integração com sistema nacional
-- [ ] App mobile (consulta)
+- **Enturmações Múltiplas:** Aluno pode ter N enturmações (2022/1ª série, 2023/2ª série, 2024/3ª série)
+- **Parsing de CSV:** Valores vêm com prefixos ("Ano Letivo: 2024") → usar `limparValor()` de `src/lib/csv.ts`
+- **Reset/Reimportação:** Hard delete da Camada 1 + SetNull na Camada 2 + flag `fonteAusente`
 
 ---
 
-## 📞 Contato
+## 🎯 FUNCIONALIDADES IMPLEMENTADAS
 
-**Desenvolvedor:** [Nome]
-**Email:** [email@exemplo.com]
-**GitHub:** [usuario/repositorio]
+### ✅ 1. Painel de Migração
+
+- Upload drag-and-drop de múltiplos CSVs
+- Detecção de duplicatas (hash SHA-256)
+- Parsing com remoção de prefixos
+- Visualização hierárquica: Período → Modalidade → Turma → Alunos
+- Sistema de reset/reimportação
+- Transação completa (operações atômicas)
+- **Docs:** [docs/ciclos/MIGRACAO\_\*](./docs/ciclos/)
+- **Status:** ✅ Produção (88/88 testes passando)
+
+### ✅ 2. Importação Estruturada por Texto
+
+- Entrada de texto formatado (múltiplas seções)
+- Validação automática de estrutura
+- Parsing inteligente para extrair dados
+- Popular banco com rastreabilidade
+- **Docs:** [docs/ciclos/IMPORTACAO*ESTRUTURADA*\*](./docs/ciclos/)
+- **Status:** ✅ Produção
+
+### ✅ 3. Fluxo de Certificação
+
+- Visualização de alunos concluintes (3ª série)
+- Filtros por período/turma com auto-seleção
+- Painel de dados (7 seções)
+- **Pendente:** Edição, salvamento, histórico escolar
+- **Status:** ⚠️ Interface pronta, funcionalidade parcial
 
 ---
 
-**Última atualização:** 2025-01-29
-**Versão atual:** 1.0.0
+## 📚 DOCUMENTAÇÃO IMPORTANTE
+
+### Para Claude (LEIA ANTES DE IMPLEMENTAR)
+
+1. **[CLAUDE.md](./CLAUDE.md)** - Guia de arquitetura e padrões (~800 linhas)
+
+   - Metodologia CIF (resumo executivo)
+   - Padrões de código e componentização
+   - Decisões técnicas críticas (migrations, parsing CSV)
+   - Convenções de nomenclatura
+   - Regras de negócio do domínio educacional
+
+2. **[docs/METODOLOGIA_CIF.md](./docs/METODOLOGIA_CIF.md)** - Metodologia completa (~580 linhas)
+
+   - 5 níveis: CONCEITO, DESCOBERTA, ESPECIFICAÇÃO, TÉCNICO, CICLO
+   - Workflows (funcionalidade nova, existente, refatoração)
+   - Sistema de numeração de validações
+   - Integração com testes
+
+3. **[docs/CHECKPOINT_METODOLOGIA_CIF.md](./docs/CHECKPOINT_METODOLOGIA_CIF.md)** - Estado atual
+   - Progresso das funcionalidades
+   - Tarefas concluídas e pendentes
+   - Bloqueadores e próximos passos
+
+### Funcionalidades Documentadas (CIF Completo)
+
+**Painel de Migração:**
+
+- [CONCEITO](./docs/ciclos/MIGRACAO_CONCEITO.md)
+- [ESPECIFICAÇÃO](./docs/ciclos/MIGRACAO_ESPECIFICACAO.md) - 80 validações, 88 testes
+- [TÉCNICO](./docs/ciclos/MIGRACAO_TECNICO.md)
+- [CICLO](./docs/ciclos/MIGRACAO_CICLO.md)
+
+**Importação Estruturada:**
+
+- [CONCEITO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_CONCEITO.md)
+- [DESCOBERTA](./docs/ciclos/IMPORTACAO_ESTRUTURADA_DESCOBERTA.md)
+- [ESPECIFICAÇÃO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_ESPECIFICACAO.md)
+- [TÉCNICO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_TECNICO.md)
+- [CICLO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_CICLO.md)
+- [CHECKPOINT](./docs/ciclos/IMPORTACAO_ESTRUTURADA_CHECKPOINT.md)
+
+---
+
+## ⚙️ DECISÕES TÉCNICAS CRÍTICAS
+
+### 1. Package Manager
+
+**SEMPRE usar `pnpm` (nunca npm)**
+
+### 2. Gestão de Migrations
+
+**SEMPRE aplicar em AMBOS os bancos** (`pnpm migrate:all`)
+
+### 3. Parsing de CSV
+
+**Usar `limparValor()` de `src/lib/csv.ts`** para remover prefixos
+
+### 4. Componentização
+
+- **Separação:** Hooks (lógica) + Componentes (UI) + Containers (composição)
+- **Reutilização:** Componentes genéricos em `src/components/ui/`
+- **Campos de formulário:** SEMPRE usar FormField, Input, DateInput, etc. (nunca criar inline)
+
+### 5. Auto-inicialização de Filtros
+
+**Filtros iniciam com valores padrão** (ano mais recente, primeira turma)
+
+---
+
+## 🎨 PADRÕES DE UI
+
+### Cores Semânticas
+
+- 🔴 Vermelho: PENDENTE
+- 🟠 Laranja: RESOLVENDO
+- 🔵 Azul: OK (não alterado)
+- 🟢 Verde: CORRIGIDO
+- 🟡 Amarelo: Avisos (fonte ausente)
+
+### Tamanhos
+
+- Títulos: `text-lg` ou `text-xl`
+- Labels: `text-xs`
+- Campos: `text-sm`
+- Hints: `text-[10px]`
+
+---
+
+## 📋 REGRAS DE NEGÓCIO
+
+### Estrutura Curricular (SEEDUC-RJ)
+
+- **Modalidades:** REGULAR, EJA, NOVO ENSINO MÉDIO
+- **Regimes:** Anual (0), Semestral (1, 2)
+- **Séries:** 1ª, 2ª, 3ª
+- **Períodos avaliativos:** Anual = 4 bimestres, Semestral = 2 bimestres
+
+### Critérios de Aprovação
+
+- **Nota:** 0-10 por bimestre, média 5
+- **Anual:** 20 pontos totais (média 5 em 4 bimestres)
+- **Semestral:** 10 pontos totais (média 5 em 2 bimestres)
+- **Frequência:** Mínimo 75%
+
+---
+
+## 🎯 PRINCÍPIOS DE TRABALHO
+
+### Antes de Implementar
+
+1. Verificar se deve usar CIF (funcionalidade complexa?)
+2. Perguntar ao usuário sobre os passos
+3. Compreensão hierárquica (geral → local → código)
+4. Não gerar estruturas sem compreensão conceitual
+
+### Durante Implementação
+
+1. **CIF (complexo):** CONCEITO → DESCOBERTA (se necessário) → experimentar → ESPECIFICACAO + testes → TECNICO → CICLO
+2. **TDD (simples):** teste → implementação → refatoração
+3. **SEMPRE atualizar CHECKPOINT ao final da sessão**
+
+### Filosofia
+
+- Componentizar sempre (DRY)
+- Testar sistematicamente
+- Documentar decisões
+- Manter rastreabilidade
+
+---
+
+**Este arquivo é otimizado para Claude. Para documentação humana, ver futura versão expandida.**

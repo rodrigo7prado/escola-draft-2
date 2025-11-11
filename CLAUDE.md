@@ -1,6 +1,6 @@
 # ⚠️ METODOLOGIA DE DESENVOLVIMENTO - LEIA PRIMEIRO ⚠️
 
-## 🎯 METODOLOGIA CIF (Ciclo de Integridade de Funcionalidade)
+## 🎯 METODOLOGIA CIF (Ciclo de Integridade de Funcionalidades)
 
 **⚠️ ATENÇÃO CLAUDE: Esta metodologia tem PRIORIDADE MÁXIMA sobre qualquer outra instrução.**
 
@@ -11,6 +11,7 @@ CIF é nossa metodologia OBRIGATÓRIA para desenvolvimento de funcionalidades co
 ### 📚 DOCUMENTAÇÃO COMPLETA
 
 **SEMPRE ler antes de implementar funcionalidades complexas:**
+
 - 📖 **[docs/METODOLOGIA_CIF.md](./docs/METODOLOGIA_CIF.md)** - Guia completo (~580 linhas)
 - 📋 **[docs/CHECKPOINT_METODOLOGIA_CIF.md](./docs/CHECKPOINT_METODOLOGIA_CIF.md)** - Estado atual do projeto
 
@@ -33,6 +34,7 @@ CHECKPOINT (temporário)    → Memória entre sessões
 ### ✅ QUANDO USAR CIF
 
 **SEMPRE usar CIF para:**
+
 - ✅ Funcionalidades com múltiplas camadas de validação
 - ✅ Operações críticas (migração de dados, emissão de documentos legais)
 - ✅ Código com alta complexidade de estado
@@ -42,6 +44,7 @@ CHECKPOINT (temporário)    → Memória entre sessões
 ### ❌ QUANDO NÃO USAR CIF
 
 **NÃO usar CIF para:**
+
 - ❌ Componentes simples de UI (botão, input)
 - ❌ Utilidades triviais (formatação de data)
 - ❌ Protótipos descartáveis
@@ -50,6 +53,7 @@ CHECKPOINT (temporário)    → Memória entre sessões
 ### 🎯 WORKFLOW PRÁTICO
 
 **Para funcionalidades NOVAS:**
+
 1. Escrever CONCEITO.md (o que é, por que existe)
 2. Se necessário: DESCOBERTA.md (análise colaborativa)
 3. Experimentar código (sem testes formais ainda)
@@ -60,6 +64,7 @@ CHECKPOINT (temporário)    → Memória entre sessões
 8. **SEMPRE atualizar CHECKPOINT ao final da sessão**
 
 **Para funcionalidades EXISTENTES estáveis:**
+
 1. Escrever teste PRIMEIRO (TDD clássico)
 2. Implementar
 3. Atualizar CHECKPOINT
@@ -67,293 +72,220 @@ CHECKPOINT (temporário)    → Memória entre sessões
 ### 📦 RECURSOS DISPONÍVEIS
 
 **Templates:** `docs/templates/CIF_*.template.md`
+
 - CIF_CONCEITO.template.md
 - CIF_DESCOBERTA.template.md
 - CIF_ESPECIFICACAO.template.md
 - CIF_TECNICO.template.md
 - CIF_CICLO.template.md
 
-**Caso de estudo completo:** Painel de Migração
-- [docs/ciclos/MIGRACAO_CONCEITO.md](./docs/ciclos/MIGRACAO_CONCEITO.md)
-- [docs/ciclos/MIGRACAO_DESCOBERTA.md](./docs/ciclos/MIGRACAO_DESCOBERTA.md) (se existir)
-- [docs/ciclos/MIGRACAO_ESPECIFICACAO.md](./docs/ciclos/MIGRACAO_ESPECIFICACAO.md) ⭐
-- [docs/ciclos/MIGRACAO_TECNICO.md](./docs/ciclos/MIGRACAO_TECNICO.md)
-- [docs/ciclos/MIGRACAO_CICLO.md](./docs/ciclos/MIGRACAO_CICLO.md)
+**Casos de estudo completos:** Ver seção "Funcionalidades Implementadas" abaixo
 
 ### 🚨 CHECKPOINT vs CICLO
 
-| Aspecto | CHECKPOINT | CICLO |
-|---------|-----------|-------|
-| **Propósito** | Continuidade entre **sessões** | Histórico da **funcionalidade** |
-| **Duração** | Temporário (descartado após conclusão) | Permanente |
-| **Conteúdo** | Estado atual, bloqueadores, próximos passos | Mudanças na funcionalidade |
-| **Infraestrutura?** | ✅ Sim (se bloqueia sessão) | ❌ Nunca |
+| Aspecto             | CHECKPOINT                                  | CICLO                           |
+| ------------------- | ------------------------------------------- | ------------------------------- |
+| **Propósito**       | Continuidade entre **sessões**              | Histórico da **funcionalidade** |
+| **Duração**         | Temporário (descartado após conclusão)      | Permanente                      |
+| **Conteúdo**        | Estado atual, bloqueadores, próximos passos | Mudanças na funcionalidade      |
+| **Infraestrutura?** | ✅ Sim (se bloqueia sessão)                 | ❌ Nunca                        |
 
 ### 🎯 COMANDOS NATURAIS
 
 Claude deve entender:
+
 - "Implemente V3.7.1" → Criar teste + código para validação V3.7.1
 - "V3.1 está quebrado" → Rodar testes V3.1.x, debugar
 - "Adicione validação de RG" → Criar item no checklist → teste → código
-- "Crie ciclo para Feature X" → Criar 4 arquivos CIF
+- "Crie ciclo para Feature X" → Criar arquivos CIF (CONCEITO, DESCOBERTA se necessário, ESPECIFICACAO, TECNICO, CICLO)
 
-### 📊 STATUS ATUAL
+### 📊 STATUS ATUAL DO PROJETO
 
-**🚧 Em andamento** - Ver [CHECKPOINT](./docs/CHECKPOINT_METODOLOGIA_CIF.md)
-
-**Exemplo funcional:** Painel de Migração (80 validações, 88/88 testes passando)
+**Ver:** [docs/CHECKPOINT_METODOLOGIA_CIF.md](./docs/CHECKPOINT_METODOLOGIA_CIF.md)
 
 ---
 
-# DESCRIÇÃO DO SISTEMA
-Sistema de emissão de certificados e certidões para alunos de Ensino Médio
+# 🎯 FUNCIONALIDADES IMPLEMENTADAS
 
-# ESTRATÉGIAS DE IMPLEMENTAÇÃO
-  - **ANTES de implementar funcionalidades complexas:** verificar se deve usar CIF (ver seção acima)
-  - Antes de gerar estruturas permanentes, geraremos sempre algum mock para a UI, e gradativamente implementaremos as estruturas
-  - Sempre me pergunte sobre os passos que tomaremos
+## ✅ 1. PAINEL DE MIGRAÇÃO (100% documentado via CIF)
 
-# MODELO DE DADOS
-  ## MODELO DE DADOS, PONTO DE VISTA DA OBTENÇÃO
-  A origem dos dados será o sistema oficial do Conexão Educação da SEEDUC-RJ, através dos arquivos de relatório baixados de lá (.csv, .xml, a princípio).
-  Isso significa que o banco de dados refletirá basicamente essa estrutura de dados, aberto, claro, para para eventuais correções e registros adicionais de informação.
-  Portanto, apenas modele os dados quando você tiver acesso às estruturas dos arquivos csv/xml.
+Upload de CSVs do sistema Conexão Educação → Parsing inteligente → Armazenamento em 3 camadas → Visualização hierárquica
 
-  ## ORIENTAÇÕES SOBRE O CONCEITO DO MODELO DE DADOS
-  O sistema é destinado aos alunos concluintes do Ensino Médio, nas mais diversas modalidades. (Através dos arquivos do Conexão você poderá saber quais)
-  Tal modalidade é formada por períodos curriculares, que são anuais (período 0) ou semestrais (períodos 1 e 2).
-  Os períodos curriculares, por sua vez, são compostos por componentes curriculares (ou disciplinas).
-  Cada período avaliativo (via de regra é bimestral, tendo um período anual 4 bimestres e o semestral 2 bimestres) em um componente curricular conta ao aluno de 0 a 10 pontos como nota. Sendo a média 5, ele é considerado aprovado com 20 pontos totais no regime anual, e 10 pontos totais no regime semestral. Além disso, a aprovação exige 75% de frequência.
+**Documentação completa (CIF):**
 
-  O nível de detalhes provavelmente não acessará o nível de bimestre, apenas o de pontuação geral dos componentes curriculares por enquanto.
+- 📖 [CONCEITO](./docs/ciclos/MIGRACAO_CONCEITO.md) - O que é, por que existe (15KB)
+- ⭐ [ESPECIFICAÇÃO](./docs/ciclos/MIGRACAO_ESPECIFICACAO.md) - 80 validações, 88 testes (68KB)
+- 🔧 [TÉCNICO](./docs/ciclos/MIGRACAO_TECNICO.md) - Arquitetura detalhada (66KB)
+- 📜 [CICLO](./docs/ciclos/MIGRACAO_CICLO.md) - Histórico de mudanças (27KB)
 
-# SISTEMA DE DESIGN
-- Estruturar o config do tailwind com propriedades personalizadas adequadas para futuros ajustes. Me perguntar o que for necessário.
-- Sempre componentize conforme as melhores práticas;
-- Abstraia componentes de interface de usuário como <INPUT>, <MODAL>, <DROPDOWN>, <POPOVER>, <TABS>, etc, tal como Radix ou outro.
+**Status:** ✅ Pronto para produção (88/88 testes passando, 100%)
 
-# PADRÕES DE CÓDIGO E ARQUITETURA
-  ## COMPONENTIZAÇÃO (CRÍTICO)
-  - **SEMPRE** componentizar ao invés de criar código hard-coded direto
-  - Criar componentes genéricos e reutilizáveis em `src/components/ui/`
-  - Componentes específicos de domínio em `src/components/`
-  - Evitar código repetido - se algo aparece 2x, componentizar
+**Principais funcionalidades:**
 
-  ## CUSTOM HOOKS
-  - **SEMPRE** criar custom hooks para lógica reutilizável
-  - Hooks para gerenciamento de estado complexo
-  - Hooks para side effects compartilhados
-  - Localização: `src/hooks/`
-  - Nomenclatura: `use[Nome].ts` (ex: `useFiltros.ts`, `useAlunos.ts`)
+- Upload drag-and-drop de múltiplos CSVs
+- Detecção automática de duplicatas (hash SHA-256)
+- Parsing tolerante com remoção de prefixos ("Ano Letivo: 2024" → "2024")
+- Criação automática de Alunos e Enturmações
+- Visualização hierárquica: Período → Modalidade → Turma → Alunos
+- Sistema de reset/reimportação (hard delete)
+- Transação completa (operações atômicas)
 
-  ## ESTRUTURA DE COMPONENTES
-  - Componentes devem ser pequenos e com responsabilidade única
-  - Máximo de 200 linhas por componente
-  - Se ultrapassar, dividir em sub-componentes
-  - Props bem tipadas com TypeScript
-  - Componentes genéricos devem aceitar className para customização
+---
 
-  ## BOAS PRÁTICAS
-  - DRY (Don't Repeat Yourself) - nunca repetir código
-  - Separação de concerns (UI vs Lógica vs Dados)
-  - Custom hooks para lógica compartilhada
-  - Componentes UI genéricos e reutilizáveis
-  - Código legível e bem organizado
+## ✅ 2. IMPORTAÇÃO ESTRUTURADA POR TEXTO (100% documentado via CIF)
 
-  ## EXEMPLO DE ESTRUTURA
-  ```
-  src/
-    components/
-      ui/              # Componentes genéricos (Button, Tabs, etc)
-      dominio/         # Componentes específicos (FiltrosCertificacao, etc)
-    hooks/             # Custom hooks
-    lib/               # Utilidades e configurações
-    app/               # Páginas Next.js
-  ```
+Captura de dados complementares de alunos via texto estruturado do sistema oficial
 
------------------------------------------------------------------------------------------------------
+**Documentação completa (CIF):**
 
-# TELA INICIAL
-**IMPORTANTE: Todas as funcionalidades principais devem estar integradas diretamente na página inicial.**
-Não criar rotas separadas para funcionalidades principais - tudo deve ser acessível na home page através de abas ou seções.
-Apenas funcionalidades administrativas/secundárias devem ter páginas separadas.
+- 📖 [CONCEITO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_CONCEITO.md) - Visão geral (5KB)
+- 🔍 [DESCOBERTA](./docs/ciclos/IMPORTACAO_ESTRUTURADA_DESCOBERTA.md) - Análise colaborativa (22KB)
+- ⭐ [ESPECIFICAÇÃO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_ESPECIFICACAO.md) - Validações (25KB)
+- 🔧 [TÉCNICO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_TECNICO.md) - Implementação (24KB)
+- 📜 [CICLO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_CICLO.md) - Histórico (21KB)
+- 📋 [CHECKPOINT](./docs/ciclos/IMPORTACAO_ESTRUTURADA_CHECKPOINT.md) - Estado atual (11KB)
 
-# TELA CENTRAL DE ALUNOS
-  ## CONSTROLES
-  - Acima dos demais elementos, haverá um campo de pesquisa bem destacado para pesquisa por nome ou número de matrícula
-  - Haverá um controle de "Anterior" e "Próximo" com seta
-  - Haverá um controle de seleção para ir-se direto ao primeiro aluno de uma turma específica
-  - Haverá também um controle de seleção para uma modalidade específica, jogando para a primeira turma
+**Status:** ✅ Em produção
 
-  ## ORDEM DAS PÁGINAS
-  A ordem será de modalidades -> turmas -> alunos (por nome).
+**Principais funcionalidades:**
 
-  ## FILTROS
-  Haverá a possibilidade bem visibilizada na UI para filtragem de pendências/registros sem pendências para uma navegação mais confortável.
-  Haverá também filtros por tipos de problemas encontrados, conforme estruturado em ESTRUTURA DAS ESTRATÉGIAS DE SOLUÇÕES DE INCONSISTÊNCIAS.
+- Entrada de texto formatado (múltiplas seções)
+- Validação automática de estrutura
+- Parsing inteligente para extrair dados
+- Popular banco de dados com rastreabilidade
+- Feedback visual sobre completude
 
-  ## ESTILIZAÇÃO SEMÂNTICA
-  Conforme for estabelecido em ESTRUTURA DAS ESTRATÉGIAS DE SOLUÇÕES DE INCONSISTÊNCIAS, o aluno que apresentar ou não pendências terá rótulos indicando isso na UI.
+---
 
-  ## COMPONENTES
+## ✅ 3. FLUXO DE CERTIFICAÇÃO
 
-  ### CAMPO DE PESQUISA
-    - Conforme se for digitando o nome do aluno ou o número da matrícula, aparecerá uma droplist com os nomes filtrados, apresentando compactdamente o período letivo, a turma, o curso/modalidade, o número de matrícula e o nome completo aluno;
-    - A busca incluirá nos matchers caracteres independentes de acentuação, cedilha, etc.
-    - A digitação de * significará um coringa, ou seja "AN*SON" filtrará "ANDERSON", etc.
-    - As setas para cima e para baixo navegarão nos nomes buscados, e enter selecionará o aluno e apresentará a tela do aluno na central de alunos
+Visualização e gestão de dados de alunos concluintes (3ª série do Ensino Médio)
 
-  ### CAMPOS DE DADOS
-    Número de matrícula (15 dígitos), Nome completo do aluno (limite de caractere compatível com nomes grandes (precisa caber nos layouts)), Sexo, Data de nascimento, Nacionalidade, Naturalidade, UF, RG (padrão flexível, um deles é xx.xxx.xxx-x), Órgão Emisor (Flexível, mas o padrão é "DETRAN"), Data da Emissão, CPF (necessariamente xxx.xxx.xxx-xx);
-    Nome completo da mãe, Nome completo do pai, Data de Conclusão do Ensino Médio, Certificação (booleano), Dados conferidos (booleano);
-    Ensino Fundamental: Instituição de Ensino, Município/Estado, Ano de Conclusão, Número página, Data de Emissão; Observações (text (1000))
+**Localização:** Aba "Fluxo de Certificação" na página inicial
 
-  ### FRAME/Divisão HISTÓRICO ESCOLAR
-    O histórico escolar corresponde ao curso (em sua modalidade) (Ex: Ensino Médio Regular, Novo Ensino Médio, Ensino Médio EJA, etc)
-    Linhas correspondem aos componentes curriculares
-    Colunas de períodos curriculares com colunas de totais de pontuação
+**Status:** ✅ Interface pronta (funcionalidade de edição pendente)
 
-  ## ORIENTAÇÕES DE LAYOUT
-  Todos os componentes precisam caber inteiramente na tela, preferencialmente sem overflow (obviamente usar overflow se realmente não couber). Portanto, o ideal são os campos estarem lado a lado, e não um por linha. As fontes precisam ser pequenas, mas também legíveis e elementos compactos.
+**Layout:**
 
-  ### FUNCIONALIDADES
-  Nos campos de nome, é necessário ajuste de CSS/tailwind para o texto diminuir conforme o tamanho do nome aumenta.
-  Também é necessário que no pressionamento de enter o próximo campo seja focado (como um tab)
+- **Grid 2 colunas:**
+  - Esquerda: Lista de alunos (sidebar fixa 300px)
+  - Direita: Filtros + Dados do aluno selecionado
 
+**Componentes principais:**
 
-# PAINEL DE SOLUÇÃO DE INCONSISTÊNCIAS
-  ## GERAL
-  A ideia aqui é gerarmos uma UI que sinalize ao usuário de forma organizada e sequenciada  todos os problemas conforme listados nas "estruturas de estratégias de soluções de inconsistências no tópico seguinte".
+- `FluxoCertificacao.tsx` - Container principal
+- `FiltrosCertificacao.tsx` - Seleção de turma (Período Letivo → Turma)
+- `ListaAlunosCertificacao.tsx` - Lista lateral com seleção
+- `DadosAlunoEditavel.tsx` - Painel de dados (7 seções)
 
-  **Toda a estrutura da UI seguirá as estruturas definidas em ESTRUTURA DAS ESTRATÉGIAS DE SOLUÇÕES DE INCONSISTÊNCIAS**
+**Hooks:**
 
-  *Provavelmente esta parte do painel será aperfeiçoado conforme formos desenvolvendo no chat. Portanto, seja cuidadoso para não gerar código antes da hora*
+- `useFiltrosCertificacao.ts` - Gerencia filtros
+- `useAlunosCertificacao.ts` - Busca alunos filtrados
+- `useAlunoSelecionado.ts` - Gerencia seleção
 
-  ## ESTILIZAÇÃO SEMÂNTICA
-  - Vermelho para PENDENTE
-  - Laranja para RESOLVENDO
-  - AZUL para OK SEM TER SIDO ALTERADO
-  - VERDE para CORRIGIDO
+**Regras de negócio:**
 
-# ESTRUTURA DAS ESTRATÉGIAS DE SOLUÇÃO DE INCONSISTÊNCIAS
-  ## NÍVEL 1: BANCO DE DADOS E MIGRAÇÃO
-  Ojetivo é detectar se todos os dados necessários foram migrados corretamente.
+- Fixo em 3ª série (concluintes)
+- Fixo em regime anual (0)
+- Auto-seleção: ano mais recente + primeira turma
+- Limpeza de filtros em cascata
 
-  **Orientações:**
-  1) O que for detectado de componente curricular para um curso em um aluno deverá estar presente em outras instâncias também.
-  2) Suspeitar de qualquer pulo de dados (exemplo: haver turma "XXXX-2001, XXXX-2002, XXXX-2004". Provavelmente estará faltando a XXXX-2003).
-  3) Sinalizar toda presença referencial sem os dados referenciados em outra instância. Exemplo: haver alunos refernciando a turma XXXX-2003 e não haver a migração da turma XXXX-3.
-  4) (*Orientação para geração de código no chat*): Deduzir e me perguntar sobre possíveis dados a serem aplicadas verificação de inconsistência;
+**Pendente:**
 
-  ## NÍVEL 2: ENTREGA DE DOCUMENTOS
-  - Me perguntar postiormente quais os documentos
+- [ ] Tornar campos editáveis
+- [ ] Implementar salvamento de edições (API + auditoria)
+- [ ] Histórico Escolar (componente + dados)
 
-  ## NÍVEL 3: CONSISTÊNCIA DE DADOS
-  - Avaliará a presença de dados necessários à produção dos documentos
+**Quando implementar CIF:** Criar ciclo em `docs/ciclos/FLUXO_CERTIFICACAO_*` ao adicionar features complexas
 
-  ## NÍVEL 4: CONSISTÊNCIA DE HISTÓRICO ESCOLAR
-  - (i) Aprovações livres de dependência ou (ii) dependências resolvidas
-  - A pontuação de cada componente curricular deve ser consistente com a situação final de aprovação/reprovação
-  - devido tratamento à reprovação por falta
+---
 
-  ## NÍVEL 5: PENDÊNCIAS DE TAREFAS
-  impressões completas por ano, por turma, por aluno, etc, de certificados e certidões, folhas de registro, etc.
+# 📖 DESCRIÇÃO DO SISTEMA
 
-  ## NÍVEL 6: FLUXO DE AÇÕES
-  Resolução de pendências -> Impressão por turma em lote -> Impressões individuais conforme resolução de pendências;
+Sistema de emissão de certificados e certidões para alunos concluintes de Ensino Médio da rede pública estadual (SEEDUC-RJ).
 
-  ## EMISSÃO DE RELATÓRIO DE STATUS DE RESOLUÇÃO DE PENDÊNCIAS
+**Principais funcionalidades:**
 
-  ## CONCEITOS DA INTERFACE DE USUÁRIO
-  A ideia é produzir uma UI bem organizada e sequencial, que deixe claro para o usuário a ordem de prioridade das pendências a serem solucionadas
+1. Importação de dados (CSVs do sistema Conexão Educação + texto estruturado)
+2. Gestão de alunos e enturmações
+3. Validação de dados e histórico escolar
+4. Emissão de certificados e certidões
+5. Impressão em lote e individual
 
-# INSTRUÇÕES SOBRE A TELA DE SOLUÇÃO DE INCONSISTÊNCIAS
-  ## INTERFACE INTEGRADA DE VERIFICAÇÃO DE ERROS
-  ## INTERFACE INTEGRADA DE EMISSÃO DE DOCUMENTOS DE CONCLUSÃO
+---
 
-# PAINEL DE IMPRESSÃO DOS DOCUMENTOS DE CONCLUSÃO
-  ## UI
-  - Será apresentada a lista por turma dos alunos prontos e não prontos para impressão, com filtro para seleção e boa sinalização visual;
-  ## VALIDAÇÃO PARA IMPRESSÃO
-  - Só poderá haver impressão de documentos se não houver incinstência de banco de dados e migração (nível 1)
-  - Só poderá ser impresso o documento que não contiver inconsistências de dados (nível 2) e pendência de terefas (nível 3)
+# 🗂️ ARQUITETURA DE BANCO DE DADOS
 
-  ## TELAS DE IMPRESSÃO
-  - Visualização e impressão de certificados em lote e individual a partir da Visualização de Lista de Certificados
-  - Visualização e impressão de certidões em lote e individual a partir da Visualização de Lista de Certidões
+## ARQUITETURA DE 3 CAMADAS
 
-
----------------------------------------------------------------------------------------------------------------
-
-# SOBRE AS ESTRATÉGIAS DE IMPLEMENTAÇÃO
-Antes de gerar código, eu preciso que sigamos uma ordem de níveis: (i) primeiro uma compreensão geral integrada, (ii) depois uma compreensão local modularizada, e seguindo em níveis de compreensão até a geração de código.
-
-A finalidade dessa hierarquização é não gerar estruturas em código sem plena compreensão conceitual do projeto.Isso também significa que a qualquer alteração, possamos nos abrir para a possibilidade de editarmos algum desses níveis de generalidade.
-
-Antes de implementar as UI, vamos mockar os dados até termos certeza das estruturas que serão usadas;
-
-**Gostaria que você conseguisse, para além de obedecer as estruturas aqui presentes, também deduzir possibilidades e me perguntar, de modo que eu possa aperfeiçar este arquivo CLAUDE.md.**
-
-# DETALHES DA IMPLEMENTAÇÃO DO BANCO DE DADOS
-Trata-se de um banco de dados para um sistema para ser rodado localmente e por outros computadores da rede. Penso em Postgres com Prisma. Pode sugerir o que quiser aqui.
-
-## ARQUITETURA DE CAMADAS DO BANCO DE DADOS
-
-O banco de dados segue uma arquitetura em 3 camadas:
+Ver detalhes completos em: [docs/ciclos/MIGRACAO_TECNICO.md](./docs/ciclos/MIGRACAO_TECNICO.md)
 
 ### CAMADA 1: ORIGEM DOS DADOS (Imutável)
-Armazena os dados brutos dos arquivos CSV importados.
+
+Armazena dados brutos dos arquivos CSV importados.
 
 **ArquivoImportado**
+
 - 1 registro = 1 arquivo CSV uploadado
-- Campos: nomeArquivo, hashArquivo (hash SHA-256 dos dados parseados), status ('ativo' ou 'excluido')
+- Campos: `nomeArquivo`, `hashArquivo` (SHA-256), `status` ('ativo' ou 'excluido')
 - Propósito: detectar duplicatas, rastreabilidade
 
 **LinhaImportada**
+
 - 1 registro = 1 linha do CSV
-- Campo `dadosOriginais`: JSONB com dados brutos daquela linha
+- Campo `dadosOriginais`: JSONB com dados brutos
 - Relacionamento: N-1 com ArquivoImportado (onDelete: Cascade)
-- Propósito: performance em comparações, queries por matrícula/turma, rastreabilidade
+- Propósito: preservação de dados originais, rastreabilidade
 
 ### CAMADA 2: ENTIDADES ESTRUTURADAS (Editáveis)
+
 Dados modelados e normalizados, derivados da Camada 1.
 
-**Turma** (a ser implementado)
-- Campos: código, anoLetivo, modalidade, serie, turno
-- `origemId`: FK → LinhaImportada (onDelete: SetNull)
-- `fonteAusente`: boolean - indica se o CSV de origem foi deletado
-
 **Aluno**
-- Campos: matricula, nome, documentos, etc
-- `linhaOrigemId`: FK → LinhaImportada (onDelete: SetNull)
-- `origemTipo`: 'csv' ou 'manual'
-- `fonteAusente`: boolean - indica se o CSV de origem foi deletado
+
+- Dados pessoais: matrícula (15 dígitos), nome, sexo, data de nascimento
+- Documentos: RG, órgão emissor, CPF
+- Naturalidade: nacionalidade, naturalidade, UF
+- Filiação: nome completo da mãe, nome completo do pai
+- Ensino Médio: data de conclusão, certificação, dados conferidos
+- Ensino Fundamental: instituição, município/estado, ano, número página
+- Campos: `linhaOrigemId` (FK → LinhaImportada), `origemTipo` ('csv' ou 'manual'), `fonteAusente` (boolean)
 
 **Enturmacao**
+
 - Relaciona Aluno com Turma em um período letivo
-- `linhaOrigemId`: FK → LinhaImportada (onDelete: SetNull)
-- `origemTipo`: 'csv' ou 'manual'
+- Um aluno pode ter MÚLTIPLAS enturmações (ex: 2022/1ª série, 2023/2ª série, 2024/3ª série)
+- Campos: `anoLetivo`, `regime` (0=anual, 1/2=semestral), `modalidade`, `serie`, `turma`, `turno`
+- Relacionamento: `Aluno` 1-N `Enturmacao`
+- Campos: `linhaOrigemId` (FK → LinhaImportada), `origemTipo` ('csv' ou 'manual')
 
 ### CAMADA 3: AUDITORIA
-Registra todas as alterações nas entidades estruturadas.
+
+**Auditoria**
+
+- Registra todas as alterações nas entidades estruturadas
+- Campos: entidade, id da entidade, campo, valor anterior, valor novo, usuário, timestamp
 
 ## PRINCÍPIO DE EXCLUSÃO E REIMPORTAÇÃO
 
 **Comportamento do Reset de Período/Turma:**
 
 1. **Hard Delete da Camada 1:**
-   - Deletar `ArquivoImportado` (remove o hash do banco)
+
+   - Deletar `ArquivoImportado` (remove hash do banco)
    - Deletar `LinhaImportada` (onDelete: Cascade - automático)
    - Remove todo o JSONB, liberando espaço
 
 2. **SetNull na Camada 2:**
+
    - `Aluno.linhaOrigemId` → NULL (onDelete: SetNull - automático)
-   - `Turma.origemId` → NULL (onDelete: SetNull - automático)
    - `Enturmacao.linhaOrigemId` → NULL (onDelete: SetNull - automático)
 
 3. **Marcar Fonte Ausente:**
+
    - Se `linhaOrigemId = NULL` E `origemTipo = 'csv'` → `fonteAusente = true`
-   - Aplica para Aluno, Turma, Enturmacao
+   - Aplica para Aluno e Enturmacao
 
 4. **Reimportação Permitida:**
    - Com hash removido, mesmo arquivo pode ser importado novamente
@@ -361,112 +293,97 @@ Registra todas as alterações nas entidades estruturadas.
    - `fonteAusente` volta a `false` ao vincular novo CSV
 
 **Vantagens:**
+
 - ✅ Permite reimportar dados após correção de problemas
-- ✅ Mantém dados editados manualmente (não deleta Aluno/Turma)
+- ✅ Mantém dados editados manualmente (não deleta Aluno/Enturmacao)
 - ✅ Rastreabilidade: sabe-se quais entidades perderam origem
 - ✅ Economia de espaço: remove JSONB desnecessário
 
----------------------------------------------------------------------------------------------------------------
+---
 
-# ARQUITETURA E DECISÕES TÉCNICAS
+# 🏗️ PADRÕES DE CÓDIGO E ARQUITETURA
 
 ## ESTRUTURA DE ARQUIVOS
+
 ```
 src/
   app/
-    page.tsx                    # Página inicial - TUDO integrado aqui
-    alunos/page.tsx            # Página separada (secundária)
+    page.tsx                    # Página inicial - funcionalidades principais integradas
+    api/
+      files/route.ts            # POST/GET/DELETE - Upload e migração de CSVs
+      filtros/route.ts          # GET - Opções hierárquicas de filtros
+      alunos/route.ts           # GET - Busca de alunos com filtros
   components/
-    ui/                        # Componentes genéricos reutilizáveis
-      Tabs.tsx                 # Sistema de abas (com context)
-      Modal.tsx                # Modal genérico
-      ButtonGroup.tsx          # Grupo de botões (seleção única)
-    FluxoCertificacao.tsx      # Container: integra filtros + lista de alunos
-    FiltrosCertificacao.tsx    # UI de filtros (recebe props, não usa hooks)
-    ListaAlunosCertificacao.tsx # Tabela de alunos (recebe props)
-    FiltrosHierarquicos.tsx    # Filtros completos (Central de Alunos)
-    CentralAlunosSimplified.tsx # Central de alunos com navegação
-    MigrateUploads.tsx         # Upload e migração de CSVs
+    ui/                         # Componentes genéricos reutilizáveis
+      Tabs.tsx                  # Sistema de abas (com context)
+      Modal.tsx                 # Modal genérico
+      ButtonGroup.tsx           # Grupo de botões (seleção única)
+      FormField.tsx             # Container de campo com label
+      Input.tsx                 # Input de texto genérico
+      DateInput.tsx             # Input de data genérico
+      Checkbox.tsx              # Checkbox genérico
+      Textarea.tsx              # Textarea genérico
+    FluxoCertificacao.tsx       # Container: integra filtros + lista de alunos
+    FiltrosCertificacao.tsx     # UI de filtros (recebe props, não usa hooks)
+    ListaAlunosCertificacao.tsx # Lista lateral de alunos
+    DadosAlunoEditavel.tsx      # Painel de dados do aluno (7 seções)
+    MigrateUploads.tsx          # Upload e migração de CSVs
   hooks/
-    useFiltrosCertificacao.ts  # Lógica de filtros (ano, turma)
-    useAlunosCertificacao.ts   # Busca de alunos filtrados
+    useFiltrosCertificacao.ts   # Lógica de filtros (ano, turma)
+    useAlunosCertificacao.ts    # Busca de alunos filtrados
+    useAlunoSelecionado.ts      # Gerencia seleção de aluno
   lib/
-    prisma.ts                  # Cliente Prisma
+    prisma.ts                   # Cliente Prisma
+    csv.ts                      # Utilidades CSV (limparValor, limparCamposEnturmacao)
+  tests/
+    unit/                       # Testes unitários (54 testes)
+    integration/                # Testes de integração (88 testes)
+    helpers/                    # Helpers de teste (db-setup, csv-fixtures)
 ```
 
-## PRINCIPAIS FEATURES
+## COMPONENTIZAÇÃO (CRÍTICO)
 
-### 1. FLUXO DE CERTIFICAÇÃO
-**Localização:** Aba "Fluxo de Certificação" na página inicial
+- **SEMPRE** componentizar ao invés de criar código hard-coded direto
+- Criar componentes genéricos e reutilizáveis em `src/components/ui/`
+- Componentes específicos de domínio em `src/components/`
+- Evitar código repetido - se algo aparece 2x, componentizar
 
-**Componentes:**
-- `FluxoCertificacao` (container)
-- `FiltrosCertificacao` (UI de filtros)
-- `ListaAlunosCertificacao` (tabela de alunos)
+**IMPORTANTE - Campos de Formulário:**
 
-**Hooks:**
-- `useFiltrosCertificacao`: gerencia estado dos filtros (ano letivo, turma)
-- `useAlunosCertificacao`: busca alunos baseado nos filtros
+- ❌ NUNCA criar campos inline (CampoTexto, CampoData, etc) dentro de componentes
+- ✅ SEMPRE usar componentes genéricos de `src/components/ui/`:
+  - `FormField.tsx` - Container genérico com label
+  - `Input.tsx` - Input de texto genérico
+  - `DateInput.tsx` - Input de data genérico
+  - `Checkbox.tsx` - Checkbox genérico
+  - `Textarea.tsx` - Textarea genérico
+- ✅ Componentes devem aceitar `className` para customização
+- ✅ Props bem tipadas com TypeScript
 
-**Regras de Negócio:**
-- Fixo em 3ª série (concluintes)
-- Fixo em regime anual (0)
-- Modalidade: REGULAR (por enquanto)
-- **Inicialização automática:** ano mais recente + primeira turma
-- Filtros: Período Letivo (botões) → Turma (botões horizontais)
+## CUSTOM HOOKS
 
-### 2. CENTRAL DE ALUNOS
-**Localização:** Aba "Central de Alunos" na página inicial
+- **SEMPRE** criar custom hooks para lógica reutilizável
+- Hooks para gerenciamento de estado complexo
+- Hooks para side effects compartilhados
+- Localização: `src/hooks/`
+- Nomenclatura: `use[Nome].ts` (ex: `useFiltros.ts`, `useAlunos.ts`)
 
-**Componentes:**
-- `CentralAlunosSimplified` (tudo-em-um)
-- `FiltrosHierarquicos` (filtros completos)
+## ESTRUTURA DE COMPONENTES
 
-**Hierarquia de filtros:**
-Período Letivo → Regime → Modalidade → Série → Turma → Aluno
+- Componentes devem ser pequenos e com responsabilidade única
+- Máximo de 200 linhas por componente
+- Se ultrapassar, dividir em sub-componentes
+- Props bem tipadas com TypeScript
+- Componentes genéricos devem aceitar className para customização
 
-**Funcionalidades:**
-- Navegação: Anterior/Próximo
-- Pesquisa: por nome ou matrícula (com wildcard *)
-- Edição inline de campos
-- Comparação: valor original vs editado
-- Indicador de fonte ausente
+## SEPARAÇÃO DE CONCERNS (CRÍTICO)
 
-### 3. SISTEMA DE ENTURMAÇÕES
-**Model Prisma:** `Enturmacao`
-
-**Estrutura:**
-- Um aluno pode ter MÚLTIPLAS enturmações (períodos letivos diferentes)
-- Relacionamento: `Aluno` 1-N `Enturmacao`
-- Dados: anoLetivo, regime, modalidade, turma, serie, turno
-
-**Parsing de CSV:**
-- Campos vêm com prefixos: "Ano Letivo: 2024", "Modalidade: REGULAR"
-- **Função `limparValor`** remove prefixos automaticamente
-- Implementado em: API de upload e script de migração
-
-### 4. MIGRAÇÃO DE DADOS
-**Localização:** Seção "Painel de Migração" na página inicial (details)
-
-**Fluxo:**
-1. Upload de CSV
-2. Parse e hash para detectar duplicatas
-3. Criar registros em `ArquivoImportado` e `LinhaImportada`
-4. Criar/atualizar `Aluno`
-5. Criar `Enturmacao` (com parsing de prefixos)
-
-**Scripts úteis:**
-- `scripts/migrar-enturmacoes.ts`: migra dados existentes para enturmações
-- `scripts/diagnosticar-dados.ts`: analisa tamanhos de campos
-
-## DECISÕES ARQUITETURAIS IMPORTANTES
-
-### 1. SEPARAÇÃO DE CONCERNS
 ✅ **Hooks** = Lógica e estado
 ✅ **Componentes** = UI pura (recebem props)
 ✅ **Containers** = Composição (usam hooks + passam props)
 
 **Exemplo:**
+
 ```tsx
 // ✅ CORRETO
 function FluxoCertificacao() {
@@ -481,52 +398,39 @@ function FiltrosCertificacao() {
 }
 ```
 
-### 2. COMPONENTIZAÇÃO
-- Componentes genéricos (ButtonGroup, Tabs, Modal) → `src/components/ui/`
-- Componentes de domínio (FiltrosCertificacao) → `src/components/`
-- Máximo 200 linhas por componente
-- Se ultrapassar: quebrar em sub-componentes
+## BOAS PRÁTICAS
 
-**IMPORTANTE - Campos de Formulário:**
-- ❌ NUNCA criar campos inline (CampoTexto, CampoData, etc) dentro de componentes
-- ✅ SEMPRE criar componentes genéricos em `src/components/ui/`:
-  - `FormField.tsx` - Container genérico com label
-  - `Input.tsx` - Input de texto genérico
-  - `DateInput.tsx` - Input de data genérico
-  - `Checkbox.tsx` - Checkbox genérico
-  - `Textarea.tsx` - Textarea genérico
-- ✅ Componentes devem aceitar `className` para customização
-- ✅ Props bem tipadas com TypeScript
+- DRY (Don't Repeat Yourself) - nunca repetir código
+- Separação de concerns (UI vs Lógica vs Dados)
+- Custom hooks para lógica compartilhada
+- Componentes UI genéricos e reutilizáveis
+- Código legível e bem organizado
 
-### 3. CUSTOM HOOKS
-- Toda lógica reutilizável vira hook
-- Nomenclatura: `use[Nome].ts`
-- Retornam objetos com estados, handlers e helpers
-- Localização: `src/hooks/`
+---
 
-### 4. TIPOS E TYPESCRIPT
-- Types compartilhados exportados dos hooks
-- Props sempre tipadas
-- Usar `type` para objetos simples, `interface` para extensíveis
+# ⚙️ DECISÕES TÉCNICAS CRÍTICAS
 
-### 5. BANCO DE DADOS (Prisma)
-**Camadas:**
-1. **Origem** (imutável): `ArquivoImportado`, `LinhaImportada`
-2. **Estruturada** (editável): `Aluno`, `Enturmacao`
-3. **Auditoria**: `Auditoria`
+## 1. PACKAGE MANAGER
 
-**Convenções:**
-- Soft delete: `status = 'excluido'`, `excluidoEm`
-- Metadados: `origemTipo`, `linhaOrigemId`
-- Dados originais preservados em JSONB
+**SEMPRE usar `pnpm` ao invés de `npm`**
 
-### 6. PACKAGE MANAGER
-**SEMPRE usar `pnpx` ao invés de `npx`**
+```bash
+# ✅ CORRETO
+pnpm install
+pnpm dev
+pnpm test
 
-### 7. GESTÃO DE MIGRATIONS (CRÍTICO)
+# ❌ ERRADO
+npm install
+npm run dev
+```
+
+## 2. GESTÃO DE MIGRATIONS (CRÍTICO)
+
 **IMPORTANTE:** Este projeto usa DOIS bancos de dados - principal e testes.
 
 **Configuração (.env):**
+
 ```bash
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/certificados?schema=public"
 DATABASE_URL_TEST="postgresql://postgres:postgres@localhost:5432/certificados_test?schema=public"
@@ -535,6 +439,7 @@ DATABASE_URL_TEST="postgresql://postgres:postgres@localhost:5432/certificados_te
 **⚠️ REGRA OBRIGATÓRIA: SEMPRE aplicar migrations em AMBOS os bancos**
 
 **Comandos corretos a usar:**
+
 ```bash
 # ✅ Aplicar migrations pendentes em AMBOS os bancos
 pnpm migrate:all
@@ -548,32 +453,46 @@ pnpm migrate:dev "nome_da_migration"
 ```
 
 **Script automatizado:**
-- Localização: [`scripts/migrate-all.sh`](scripts/migrate-all.sh)
+
+- Localização: `scripts/migrate-all.sh`
 - Aplica automaticamente em ambos os bancos
 - Verifica status final de ambos
 
 **Checklist obrigatório ao trabalhar com migrations:**
+
 1. ✅ Sempre usar `pnpm migrate:dev` ao criar novas migrations
 2. ✅ Antes de rodar testes, verificar sincronização com `pnpm migrate:all`
 3. ✅ NUNCA assumir que existe apenas um banco
 4. ✅ NUNCA usar comandos Prisma diretos (use os scripts do package.json)
 
 **Por que isso é crítico:**
+
 - Testes rodam no banco `certificados_test`, não no principal
 - Se migrations não forem aplicadas no banco de testes, os testes falham
 - Erro comum: "column does not exist" nos testes mesmo existindo no banco principal
 
-### 8. PARSING DE CSV - FUNÇÃO CRÍTICA
+## 3. PARSING DE CSV - FUNÇÃO CRÍTICA
+
 **IMPORTANTE:** Arquivos CSV do sistema Conexão Educação vêm com PREFIXOS nos valores.
 
 **Problema:**
+
 - Valores vêm como: "Ano Letivo: 2024", "Modalidade: REGULAR", "Turma: 3001", etc.
 - Isso causava erros de "value too long for column" no banco de dados
 
 **Solução - Função `limparValor`:**
+
+Localização: `src/lib/csv.ts`
+
 ```typescript
+/**
+ * Remove prefixo de valor de CSV do Conexão Educação
+ * @example
+ * limparValor("Ano Letivo: 2024", "Ano Letivo:") // "2024"
+ * limparValor("Modalidade: REGULAR", "Modalidade:") // "REGULAR"
+ */
 const limparValor = (valor: string | undefined, prefixo: string): string => {
-  if (!valor) return '';
+  if (!valor) return "";
   const str = valor.toString().trim();
   if (str.startsWith(prefixo)) {
     return str.substring(prefixo.length).trim();
@@ -582,35 +501,57 @@ const limparValor = (valor: string | undefined, prefixo: string): string => {
 };
 
 // Uso:
-const anoLetivo = limparValor(csvData.Ano, 'Ano Letivo:');
-const modalidade = limparValor(csvData.MODALIDADE, 'Modalidade:');
-const turma = limparValor(csvData.TURMA, 'Turma:');
-const serie = limparValor(csvData.SERIE, 'Série:');
+const anoLetivo = limparValor(csvData.Ano, "Ano Letivo:");
+const modalidade = limparValor(csvData.MODALIDADE, "Modalidade:");
+const turma = limparValor(csvData.TURMA, "Turma:");
+const serie = limparValor(csvData.SERIE, "Série:");
 ```
 
 **Onde usar:**
+
 - ✅ API de upload (`src/app/api/files/route.ts`)
-- ✅ Scripts de migração (`scripts/migrar-enturmacoes.ts`)
+- ✅ Scripts de migração
 - ✅ Qualquer código que processe dados de CSV
 
-### 8. CONCEITO DE ENTURMAÇÕES MÚLTIPLAS
+**Helper adicional:**
+
+```typescript
+/**
+ * Limpa todos os campos de enturmação de uma vez
+ */
+const limparCamposEnturmacao = (csvData: any) => ({
+  anoLetivo: limparValor(csvData.Ano, "Ano Letivo:"),
+  modalidade: limparValor(csvData.MODALIDADE, "Modalidade:"),
+  turma: limparValor(csvData.TURMA, "Turma:"),
+  serie: limparValor(csvData.SERIE, "Série:"),
+  turno: limparValor(csvData.TURNO, "Turno:"),
+  regime: limparValor(csvData.PERIODO_CURRICULAR, "Período Curricular:"),
+});
+```
+
+## 4. CONCEITO DE ENTURMAÇÕES MÚLTIPLAS
+
 **IMPORTANTE:** Um aluno pode ter MÚLTIPLAS enturmações ao longo dos anos.
 
 **Cenário:**
+
 - Aluno estuda em 2022 (1ª série), 2023 (2ª série), 2024 (3ª série)
 - Cada ano = uma enturmação diferente
 - Relacionamento: `Aluno` 1-N `Enturmacao`
 
 **Implicações:**
+
 - ❌ NÃO assumir que aluno tem apenas 1 turma
 - ✅ SEMPRE filtrar enturmações por `anoLetivo` quando necessário
 - ✅ Ao buscar alunos, fazer JOIN com enturmações e filtrar
 - ✅ Migração de dados precisa criar TODAS as enturmações de um aluno
 
-### 9. AUTO-INICIALIZAÇÃO DE FILTROS
+## 5. AUTO-INICIALIZAÇÃO DE FILTROS
+
 **PADRÃO:** Filtros devem iniciar com valores padrão, não vazios.
 
 **Implementação em hooks:**
+
 ```typescript
 // No useEffect após carregar opções
 useEffect(() => {
@@ -630,176 +571,292 @@ useEffect(() => {
 ```
 
 **Benefícios:**
+
 - UX melhor - usuário vê dados imediatamente
 - Menos cliques necessários
 - Estado sempre válido
 
-## PADRÕES DE UI
+---
 
-### Cores Semânticas
+# 🎨 PADRÕES DE UI
+
+## CORES SEMÂNTICAS (Sistema de Status)
+
+- 🔴 **Vermelho:** PENDENTE (erro, ação necessária)
+- 🟠 **Laranja:** RESOLVENDO (em progresso)
+- 🔵 **Azul:** OK (não alterado, estado normal)
+- 🟢 **Verde:** CORRIGIDO (sucesso, aprovado)
+- 🟡 **Amarelo:** Avisos (fonte ausente, atenção)
+
+## TAMANHOS DE FONTE
+
+- **Títulos:** `text-lg` ou `text-xl`
+- **Labels:** `text-xs`
+- **Campos:** `text-sm`
+- **Hints:** `text-[10px]`
+
+## ESPAÇAMENTO
+
+- **Seções:** `space-y-6`
+- **Elementos internos:** `space-y-4`
+- **Campos de formulário:** `gap-3`
+
+## LAYOUT
+
+- **Página inicial:** Tudo integrado via abas (Tabs), não criar rotas separadas
+- **Componentes:** Devem caber na tela (usar overflow se necessário)
+- **Campos:** Lado a lado ao invés de um por linha (layout compacto)
+- **Fontes:** Pequenas mas legíveis
+
+---
+
+# 📚 REGRAS DE NEGÓCIO DO DOMÍNIO EDUCACIONAL
+
+## ESTRUTURA CURRICULAR
+
+**Sistema de Ensino Médio (SEEDUC-RJ):**
+
+- **Modalidades:** REGULAR, EJA, NOVO ENSINO MÉDIO, etc.
+- **Regimes curriculares:**
+  - Anual (regime 0): 1 período por ano
+  - Semestral (regimes 1 e 2): 2 períodos por ano
+- **Séries:** 1ª, 2ª, 3ª série
+- **Períodos avaliativos:**
+  - Anual: 4 bimestres
+  - Semestral: 2 bimestres
+- **Componentes curriculares:** Disciplinas (Matemática, Português, etc.)
+
+## CRITÉRIOS DE APROVAÇÃO
+
+**Nota:**
+
+- Escala: 0 a 10 pontos por bimestre
+- Média: 5 pontos
+- **Regime Anual:** Aprovação com 20 pontos totais (média 5 em 4 bimestres)
+- **Regime Semestral:** Aprovação com 10 pontos totais (média 5 em 2 bimestres)
+
+**Frequência:**
+
+- Mínimo: 75% de presença
+
+**Observação:** O nível de detalhes atual não acessa bimestres individuais, apenas pontuação total dos componentes curriculares.
+
+---
+
+# 📋 CONVENÇÕES DE NOMENCLATURA
+
+## Componentes
+
+- **PascalCase:** `FiltrosCertificacao.tsx`
+- **Sufixos descritivos:** `ListaAlunosCertificacao`, `ButtonGroup`
+
+## Hooks
+
+- **camelCase com prefixo `use`:** `useFiltrosCertificacao.ts`
+- **Nome descritivo do domínio**
+
+## Tipos
+
+- **PascalCase com sufixo:** `FiltrosState`, `AlunoProps`
+- **Exportar do mesmo arquivo quando possível**
+
+## Variáveis de Estado
+
+- **Descritivas:** `anosDisponiveis`, `isLoadingTurmas`
+- **Booleanos:** prefixo `is`, `has`, `should`
+
+---
+
+# 🔮 FUNCIONALIDADES FUTURAS
+
+**IMPORTANTE:** Antes de implementar, sempre perguntar ao usuário sobre os passos a tomar.
+
+## PAINEL DE SOLUÇÃO DE INCONSISTÊNCIAS (Futuro)
+
+**Status:** 🔜 Não iniciado
+
+**Conceito:** UI para identificar e resolver pendências em 6 níveis:
+
+1. **NÍVEL 1: Banco de Dados e Migração**
+
+   - Detectar se todos os dados foram migrados corretamente
+   - Suspeitar de pulos de dados (ex: turma 3001, 3002, 3004 - falta 3003)
+   - Sinalizar referências órfãs (aluno referencia turma não migrada)
+
+2. **NÍVEL 2: Entrega de Documentos**
+
+   - (A definir posteriormente)
+
+3. **NÍVEL 3: Consistência de Dados**
+
+   - Avaliar presença de dados necessários para emissão de documentos
+
+4. **NÍVEL 4: Consistência de Histórico Escolar**
+
+   - Aprovações livres de dependência ou dependências resolvidas
+   - Pontuação consistente com situação final (aprovado/reprovado)
+   - Tratamento de reprovação por falta
+
+5. **NÍVEL 5: Pendências de Tarefas**
+
+   - Impressões completas por ano/turma/aluno
+   - Certificados, certidões, folhas de registro
+
+6. **NÍVEL 6: Fluxo de Ações**
+   - Resolução de pendências → Impressão em lote → Impressões individuais
+
+**Cores semânticas (já definidas):**
+
 - 🔴 Vermelho: PENDENTE
 - 🟠 Laranja: RESOLVENDO
 - 🔵 Azul: OK (não alterado)
 - 🟢 Verde: CORRIGIDO
-- 🟡 Amarelo: Avisos (fonte ausente)
 
-### Tamanhos de Fonte
-- Títulos: `text-lg` ou `text-xl`
-- Labels: `text-xs`
-- Campos: `text-sm`
-- Hints: `text-[10px]`
+**Quando implementar:** Criar ciclo CIF completo em `docs/ciclos/PAINEL_INCONSISTENCIAS_*`
 
-### Espaçamento
-- Seções: `space-y-6`
-- Elementos internos: `space-y-4`
-- Campos de formulário: `gap-3`
+---
 
-## CONVENÇÕES DE NOMENCLATURA
+## PAINEL DE IMPRESSÃO DE DOCUMENTOS (Futuro)
 
-### Componentes
-- PascalCase: `FiltrosCertificacao.tsx`
-- Sufixos descritivos: `ListaAlunosCertificacao`, `ButtonGroup`
+**Status:** 🔜 Não iniciado
 
-### Hooks
-- camelCase com prefixo `use`: `useFiltrosCertificacao.ts`
-- Nome descritivo do domínio
+**Conceito:**
 
-### Tipos
-- PascalCase com sufixo: `FiltrosState`, `AlunoProps`
-- Exportar do mesmo arquivo quando possível
+- Lista por turma de alunos prontos/não prontos para impressão
+- Filtros e sinalização visual
+- Visualização e impressão em lote/individual
+- Tipos: Certificados, Certidões
 
-### Variáveis de Estado
-- Descritivas: `anosDisponiveis`, `isLoadingTurmas`
-- Booleanos: prefixo `is`, `has`, `should`
+**Validação para impressão:**
 
----------------------------------------------------------------------------------------------------------------
+- ❌ Bloquear se houver inconsistência de banco de dados (nível 1)
+- ❌ Bloquear se houver inconsistência de dados (nível 3)
+- ❌ Bloquear se houver pendência de tarefas (nível 5)
 
-# ESTADO ATUAL DA IMPLEMENTAÇÃO (atualizado em 2025-01-31)
+**Quando implementar:** Criar ciclo CIF completo em `docs/ciclos/IMPRESSAO_DOCUMENTOS_*`
 
-## ✅ FUNCIONALIDADES IMPLEMENTADAS
+---
 
-### 1. FLUXO DE CERTIFICAÇÃO (Aba na página inicial)
-**Status:** ✅ Pronto e funcional
+# 🔧 COMANDOS E SCRIPTS ÚTEIS
 
-**Layout:** Grid 2 colunas
-- **Esquerda (300px fixo):** Lista de alunos em sidebar
-  - Exibe matrícula, nome, indicador de fonte ausente
-  - Seleção visual (fundo azul + borda esquerda)
-  - Scroll vertical para lista longa
-  - Contador de total de alunos
+## Desenvolvimento
 
-- **Direita (flex):** Dividida em 2 seções
-  - **Topo:** "Seleção de Turma" (FiltrosCertificacao)
-    - Período Letivo (botões em ordem decrescente)
-    - Série (fixo: 3ª série)
-    - Turmas (botões horizontais)
-    - Botão "Limpar filtros"
-    - Resumo de filtros ativos
-  - **Base:** Dados do aluno (DadosAlunoEditavel)
-    - 7 seções: Identificação, Documentos, Naturalidade, Filiação, Ensino Médio, Ensino Fundamental, Observações
-    - Todos os campos exibidos (read-only por enquanto)
-    - Layout compacto com grid de 2-3 colunas conforme necessário
-    - Aviso visual para fonte ausente
+```bash
+# Iniciar servidor de desenvolvimento
+pnpm dev
 
-**Componentes:**
-- ✅ `FluxoCertificacao.tsx` - Container principal
-- ✅ `FiltrosCertificacao.tsx` - Seleção de turma
-- ✅ `ListaAlunosCertificacao.tsx` - Lista lateral de alunos
-- ✅ `DadosAlunoEditavel.tsx` - Painel de dados (atualmente read-only)
+# Rodar testes
+pnpm test              # Todos os testes
+pnpm test:unit         # Apenas unitários
+pnpm test:integration  # Apenas integração
+pnpm test:watch        # Modo watch
 
-**Hooks:**
-- ✅ `useFiltrosCertificacao.ts` - Gerencia filtros (ano, turma)
-- ✅ `useAlunosCertificacao.ts` - Busca alunos filtrados
-- ✅ `useAlunoSelecionado.ts` - Gerencia seleção de aluno
+# Linter e formatação
+pnpm lint
+pnpm format
+```
 
-**Componentes UI genéricos criados:**
-- ✅ `FormField.tsx` - Container de campo com label
-- ✅ `Input.tsx` - Input de texto genérico
-- ✅ `DateInput.tsx` - Input de data (aceita Date | null)
-- ✅ `Checkbox.tsx` - Checkbox com label opcional
-- ✅ `Textarea.tsx` - Textarea genérico
-- ✅ `ButtonGroup.tsx` - Grupo de botões para seleção única
+## Banco de Dados
 
-**Regras aplicadas:**
-- ✅ Auto-seleção do ano mais recente ao carregar
-- ✅ Auto-seleção da primeira turma ao trocar ano
-- ✅ Filtro fixo: série = "3" (concluintes)
-- ✅ Filtro fixo: regime = 0 (anual)
-- ✅ Limpeza de filtros em cascata
+```bash
+# Migrations (SEMPRE usar estes comandos)
+pnpm migrate:dev "nome"  # Criar e aplicar em AMBOS os bancos
+pnpm migrate:all         # Aplicar pendentes em AMBOS os bancos
 
-### 2. CENTRAL DE ALUNOS (Aba na página inicial)
-**Status:** ✅ Básico implementado (navegação pendente)
+# Prisma Studio
+pnpm prisma studio       # Visualizar banco principal
+DATABASE_URL=$DATABASE_URL_TEST pnpm prisma studio  # Banco de testes
 
-**Componentes:**
-- ✅ `CentralAlunosSimplified.tsx` - Container principal
-- ✅ `FiltrosHierarquicos.tsx` - Filtros completos (5 níveis)
+# Reset (CUIDADO!)
+pnpm db:reset            # Reset do banco principal
+```
 
-**Funcionalidades:**
-- ✅ Filtros hierárquicos: Período → Regime → Modalidade → Série → Turma
-- ✅ Exibição e edição de dados do aluno
-- ✅ Comparação valor original vs editado (indicador visual)
-- ⚠️ **PENDENTE:** Navegação Anterior/Próximo
-- ⚠️ **PENDENTE:** Campo de pesquisa com autocomplete
-- ⚠️ **PENDENTE:** Salvar edições no banco de dados
+## Scripts Customizados
 
-### 3. SISTEMA DE ENTURMAÇÕES
-**Status:** ✅ Implementado e migrado
+```bash
+# Scripts em scripts/
+pnpx tsx scripts/reset-database.ts       # Reset completo do banco
+pnpx tsx scripts/migrar-enturmacoes.ts   # Migrar enturmações antigas
+pnpx tsx scripts/diagnosticar-dados.ts   # Analisar tamanhos de campos
+pnpx tsx scripts/check-data.ts           # Verificar dados no banco
+```
 
-- ✅ Model `Enturmacao` no Prisma
-- ✅ Relacionamento 1-N com Aluno
-- ✅ API `/api/filtros` - retorna opções hierárquicas
-- ✅ API `/api/alunos` - busca com filtros
-- ✅ Parsing de CSV com remoção de prefixos (`limparValor`)
-- ✅ Script de migração executado (831 enturmações criadas)
+---
 
-### 4. UPLOAD E MIGRAÇÃO DE CSV
-**Status:** ✅ Funcional
+# 📚 REFERÊNCIAS IMPORTANTES
 
-- ✅ Upload via interface na página inicial
-- ✅ Detecção de duplicatas por hash
-- ✅ Criação de `ArquivoImportado` e `LinhaImportada`
-- ✅ Criação/atualização de `Aluno`
-- ✅ Criação automática de `Enturmacao`
-- ✅ Função `limparValor` aplicada corretamente
+## Documentação do Projeto
 
-## ⚠️ FUNCIONALIDADES PENDENTES
+- **Metodologia:** [docs/METODOLOGIA_CIF.md](./docs/METODOLOGIA_CIF.md)
+- **Estado Atual:** [docs/CHECKPOINT_METODOLOGIA_CIF.md](./docs/CHECKPOINT_METODOLOGIA_CIF.md)
+- **Templates:** `docs/templates/CIF_*.template.md`
 
-### Prioridade Alta
-- [ ] Tornar campos editáveis em `DadosAlunoEditavel`
-- [ ] Implementar salvamento de edições (API + auditoria)
-- [ ] Campo de pesquisa com autocomplete na Central de Alunos
-- [ ] Navegação Anterior/Próximo na Central de Alunos
-- [ ] Histórico Escolar (componente + dados)
+## Funcionalidades Documentadas (CIF)
 
-### Prioridade Média
-- [ ] Painel de Solução de Inconsistências
-- [ ] Validações de dados (nível 3)
-- [ ] Validações de histórico escolar (nível 4)
-- [ ] Sistema de verificação de pendências
+**Painel de Migração:**
 
-### Prioridade Baixa
-- [ ] Impressão de certificados
-- [ ] Impressão de certidões
-- [ ] Geração de relatórios
-- [ ] Sistema de entregas de documentos
+- [CONCEITO](./docs/ciclos/MIGRACAO_CONCEITO.md)
+- [ESPECIFICAÇÃO](./docs/ciclos/MIGRACAO_ESPECIFICACAO.md)
+- [TÉCNICO](./docs/ciclos/MIGRACAO_TECNICO.md)
+- [CICLO](./docs/ciclos/MIGRACAO_CICLO.md)
 
-## 🗂️ ESTRUTURA DE BANCO DE DADOS
+**Importação Estruturada:**
 
-**Modelos principais:**
-- ✅ `ArquivoImportado` - Metadados dos arquivos CSV
-- ✅ `LinhaImportada` - Linhas individuais (JSONB com dados originais)
-- ✅ `Aluno` - Dados estruturados do aluno
-- ✅ `Enturmacao` - Múltiplas enturmações por aluno
-- ✅ `Auditoria` - Registro de alterações
+- [CONCEITO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_CONCEITO.md)
+- [DESCOBERTA](./docs/ciclos/IMPORTACAO_ESTRUTURADA_DESCOBERTA.md)
+- [ESPECIFICAÇÃO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_ESPECIFICACAO.md)
+- [TÉCNICO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_TECNICO.md)
+- [CICLO](./docs/ciclos/IMPORTACAO_ESTRUTURADA_CICLO.md)
+- [CHECKPOINT](./docs/ciclos/IMPORTACAO_ESTRUTURADA_CHECKPOINT.md)
 
-**Total de registros (última contagem):**
-- Alunos: 831
-- Enturmações: 831 (pode aumentar se houver alunos com múltiplos anos)
+---
 
-## 📝 PRÓXIMOS PASSOS SUGERIDOS
+# 🎯 PRINCÍPIOS DE TRABALHO
 
-1. **Edição de dados:** Tornar `DadosAlunoEditavel` realmente editável
-2. **Persistência:** Criar API para salvar edições com auditoria
-3. **Navegação:** Implementar Anterior/Próximo na Central de Alunos
-4. **Pesquisa:** Campo de busca com autocomplete
-5. **Histórico Escolar:** Modelar dados e criar componente de visualização
+## Antes de Gerar Código
+
+1. **Compreensão hierárquica:**
+
+   - Primeiro: compreensão geral integrada
+   - Depois: compreensão local modularizada
+   - Então: níveis de compreensão até geração de código
+
+2. **Não gerar estruturas sem compreensão conceitual**
+
+3. **Antes de gerar estruturas permanentes:**
+
+   - Gerar mocks para UI
+   - Gradativamente implementar estruturas
+
+4. **SEMPRE perguntar sobre os passos a tomar**
+
+## Durante Implementação
+
+1. **ANTES de implementar funcionalidade complexa:**
+
+   - Verificar se deve usar CIF (ver seção no topo)
+
+2. **Se usar CIF:**
+
+   - Criar CONCEITO primeiro
+   - Se necessário: DESCOBERTA (análise colaborativa)
+   - Experimentar código sem testes formais
+   - Quando estabilizar: ESPECIFICACAO + testes
+   - Documentar: TECNICO + CICLO
+   - SEMPRE atualizar CHECKPOINT ao final da sessão
+
+3. **Se NÃO usar CIF (feature simples):**
+   - TDD clássico (teste → implementação → refatoração)
+   - Atualizar CHECKPOINT ao final
+
+## Filosofia
+
+- **Deduzir possibilidades e perguntar** para aperfeiçoar este arquivo
+- **Componentizar sempre** (DRY, separação de concerns)
+- **Documentar decisões** (arquitetura, padrões, trade-offs)
+- **Testar sistematicamente** (unitário + integração)
+- **Manter rastreabilidade** (origem dos dados, auditoria)
+
+---
+
+**Este guia é um documento vivo. Aperfeiçoe-o conforme o projeto evolui.**

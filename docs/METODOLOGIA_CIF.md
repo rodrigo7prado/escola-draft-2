@@ -1,4 +1,4 @@
-# METODOLOGIA CIF (Ciclo de Integridade de Funcionalidade)
+# METODOLOGIA CIF (Ciclo de Integridade de Funcionalidades)
 
 ## O QUE É?
 
@@ -64,16 +64,17 @@ CHECKPOINT                           (Sessão - Memória temporária)
 
 ### ⚠️ IMPORTANTE: CHECKPOINT vs CICLO
 
-| Aspecto | CHECKPOINT | CICLO |
-|---------|-----------|-------|
-| **Propósito** | Continuidade entre **sessões** | Histórico da **funcionalidade** |
-| **Duração** | Temporário (descartado após conclusão) | Permanente |
-| **Detalhamento** | Detalhado (contexto para retomar) | Conciso (marcos relevantes) |
-| **Conteúdo** | Estado atual, bloqueadores, próximos passos | Mudanças na funcionalidade |
-| **Pode ter infraestrutura?** | ✅ Sim (se bloqueia sessão) | ❌ Nunca |
-| **Finalidade** | Memória de curto prazo (Claude) | Facilitar refatorações futuras |
+| Aspecto                      | CHECKPOINT                                  | CICLO                           |
+| ---------------------------- | ------------------------------------------- | ------------------------------- |
+| **Propósito**                | Continuidade entre **sessões**              | Histórico da **funcionalidade** |
+| **Duração**                  | Temporário (descartado após conclusão)      | Permanente                      |
+| **Detalhamento**             | Detalhado (contexto para retomar)           | Conciso (marcos relevantes)     |
+| **Conteúdo**                 | Estado atual, bloqueadores, próximos passos | Mudanças na funcionalidade      |
+| **Pode ter infraestrutura?** | ✅ Sim (se bloqueia sessão)                 | ❌ Nunca                        |
+| **Finalidade**               | Memória de curto prazo (Claude)             | Facilitar refatorações futuras  |
 
 **Exemplo - Banco de testes:**
+
 - ✅ **CHECKPOINT:** "Bloqueado: testes apagam dados. Próximo: criar certificados_test"
 - ❌ **CICLO:** Não documentar (infraestrutura, não é mudança na funcionalidade)
 
@@ -82,6 +83,7 @@ CHECKPOINT                           (Sessão - Memória temporária)
 **Objetivo:** Explicar a funcionalidade em linguagem natural
 
 **Conteúdo:**
+
 - O que é esta funcionalidade?
 - Qual problema resolve?
 - Qual o escopo? (o que FAZ parte, o que NÃO FAZ parte)
@@ -99,6 +101,7 @@ CHECKPOINT                           (Sessão - Memória temporária)
 **Objetivo:** Checklist de perguntas para análise colaborativa antes de especificar
 
 **Conteúdo:**
+
 - Perguntas críticas sobre dados de origem (estrutura, formatos)
 - Análise de mapeamento (campos, transformações necessárias)
 - Definição de validações e regras de negócio
@@ -107,12 +110,14 @@ CHECKPOINT                           (Sessão - Memória temporária)
 - Definição de MVP e roadmap
 
 **Princípios:**
+
 1. **Baseado em exemplos reais** (não assumir estruturas)
 2. **Colaborativo** (desenvolvedor + cliente definem juntos)
 3. **Documentação viva** (atualizar conforme descobertas)
 4. **Evita retrabalho** (especificar apenas após entender completamente)
 
 **Quando usar:**
+
 - ✅ Funcionalidades com dados externos (formatos desconhecidos)
 - ✅ Integrações com sistemas de terceiros
 - ✅ Features complexas com muitas incógnitas
@@ -129,6 +134,7 @@ CHECKPOINT                           (Sessão - Memória temporária)
 **Objetivo:** Checklist executável de validações que DEVEM ser testadas
 
 **Conteúdo:**
+
 - Cada validação numerada (V1.1.1, V1.1.2, ...)
 - Para cada validação:
   - Descrição clara do que validar
@@ -137,6 +143,7 @@ CHECKPOINT                           (Sessão - Memória temporária)
   - **Comportamento esperado** (output/erro)
 
 **Princípios:**
+
 1. **Cada item DEVE ter teste correspondente**
 2. **Checklist é a fonte da verdade** (código segue checklist, não o contrário)
 3. **Organizado em camadas** (validação de entrada → processamento → saída)
@@ -153,6 +160,7 @@ CHECKPOINT                           (Sessão - Memória temporária)
 **Objetivo:** Documentar COMO está implementado (arquitetura, APIs, funções)
 
 **Conteúdo:**
+
 - Fluxo de dados completo
 - Componentes e responsabilidades
 - APIs (endpoints, payloads)
@@ -171,6 +179,7 @@ CHECKPOINT                           (Sessão - Memória temporária)
 **Objetivo:** Registro cronológico de mudanças, refatorações, bugs corrigidos
 
 **Conteúdo:**
+
 - Data da mudança
 - Problema que motivou
 - Solução implementada
@@ -321,7 +330,9 @@ V3.x.x - Camada 3 (ex: Processamento de Dados)
 ## CAMADA 1: VALIDAÇÃO DE ARQUIVO (Frontend)
 
 ### V1.1: Estrutura de CSV
+
 - [ ] **V1.1.1** CSV não pode estar vazio
+
   - **Como validar:** Parser retorna headers.length === 0
   - **Teste:** `tests/unit/csv/parse-empty.test.ts`
   - **Comportamento esperado:** Exibir erro "CSV vazio ou inválido"
@@ -338,12 +349,12 @@ V3.x.x - Camada 3 (ex: Processamento de Dados)
 
 ### Estados de Validação
 
-| Marcação | Significado |
-|----------|-------------|
-| `- [ ]` | Não implementado ainda |
-| `- [x]` | Implementado E testado (teste passa) |
+| Marcação   | Significado                          |
+| ---------- | ------------------------------------ |
+| `- [ ]`    | Não implementado ainda               |
+| `- [x]`    | Implementado E testado (teste passa) |
 | `- [ ] ⚠️` | GAP identificado (falta implementar) |
-| `- [ ] ❌` | GAP CRÍTICO (bloqueia produção) |
+| `- [ ] ❌` | GAP CRÍTICO (bloqueia produção)      |
 
 ### Indicadores de Problemas
 
@@ -366,6 +377,7 @@ Exemplo:
 
 ```markdown
 <!-- ESPECIFICACAO.md -->
+
 - [ ] **V3.1.1** Remover prefixo "Ano Letivo:"
   - **Input:** "Ano Letivo: 2024"
   - **Output:** "2024"
@@ -374,13 +386,13 @@ Exemplo:
 
 ```typescript
 // tests/unit/lib/limpar-valor.test.ts
-import { describe, it, expect } from 'vitest';
-import { limparValor } from '@/lib/csv-utils';
+import { describe, it, expect } from "vitest";
+import { limparValor } from "@/lib/csv-utils";
 
-describe('V3.1: Função limparValor', () => {
+describe("V3.1: Função limparValor", () => {
   it('V3.1.1: should remove prefix "Ano Letivo:"', () => {
-    const result = limparValor('Ano Letivo: 2024', 'Ano Letivo:');
-    expect(result).toBe('2024');
+    const result = limparValor("Ano Letivo: 2024", "Ano Letivo:");
+    expect(result).toBe("2024");
   });
 });
 ```
@@ -397,15 +409,15 @@ describe('V3.1: Função limparValor', () => {
 
 Claude deve entender estes comandos ao trabalhar com CIF:
 
-| Comando | Ação Esperada |
-|---------|---------------|
-| "Implemente V3.7.1" | Criar teste + código para validação V3.7.1 |
-| "V3.1 está quebrado" | Rodar testes V3.1.1 a V3.1.5, debugar |
-| "Adicione validação de RG" | Criar item no checklist → teste → código |
-| "Refatore V5" | Garantir testes V5.x passam, refatorar, validar |
-| "Gere relatório de gaps" | Listar todos ❌ e ⚠️ do checklist |
-| "Marque V2.1.2 como completo" | Rodar teste, se passar: marcar [x] |
-| "Crie ciclo para Feature X" | Criar 4 arquivos (_CONCEITO, _ESPECIFICACAO, _TECNICO, _CICLO) |
+| Comando                       | Ação Esperada                                                      |
+| ----------------------------- | ------------------------------------------------------------------ |
+| "Implemente V3.7.1"           | Criar teste + código para validação V3.7.1                         |
+| "V3.1 está quebrado"          | Rodar testes V3.1.1 a V3.1.5, debugar                              |
+| "Adicione validação de RG"    | Criar item no checklist → teste → código                           |
+| "Refatore V5"                 | Garantir testes V5.x passam, refatorar, validar                    |
+| "Gere relatório de gaps"      | Listar todos ❌ e ⚠️ do checklist                                  |
+| "Marque V2.1.2 como completo" | Rodar teste, se passar: marcar [x]                                 |
+| "Crie ciclo para Feature X"   | Criar 4 arquivos (\_CONCEITO, \_ESPECIFICACAO, \_TECNICO, \_CICLO) |
 
 ---
 
@@ -434,27 +446,33 @@ Veja a aplicação completa da metodologia:
 ## BENEFÍCIOS DA METODOLOGIA
 
 ### 1. Previne Buracos Lógicos
+
 - Checklist força pensar em TODOS os casos
 - Difícil esquecer validações críticas
 
 ### 2. Testes como Especificação
+
 - Testes não são "extras", são parte da spec
 - Se não tem teste, não está implementado
 
 ### 3. Refatoração Segura
+
 - Testes garantem que comportamento não muda
 - Confiança para melhorar código legado
 
 ### 4. Documentação Viva
+
 - Especificação atualizada com código
 - Histórico de mudanças registrado
 
 ### 5. Onboarding Facilitado
+
 - Novo desenvolvedor lê CONCEITO → entende o que é
 - Lê ESPECIFICACAO → entende o que deve funcionar
 - Lê TECNICO → entende como está implementado
 
 ### 6. Amigável a IA
+
 - Claude pode seguir checklist sistematicamente
 - Rastreabilidade (V1.1.1 → teste → código)
 - Menos ambiguidade = melhor código gerado
@@ -466,6 +484,7 @@ Veja a aplicação completa da metodologia:
 **CIF documenta COMPORTAMENTO e LÓGICA DE NEGÓCIO, não infraestrutura.**
 
 ### O QUE documentar no CIF:
+
 - ✅ Validações de dados (CPF, RG, campos obrigatórios)
 - ✅ Regras de negócio (cálculo de notas, aprovação)
 - ✅ Fluxos de usuário (upload → processamento → exibição)
@@ -473,6 +492,7 @@ Veja a aplicação completa da metodologia:
 - ✅ Decisões de UX (por que modal em vez de página)
 
 ### O QUE NÃO documentar no CIF:
+
 - ❌ Configuração de banco de dados (PostgreSQL vs SQLite)
 - ❌ Setup de testes (banco de testes, fixtures)
 - ❌ Configuração de ferramentas (Vitest, ESLint)
@@ -480,14 +500,17 @@ Veja a aplicação completa da metodologia:
 - ❌ Dependências técnicas (versões de libs)
 
 ### Onde documentar infraestrutura:
+
 - **Comentários no código:** Decisões técnicas pontuais
 - **README.md:** Setup inicial, variáveis de ambiente
 - **CHECKPOINT.md:** Se bloqueia sessão (temporário)
 
 ### Pós-Implementação:
+
 ✅ **ÚNICA ação obrigatória:** Atualizar CHECKPOINT ao final da sessão
 
 ❌ **NÃO atualizar:**
+
 - ESPECIFICAÇÃO (write-once, não mexer)
 - GAPS ou REGRAS DE NEGÓCIO (não existe mais)
 - DEBUG documents (não criar)
@@ -499,6 +522,7 @@ Veja a aplicação completa da metodologia:
 **Documentação CIF deve ser completa, mas não verbosa.**
 
 ### Diretrizes:
+
 - Escreva o **mínimo necessário** para entender 6 meses depois
 - Evite exemplos de erros passados (não é diário)
 - Use listas/tabelas ao invés de parágrafos longos
@@ -506,6 +530,7 @@ Veja a aplicação completa da metodologia:
 - Templates são guias, não contratos (adapte ao contexto)
 
 ### Balanceamento:
+
 - ✅ Decisões, motivos, consequências
 - ✅ O que fazer, onde está, como validar
 - ❌ Histórias sobre como chegamos lá
@@ -526,29 +551,32 @@ Veja a aplicação completa da metodologia:
 
 ### Custo vs Benefício
 
-| Cenário | Custo CIF | Benefício CIF | Vale a pena? |
-|---------|-----------|---------------|--------------|
-| Feature complexa (migração de dados) | Alto (2-3 dias doc+testes) | Muito Alto (previne bugs críticos) | ✅ SIM |
-| Feature média (CRUD com validações) | Médio (1 dia) | Alto (facilita manutenção) | ✅ SIM |
-| Feature simples (botão) | Baixo (30min) | Baixo (overhead desnecessário) | ❌ NÃO |
-| Protótipo descartável | Alto (desperdício) | Zero (será descartado) | ❌ NÃO |
+| Cenário                              | Custo CIF                  | Benefício CIF                      | Vale a pena? |
+| ------------------------------------ | -------------------------- | ---------------------------------- | ------------ |
+| Feature complexa (migração de dados) | Alto (2-3 dias doc+testes) | Muito Alto (previne bugs críticos) | ✅ SIM       |
+| Feature média (CRUD com validações)  | Médio (1 dia)              | Alto (facilita manutenção)         | ✅ SIM       |
+| Feature simples (botão)              | Baixo (30min)              | Baixo (overhead desnecessário)     | ❌ NÃO       |
+| Protótipo descartável                | Alto (desperdício)         | Zero (será descartado)             | ❌ NÃO       |
 
 ---
 
 ## EVOLUÇÃO FUTURA
 
 ### Fase 1 (Atual): Metodologia Local
+
 - CIF implementado dentro do projeto
 - Validação em uso real
 - Iteração e aperfeiçoamento
 
 ### Fase 2 (Futuro): Pacote Global
+
 - Extrair para `@seunome/metodologia-cif`
 - Publicar no npm/pnpm
 - CLI para gerar skeleton de ciclos
 - Reutilizar em múltiplos projetos
 
 ### Fase 3 (Futuro Distante): Ferramental
+
 - Validador automático (checklist 100% coberto por testes?)
 - Gerador de relatórios (coverage por camada)
 - Integração com GitHub Actions (CI/CD)

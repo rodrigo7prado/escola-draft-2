@@ -1,7 +1,7 @@
 # TÉCNICO: Importação Estruturada por Texto
 
 **Status:** 🟡 Em Desenvolvimento
-**Metodologia:** CIF (Ciclo de Integridade de Funcionalidade)
+**Metodologia:** CIF (Ciclo de Integridade de Funcionalidades)
 **Fase:** TÉCNICO
 **Criado em:** 2025-01-09
 **Última atualização:** 2025-01-09
@@ -9,6 +9,7 @@
 ---
 
 ## ÍNDICE
+
 1. [Arquitetura de Alto Nível](#1-arquitetura-de-alto-nível)
 2. [Modelagem de Banco de Dados](#2-modelagem-de-banco-de-dados)
 3. [Componentes Frontend](#3-componentes-frontend)
@@ -77,15 +78,15 @@
 
 ### 1.2 Tecnologias Utilizadas
 
-| Camada | Tecnologia | Justificativa |
-|--------|------------|---------------|
-| **Frontend** | React + TypeScript | Já utilizado no projeto |
-| **Componentes UI** | Radix UI | Padrão do projeto (acessibilidade) |
-| **Estado** | React Hooks | Simples, sem necessidade de Redux |
-| **Backend** | Next.js API Routes | Framework do projeto |
-| **Validação** | Zod | Type-safe, integra com TypeScript |
-| **Banco de Dados** | PostgreSQL + Prisma | Já utilizado no projeto |
-| **Parsing** | Regex + String manipulation | Suficiente para formato estruturado |
+| Camada             | Tecnologia                  | Justificativa                       |
+| ------------------ | --------------------------- | ----------------------------------- |
+| **Frontend**       | React + TypeScript          | Já utilizado no projeto             |
+| **Componentes UI** | Radix UI                    | Padrão do projeto (acessibilidade)  |
+| **Estado**         | React Hooks                 | Simples, sem necessidade de Redux   |
+| **Backend**        | Next.js API Routes          | Framework do projeto                |
+| **Validação**      | Zod                         | Type-safe, integra com TypeScript   |
+| **Banco de Dados** | PostgreSQL + Prisma         | Já utilizado no projeto             |
+| **Parsing**        | Regex + String manipulation | Suficiente para formato estruturado |
 
 ---
 
@@ -138,6 +139,7 @@ model Aluno {
 ### 2.2 Estrutura do JSONB `dadosOriginais`
 
 **Exemplo de conteúdo:**
+
 ```json
 {
   "nomeCompleto": "JOÃO SILVA SANTOS",
@@ -213,19 +215,22 @@ src/
 **Responsabilidade:** Toggle para ativar/desativar modo colagem (APENAS no aluno ativo)
 
 **Props:**
+
 ```typescript
 interface BotaoModoColagemProps {
-  alunoId: number;           // ID do aluno ativo
+  alunoId: number; // ID do aluno ativo
   onToggle: (ativo: boolean) => void;
 }
 ```
 
 **Estado:**
+
 ```typescript
 const [modoColagemAtivo, setModoColagemAtivo] = useState(false);
 ```
 
 **Renderização:**
+
 ```tsx
 <button
   onClick={() => {
@@ -240,7 +245,7 @@ const [modoColagemAtivo, setModoColagemAtivo] = useState(false);
       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
   )}
 >
-  {modoColagemAtivo ? '📋 Modo Colagem Ativo' : '📋 Ativar Modo Colagem'}
+  {modoColagemAtivo ? "📋 Modo Colagem Ativo" : "📋 Ativar Modo Colagem"}
 </button>
 ```
 
@@ -253,62 +258,66 @@ const [modoColagemAtivo, setModoColagemAtivo] = useState(false);
 **Responsabilidade:** Textarea para colar texto + botão "Importar" + lógica de chamada API
 
 **Props:**
+
 ```typescript
 interface AreaColagemProps {
   alunoId: number;
   matricula: string;
-  visivel: boolean;  // Controlado pelo toggle
+  visivel: boolean; // Controlado pelo toggle
   onSucesso: () => void;
 }
 ```
 
 **Estado:**
+
 ```typescript
-const [texto, setTexto] = useState('');
+const [texto, setTexto] = useState("");
 const [loading, setLoading] = useState(false);
 const [erro, setErro] = useState<string | null>(null);
 ```
 
 **Renderização:**
+
 ```tsx
-{visivel && (
-  <div className="mt-3 space-y-3 border-t pt-3">
-    <textarea
-      value={texto}
-      onChange={(e) => setTexto(e.target.value)}
-      placeholder="Cole aqui o texto da Página 1 ou 2"
-      rows={10}
-      className="w-full border rounded p-2 text-sm font-mono"
-    />
+{
+  visivel && (
+    <div className="mt-3 space-y-3 border-t pt-3">
+      <textarea
+        value={texto}
+        onChange={(e) => setTexto(e.target.value)}
+        placeholder="Cole aqui o texto da Página 1 ou 2"
+        rows={10}
+        className="w-full border rounded p-2 text-sm font-mono"
+      />
 
-    {erro && (
-      <div className="text-red-600 text-sm bg-red-50 p-2 rounded">
-        {erro}
-      </div>
-    )}
+      {erro && (
+        <div className="text-red-600 text-sm bg-red-50 p-2 rounded">{erro}</div>
+      )}
 
-    <button
-      onClick={handleImportar}
-      disabled={!texto.trim() || loading}
-      className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
-    >
-      {loading ? 'Importando...' : '📥 Importar'}
-    </button>
-  </div>
-)}
+      <button
+        onClick={handleImportar}
+        disabled={!texto.trim() || loading}
+        className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
+      >
+        {loading ? "Importando..." : "📥 Importar"}
+      </button>
+    </div>
+  );
+}
 ```
 
 **Lógica de `handleImportar`:**
+
 ```typescript
 const handleImportar = async () => {
   setLoading(true);
   setErro(null);
 
   try {
-    const response = await fetch('/api/importacao-estruturada', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texto, matricula, alunoId })
+    const response = await fetch("/api/importacao-estruturada", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texto, matricula, alunoId }),
     });
 
     const resultado = await response.json();
@@ -320,9 +329,8 @@ const handleImportar = async () => {
 
     // Delegar para hook (abre dialogs conforme necessário)
     // (implementado em useImportacaoEstruturada)
-
   } catch (error) {
-    setErro('Erro ao importar. Tente novamente.');
+    setErro("Erro ao importar. Tente novamente.");
   } finally {
     setLoading(false);
   }
@@ -336,14 +344,16 @@ const handleImportar = async () => {
 **Responsabilidade:** Gerenciar estado e fluxo de importação (incluindo dialogs)
 
 **Assinatura:**
+
 ```typescript
 export function useImportacaoEstruturada(
   alunoId: number,
   matricula: string
-): UseImportacaoEstruturadaReturn
+): UseImportacaoEstruturadaReturn;
 ```
 
 **Retorno:**
+
 ```typescript
 interface UseImportacaoEstruturadaReturn {
   // Estado do texto
@@ -360,16 +370,17 @@ interface UseImportacaoEstruturadaReturn {
 
   // Funções
   importar: () => Promise<void>;
-  confirmarSexo: (sexo: 'M' | 'F') => void;
+  confirmarSexo: (sexo: "M" | "F") => void;
   confirmarResumo: () => Promise<void>;
   fecharDialogs: () => void;
 }
 ```
 
 **Implementação (simplificada):**
+
 ```typescript
 export function useImportacaoEstruturada(alunoId: number, matricula: string) {
-  const [texto, setTexto] = useState('');
+  const [texto, setTexto] = useState("");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -383,10 +394,10 @@ export function useImportacaoEstruturada(alunoId: number, matricula: string) {
     setErro(null);
 
     try {
-      const res = await fetch('/api/importacao-estruturada', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texto, matricula, alunoId })
+      const res = await fetch("/api/importacao-estruturada", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texto, matricula, alunoId }),
       });
 
       const resultado = await res.json();
@@ -401,20 +412,19 @@ export function useImportacaoEstruturada(alunoId: number, matricula: string) {
       // Abrir dialog apropriado
       if (resultado.precisaConfirmarSexo) {
         setDialogSexoAberto(true);
-      } else if (resultado.tipoPagina === 'pagina1') {
+      } else if (resultado.tipoPagina === "pagina1") {
         setDialogResumoAberto(true);
-      } else if (resultado.tipoPagina === 'pagina2') {
+      } else if (resultado.tipoPagina === "pagina2") {
         setDialogPagina2Aberto(true);
       }
-
     } catch (error) {
-      setErro('Erro ao importar');
+      setErro("Erro ao importar");
     } finally {
       setLoading(false);
     }
   };
 
-  const confirmarSexo = (sexo: 'M' | 'F') => {
+  const confirmarSexo = (sexo: "M" | "F") => {
     setDialogSexoAberto(false);
     setDadosParsed({ ...dadosParsed, sexo });
     setDialogResumoAberto(true);
@@ -422,14 +432,14 @@ export function useImportacaoEstruturada(alunoId: number, matricula: string) {
 
   const confirmarResumo = async () => {
     // Chamar API para salvar
-    await fetch('/api/importacao-estruturada/salvar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ alunoId, dados: dadosParsed })
+    await fetch("/api/importacao-estruturada/salvar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ alunoId, dados: dadosParsed }),
     });
 
     setDialogResumoAberto(false);
-    setTexto('');
+    setTexto("");
     // Callback onSucesso (atualizar UI)
   };
 
@@ -440,9 +450,18 @@ export function useImportacaoEstruturada(alunoId: number, matricula: string) {
   };
 
   return {
-    texto, setTexto, loading, erro,
-    dialogSexoAberto, dialogResumoAberto, dialogPagina2Aberto, dadosParsed,
-    importar, confirmarSexo, confirmarResumo, fecharDialogs
+    texto,
+    setTexto,
+    loading,
+    erro,
+    dialogSexoAberto,
+    dialogResumoAberto,
+    dialogPagina2Aberto,
+    dadosParsed,
+    importar,
+    confirmarSexo,
+    confirmarResumo,
+    fecharDialogs,
   };
 }
 ```
@@ -456,15 +475,17 @@ export function useImportacaoEstruturada(alunoId: number, matricula: string) {
 **Método:** POST
 
 **Request Body:**
+
 ```typescript
 interface ImportacaoRequest {
-  texto: string;       // Texto colado pelo usuário
-  matricula: string;   // Matrícula do aluno (15 dígitos)
-  alunoId: number;     // ID do aluno
+  texto: string; // Texto colado pelo usuário
+  matricula: string; // Matrícula do aluno (15 dígitos)
+  alunoId: number; // ID do aluno
 }
 ```
 
 **Response (sucesso - Página 1 com sexo):**
+
 ```typescript
 {
   sucesso: true,
@@ -475,6 +496,7 @@ interface ImportacaoRequest {
 ```
 
 **Response (sucesso - Página 1 SEM sexo):**
+
 ```typescript
 {
   sucesso: true,
@@ -485,6 +507,7 @@ interface ImportacaoRequest {
 ```
 
 **Response (erro):**
+
 ```typescript
 {
   sucesso: false,
@@ -493,17 +516,18 @@ interface ImportacaoRequest {
 ```
 
 **Implementação:**
+
 ```typescript
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
-import { detectarTipoPagina } from '@/lib/parsing/detectarTipoPagina';
-import { parsePagina1 } from '@/lib/parsing/parsePagina1';
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { prisma } from "@/lib/prisma";
+import { detectarTipoPagina } from "@/lib/parsing/detectarTipoPagina";
+import { parsePagina1 } from "@/lib/parsing/parsePagina1";
 
 const schemaRequest = z.object({
   texto: z.string().min(10),
   matricula: z.string().length(15),
-  alunoId: z.number()
+  alunoId: z.number(),
 });
 
 export async function POST(request: NextRequest) {
@@ -513,14 +537,14 @@ export async function POST(request: NextRequest) {
 
     // Validar que matrícula existe
     const aluno = await prisma.aluno.findUnique({
-      where: { matricula }
+      where: { matricula },
     });
 
     if (!aluno) {
       return NextResponse.json(
         {
           sucesso: false,
-          erro: `Matrícula ${matricula} não encontrada. Cadastre o aluno primeiro.`
+          erro: `Matrícula ${matricula} não encontrada. Cadastre o aluno primeiro.`,
         },
         { status: 404 }
       );
@@ -531,45 +555,44 @@ export async function POST(request: NextRequest) {
 
     if (!tipoPagina) {
       return NextResponse.json(
-        { sucesso: false, erro: 'Formato não reconhecido.' },
+        { sucesso: false, erro: "Formato não reconhecido." },
         { status: 400 }
       );
     }
 
     // Processar Página 1
-    if (tipoPagina === 'pagina1') {
+    if (tipoPagina === "pagina1") {
       const dadosParsed = parsePagina1(texto);
 
       return NextResponse.json({
         sucesso: true,
-        tipoPagina: 'pagina1',
+        tipoPagina: "pagina1",
         precisaConfirmarSexo: !dadosParsed.sexo,
-        dados: dadosParsed
+        dados: dadosParsed,
       });
     }
 
     // Processar Página 2 (salvar direto)
-    if (tipoPagina === 'pagina2') {
+    if (tipoPagina === "pagina2") {
       await prisma.aluno.update({
         where: { id: aluno.id },
         data: {
           textoHistoricoOriginal: texto,
           pagina2Importada: true,
-          dataImportacaoPagina2: new Date()
-        }
+          dataImportacaoPagina2: new Date(),
+        },
       });
 
       return NextResponse.json({
         sucesso: true,
-        tipoPagina: 'pagina2',
-        mensagem: 'Página 2 recebida com sucesso'
+        tipoPagina: "pagina2",
+        mensagem: "Página 2 recebida com sucesso",
       });
     }
-
   } catch (error) {
-    console.error('Erro na importação:', error);
+    console.error("Erro na importação:", error);
     return NextResponse.json(
-      { sucesso: false, erro: 'Erro interno' },
+      { sucesso: false, erro: "Erro interno" },
       { status: 500 }
     );
   }
@@ -583,6 +606,7 @@ export async function POST(request: NextRequest) {
 **Método:** POST
 
 **Request Body:**
+
 ```typescript
 {
   alunoId: number,
@@ -591,6 +615,7 @@ export async function POST(request: NextRequest) {
 ```
 
 **Implementação:**
+
 ```typescript
 export async function POST(request: NextRequest) {
   try {
@@ -601,18 +626,17 @@ export async function POST(request: NextRequest) {
       data: {
         dadosOriginais: {
           ...dados,
-          importadoEm: new Date().toISOString()
+          importadoEm: new Date().toISOString(),
         },
         pagina1Importada: true,
-        dataImportacaoPagina1: new Date()
-      }
+        dataImportacaoPagina1: new Date(),
+      },
     });
 
     return NextResponse.json({ sucesso: true });
-
   } catch (error) {
     return NextResponse.json(
-      { sucesso: false, erro: 'Erro ao salvar' },
+      { sucesso: false, erro: "Erro ao salvar" },
       { status: 500 }
     );
   }
@@ -626,31 +650,31 @@ export async function POST(request: NextRequest) {
 ### 5.1 `detectarTipoPagina.ts`
 
 ```typescript
-type TipoPagina = 'pagina1' | 'pagina2' | null;
+type TipoPagina = "pagina1" | "pagina2" | null;
 
 export function detectarTipoPagina(texto: string): TipoPagina {
   const marcadoresPagina1 = [
     /NOME COMPLETO:/i,
     /MATRÍCULA:/i,
-    /DATA DE NASCIMENTO:/i
+    /DATA DE NASCIMENTO:/i,
   ];
 
   const marcadoresPagina2 = [
     /COMPONENTE CURRICULAR/i,
     /\bNOTA\b/i,
     /\bFREQ/i,
-    /RESULTADO/i
+    /RESULTADO/i,
   ];
 
-  const ehPagina1 = marcadoresPagina1.some(regex => regex.test(texto));
-  const ehPagina2 = marcadoresPagina2.some(regex => regex.test(texto));
+  const ehPagina1 = marcadoresPagina1.some((regex) => regex.test(texto));
+  const ehPagina2 = marcadoresPagina2.some((regex) => regex.test(texto));
 
   if (ehPagina1 && ehPagina2) {
-    throw new Error('Texto contém múltiplos formatos');
+    throw new Error("Texto contém múltiplos formatos");
   }
 
-  if (ehPagina1) return 'pagina1';
-  if (ehPagina2) return 'pagina2';
+  if (ehPagina1) return "pagina1";
+  if (ehPagina2) return "pagina2";
   return null;
 }
 ```
@@ -664,7 +688,7 @@ export interface DadosPagina1 {
   nomeCompleto?: string;
   matricula?: string;
   dataNascimento?: string;
-  sexo?: 'M' | 'F';
+  sexo?: "M" | "F";
   cpf?: string;
   rg?: string;
   orgaoEmissor?: string;
@@ -697,7 +721,7 @@ export function parsePagina1(texto: string): DadosPagina1 {
 
   let nomeMae, nomePai;
   if (filiacaoRaw) {
-    const partes = filiacaoRaw.split('/').map(s => s.trim());
+    const partes = filiacaoRaw.split("/").map((s) => s.trim());
     nomeMae = partes[0] || undefined;
     nomePai = partes[1] || undefined;
   }
@@ -707,14 +731,14 @@ export function parsePagina1(texto: string): DadosPagina1 {
     matricula,
     dataNascimento,
     sexo,
-    cpf: cpf?.replace(/\D/g, ''),
+    cpf: cpf?.replace(/\D/g, ""),
     rg,
     orgaoEmissor,
     dataEmissaoRG,
     naturalidade,
     nacionalidade,
     nomeMae,
-    nomePai
+    nomePai,
   };
 }
 ```
@@ -724,15 +748,15 @@ export function parsePagina1(texto: string): DadosPagina1 {
 ### 5.3 `normalizarSexo.ts`
 
 ```typescript
-export function normalizarSexo(valor: string): 'M' | 'F' | undefined {
+export function normalizarSexo(valor: string): "M" | "F" | undefined {
   const normalizado = valor.trim().toLowerCase();
 
-  if (normalizado === 'm' || normalizado === 'masculino') {
-    return 'M';
+  if (normalizado === "m" || normalizado === "masculino") {
+    return "M";
   }
 
-  if (normalizado === 'f' || normalizado === 'feminino') {
-    return 'F';
+  if (normalizado === "f" || normalizado === "feminino") {
+    return "F";
   }
 
   return undefined;
@@ -800,6 +824,7 @@ export function normalizarSexo(valor: string): 'M' | 'F' | undefined {
 **Decisão:** Campos atuais do banco continuam sendo os "editáveis". Criar novo campo JSONB para "originais".
 
 **Motivos:**
+
 - ✅ Compatibilidade com código existente
 - ✅ Nenhuma migration complexa
 - ✅ Edição manual já funciona
@@ -808,6 +833,7 @@ export function normalizarSexo(valor: string): 'M' | 'F' | undefined {
 ### 7.2 Por que JSONB para dadosOriginais?
 
 **Vantagens:**
+
 - ✅ Flexibilidade (adicionar campos sem migration)
 - ✅ Performance (índices GIN)
 - ✅ Queries nativas PostgreSQL
@@ -815,6 +841,7 @@ export function normalizarSexo(valor: string): 'M' | 'F' | undefined {
 ### 7.3 Por que Regex ao invés de LLM?
 
 **Motivos:**
+
 - ✅ Formato estruturado e previsível
 - ✅ Performance < 10ms
 - ✅ Zero custos

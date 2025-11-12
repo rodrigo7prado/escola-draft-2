@@ -21,6 +21,8 @@
   --color-ok: #3b82f6; /* azul */
   --color-corrigido: #10b981; /* verde */
 
+  --color-success: hsl(90, 50%, 50%); /* verde */
+
   /* Border Radius (padrão: sm = 0.125rem) */
   --radius-default: 0.125rem;
   --radius-none: 0;
@@ -64,10 +66,10 @@ body {
 
 /* Utility para esconder scrollbar mas manter funcionalidade */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
+  display: none; /* Chrome, Safari and Opera */
 }

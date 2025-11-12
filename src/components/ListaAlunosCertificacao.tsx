@@ -24,7 +24,7 @@ type Aluno = {
 type ListaAlunosCertificacaoProps = {
   filtros: FiltrosCertificacaoState;
   alunoSelecionadoId: string | null;
-  onSelecionarAluno: (aluno: any) => void;
+  onSelecionarAluno: (aluno: Aluno) => void;
   alunoIdModoColagemAtivo: string | null;
   onToggleModoColagem: (alunoId: string, ativo: boolean) => void;
 };

@@ -21,12 +21,14 @@ type ModalConfirmacaoDadosProps = {
  * (Declarado fora do componente principal para evitar recriação)
  */
 const Campo = ({ label, valor }: { label: string; valor?: string }) => {
-  const temValor = valor && valor.trim() !== '';
+  const temValor = valor && valor.trim() !== "";
 
   return (
     <div className="grid grid-cols-[140px_1fr] gap-2 text-xs">
       <div className="font-medium text-neutral-600">{label}:</div>
-      <div className={temValor ? "text-neutral-900" : "text-neutral-400 italic"}>
+      <div
+        className={temValor ? "text-neutral-900" : "text-neutral-400 italic"}
+      >
         {temValor ? valor : "(não detectado)"}
       </div>
     </div>
@@ -50,15 +52,17 @@ export function ModalConfirmacaoDados({
   onConfirmar,
   onCancelar,
 }: ModalConfirmacaoDadosProps) {
-  const [sexoSelecionado, setSexoSelecionado] = useState<"M" | "F" | "">("");
+  const [sexoSelecionado, setSexoSelecionado] = useState<"M" | "F" | "">(
+    () => dados?.sexo ?? ""
+  );
 
-  // Reset sexo ao abrir modal
+  // Sincroniza sexo ao abrir modal (atualiza de forma assíncrona para evitar renderizações em cascata)
   useEffect(() => {
-    if (open && dados?.sexo) {
-      setSexoSelecionado(dados.sexo);
-    } else if (open && !dados?.sexo) {
-      setSexoSelecionado("");
-    }
+    if (!open) return;
+    const id = setTimeout(() => {
+      setSexoSelecionado(dados?.sexo ?? "");
+    }, 0);
+    return () => clearTimeout(id);
   }, [open, dados?.sexo]);
 
   if (!dados) return null;
@@ -84,7 +88,12 @@ export function ModalConfirmacaoDados({
   };
 
   return (
-    <Modal open={open} onClose={onCancelar} title="Confirmar Dados Importados" size="lg">
+    <Modal
+      open={open}
+      onClose={onCancelar}
+      title="Confirmar Dados Importados"
+      size="lg"
+    >
       <div className="space-y-4" onKeyDown={handleKeyDown}>
         {/* Alerta de confirmação de sexo */}
         {precisaConfirmarSexo && (
@@ -95,7 +104,9 @@ export function ModalConfirmacaoDados({
             <FormField label="Selecione o sexo do aluno" className="mb-0">
               <Select
                 value={sexoSelecionado}
-                onChange={(e) => setSexoSelecionado(e.target.value as "M" | "F")}
+                onChange={(e) =>
+                  setSexoSelecionado(e.target.value as "M" | "F")
+                }
                 options={[
                   { value: "", label: "Selecione..." },
                   { value: "M", label: "Masculino" },
@@ -122,7 +133,10 @@ export function ModalConfirmacaoDados({
             <Campo label="Nacionalidade" valor={dados.nacionalidade} />
             <Campo label="UF de Nascimento" valor={dados.uf} />
             <Campo label="Naturalidade" valor={dados.naturalidade} />
-            <Campo label="Necessidade Especial" valor={dados.necessidadeEspecial} />
+            <Campo
+              label="Necessidade Especial"
+              valor={dados.necessidadeEspecial}
+            />
           </div>
         </section>
 
@@ -134,7 +148,10 @@ export function ModalConfirmacaoDados({
           <div className="space-y-1">
             <Campo label="Tipo de Documento" valor={dados.tipoDocumento} />
             <Campo label="RG" valor={dados.rg} />
-            <Campo label="Complemento da Identidade" valor={dados.complementoIdentidade} />
+            <Campo
+              label="Complemento da Identidade"
+              valor={dados.complementoIdentidade}
+            />
             <Campo label="Estado (Emissão)" valor={dados.estadoEmissao} />
             <Campo label="Órgão Emissor" valor={dados.orgaoEmissor} />
             <Campo label="Data de Expedição" valor={dados.dataEmissaoRG} />
@@ -179,12 +196,21 @@ export function ModalConfirmacaoDados({
             </h3>
             <div className="space-y-1">
               <Campo label="Tipo de Certidão" valor={dados.tipoCertidaoCivil} />
-              <Campo label="Número da Certidão" valor={dados.numeroCertidaoCivil} />
+              <Campo
+                label="Número da Certidão"
+                valor={dados.numeroCertidaoCivil}
+              />
               <Campo label="UF do Cartório" valor={dados.ufCartorio} />
-              <Campo label="Município do Cartório" valor={dados.municipioCartorio} />
+              <Campo
+                label="Município do Cartório"
+                valor={dados.municipioCartorio}
+              />
               <Campo label="Nome do Cartório" valor={dados.nomeCartorio} />
               <Campo label="Número do Termo" valor={dados.numeroTermo} />
-              <Campo label="Data de Emissão" valor={dados.dataEmissaoCertidao} />
+              <Campo
+                label="Data de Emissão"
+                valor={dados.dataEmissaoCertidao}
+              />
               <Campo label="Estado" valor={dados.estadoCertidao} />
               <Campo label="Folha" valor={dados.folhaCertidao} />
               <Campo label="Livro" valor={dados.livroCertidao} />

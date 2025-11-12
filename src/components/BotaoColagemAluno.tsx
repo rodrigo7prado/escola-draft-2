@@ -20,7 +20,6 @@ type BotaoColagemAlunoProps = {
  */
 export function BotaoColagemAluno({
   matricula,
-  alunoId,
   isModoColagemAtivo,
   onToggleModoColagem,
   disabled = false,
@@ -69,7 +68,7 @@ export function BotaoColagemAluno({
             : "hover:bg-neutral-200"
         }`}
       >
-        {isModoColagemAtivo ? "✓ Colagem" : "🔓 Colar"}
+        {isModoColagemAtivo ? "✓ Colagem ativada" : "🔓 Ativar Colagem"}
       </Button>
     </div>
   );

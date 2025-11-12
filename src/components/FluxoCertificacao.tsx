@@ -8,6 +8,7 @@ import { ListaAlunosCertificacao } from "./ListaAlunosCertificacao";
 import { DadosAlunoEditavel } from "./DadosAlunoEditavel";
 import { AreaColagemDados } from "./AreaColagemDados";
 import { ModalConfirmacaoDados } from "./ModalConfirmacaoDados";
+import { Aluno } from "@prisma/client";
 
 export function FluxoCertificacao() {
   const {
@@ -26,6 +27,10 @@ export function FluxoCertificacao() {
 
   const { alunoSelecionado, selecionarAluno } = useAlunoSelecionado();
 
+  // Forward selection to the hook; accept any to be compatible with ListaAlunosCertificacao callback signature
+  const handleSelecionarAluno = (aluno: unknown): void =>
+    selecionarAluno(aluno as Aluno | null);
+
   const {
     alunoIdAtivo,
     dadosParsed,
@@ -39,18 +44,18 @@ export function FluxoCertificacao() {
     handlePaste,
     fecharModal,
     confirmarDados,
-    isModoColagemAtivo,
+    // isModoColagemAtivo,
   } = useModoColagem();
 
   return (
     <>
-      <div className="grid grid-cols-[300px_1fr] gap-4 min-h-0 overflow-hidden h-full">
-        {/* Sidebar Esquerda - Lista de Alunos */}
-        <div className="h-full overflow-hidden">
+      <div className="flex gap-4 h-full">
+        {/* Left - Lista de alunos */}
+        <div className="w-80 shrink-0">
           <ListaAlunosCertificacao
             filtros={filtros}
             alunoSelecionadoId={alunoSelecionado?.id || null}
-            onSelecionarAluno={selecionarAluno}
+            onSelecionarAluno={handleSelecionarAluno}
             alunoIdModoColagemAtivo={alunoIdAtivo}
             onToggleModoColagem={(alunoId: string, ativo: boolean) => {
               if (ativo) {
@@ -62,9 +67,8 @@ export function FluxoCertificacao() {
           />
         </div>
 
-        {/* Painel Direito - Filtros + Dados */}
-        <div className="flex flex-col gap-3 h-full min-w-0 min-h-0">
-          {/* Fixed Container - Seleção de Turma */}
+        {/* Right - Filtros + Dados */}
+        <div className="flex-1 flex flex-col gap-3 h-full min-w-0 min-h-0">
           <div className="shrink-0">
             <FiltrosCertificacao
               anoLetivo={anoLetivo}
@@ -80,9 +84,7 @@ export function FluxoCertificacao() {
             />
           </div>
 
-          {/* Content Wrapper */}
           <div className="flex-1 min-h-0">
-            {/* Overflow Container */}
             <div className="border rounded-sm overflow-y-auto h-full">
               <DadosAlunoEditavel aluno={alunoSelecionado} />
             </div>

@@ -17,6 +17,23 @@ type ModalConfirmacaoDadosProps = {
 };
 
 /**
+ * Componente auxiliar para exibir campo
+ * (Declarado fora do componente principal para evitar recriação)
+ */
+const Campo = ({ label, valor }: { label: string; valor?: string }) => {
+  const temValor = valor && valor.trim() !== '';
+
+  return (
+    <div className="grid grid-cols-[140px_1fr] gap-2 text-xs">
+      <div className="font-medium text-neutral-600">{label}:</div>
+      <div className={temValor ? "text-neutral-900" : "text-neutral-400 italic"}>
+        {temValor ? valor : "(não detectado)"}
+      </div>
+    </div>
+  );
+};
+
+/**
  * Modal de confirmação de dados parseados
  *
  * Funcionalidades:
@@ -64,19 +81,6 @@ export function ModalConfirmacaoDados({
     if (e.key === "Enter" && !isSalvando) {
       handleConfirmar();
     }
-  };
-
-  /**
-   * Componente auxiliar para exibir campo
-   */
-  const Campo = ({ label, valor }: { label: string; valor?: string }) => {
-    if (!valor) return null;
-    return (
-      <div className="grid grid-cols-[140px_1fr] gap-2 text-xs">
-        <div className="font-medium text-neutral-600">{label}:</div>
-        <div className="text-neutral-900">{valor}</div>
-      </div>
-    );
   };
 
   return (

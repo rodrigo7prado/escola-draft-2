@@ -71,10 +71,70 @@ export interface DadosPessoais {
 
 /**
  * Extrai um campo do texto usando regex
+ *
+ * CORREÇÃO: Valores podem estar na mesma linha OU nas próximas linhas
+ * Exemplo formato 1: "Nome: ADRIEL"
+ * Exemplo formato 2: "Nome:*\nADRIEL"
+ * Exemplo formato 3: "Complemento:\nEstado*:\nRJ"
+ *
+ * A função continua procurando linhas subsequentes até encontrar um valor válido
+ * (que não seja label, valor inválido, ou texto entre parênteses)
  */
 function extrairCampo(texto: string, regex: RegExp): string | undefined {
   const match = texto.match(regex);
-  return match ? match[1].trim() : undefined;
+  if (!match) return undefined;
+
+  // Lista de valores inválidos que devem ser ignorados
+  const valoresInvalidos = ['*', 'v', 'Saiba Mais', 'Selecione', ''];
+
+  // Helper: verifica se string é um label (termina com ":" ou "*:")
+  const ehLabel = (str: string): boolean => {
+    const trimmed = str.trim();
+    return trimmed.endsWith(':') || trimmed.endsWith('*:');
+  };
+
+  // Helper: verifica se string é texto de instrução entre parênteses
+  const ehInstrucao = (str: string): boolean => {
+    return /^\(.*\)$/.test(str.trim());
+  };
+
+  // Valor capturado na mesma linha
+  let valorNaMesmaLinha = match[1].trim();
+
+  // Se valor na mesma linha é válido e não é label, retornar
+  if (valorNaMesmaLinha &&
+      !valoresInvalidos.includes(valorNaMesmaLinha) &&
+      !ehLabel(valorNaMesmaLinha) &&
+      !ehInstrucao(valorNaMesmaLinha)) {
+    return valorNaMesmaLinha;
+  }
+
+  // Valor na mesma linha é inválido, buscar nas próximas linhas
+  const posicaoMatch = match.index || 0;
+  const textoAposMatch = texto.substring(posicaoMatch + match[0].length);
+  const linhas = textoAposMatch.split('\n');
+
+  // Procurar nas próximas linhas (máximo 5 linhas à frente)
+  for (let i = 0; i < Math.min(linhas.length, 5); i++) {
+    const linha = linhas[i]?.trim();
+
+    // Pular linhas vazias
+    if (!linha) continue;
+
+    // Pular labels (ex: "Estado*:")
+    if (ehLabel(linha)) continue;
+
+    // Pular valores inválidos
+    if (valoresInvalidos.includes(linha)) continue;
+
+    // Pular instruções entre parênteses
+    if (ehInstrucao(linha)) continue;
+
+    // Encontrou valor válido!
+    return linha;
+  }
+
+  return undefined; // Valor realmente vazio
 }
 
 /**

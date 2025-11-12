@@ -31,4 +31,4 @@ afterEach(() => {
 // process.env.DATABASE_URL = 'file:./test.db';
 
 // Configurações globais
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;

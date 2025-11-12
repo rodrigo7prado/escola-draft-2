@@ -1,3 +1,8 @@
+# INSTRUÇÕES GERAIS
+
+- sempre usar pnpm;
+- nunca rode "&& pnpm test 2>&1 | head -100", esse sufixo dá erro. Prefira "&& pnpm test";
+
 # ⚠️ METODOLOGIA DE DESENVOLVIMENTO - LEIA PRIMEIRO ⚠️
 
 ## 🎯 METODOLOGIA CIF (Ciclo de Integridade de Funcionalidades)
@@ -113,19 +118,22 @@ Claude deve entender:
 
 ### RESUMO RÁPIDO (3 FASES)
 
-**FASE 1: CAPTURA VISUAL** *(Usuário fornece)*
+**FASE 1: CAPTURA VISUAL** _(Usuário fornece)_
+
 - Screenshots do estado atual
 - Screenshots do resultado desejado (se aplicável)
 - Contexto de uso (navegação, tamanho, interações)
 
-**FASE 2: ANÁLISE ESTRUTURADA** *(Claude executa)*
+**FASE 2: ANÁLISE ESTRUTURADA** _(Claude executa)_
+
 - Leitura hierárquica completa (componente → filhos → hooks)
 - Mapeamento visual → código (cada elemento da screenshot)
 - ✅ Checklist obrigatório de compreensão
 - ✅ Identificar oportunidades de componentização
 - ✅ Buscar componentes genéricos existentes em `ui/`
 
-**FASE 3: COMPONENTIZAÇÃO E REFATORAÇÃO** *(Claude executa)*
+**FASE 3: COMPONENTIZAÇÃO E REFATORAÇÃO** _(Claude executa)_
+
 - ✅ **SEMPRE componentizar** (se aparece 2x, componentizar)
 - ✅ **Buscar existentes PRIMEIRO** (Glob em `ui/`, evitar duplicação)
 - ✅ **Decidir tipo:** Genérico (`ui/`) vs Personalizado (`components/`)
@@ -134,6 +142,7 @@ Claude deve entender:
 ### DECISÃO: GENÉRICO vs PERSONALIZADO
 
 **Componente GENÉRICO (`ui/`):**
+
 - ✅ Reutilizável em múltiplos contextos
 - ✅ SEM lógica de negócio
 - ✅ Altamente configurável (props)
@@ -141,6 +150,7 @@ Claude deve entender:
 - **Exemplos:** Button, Input, Modal, FormField, Badge
 
 **Componente PERSONALIZADO (`components/`):**
+
 - ✅ Lógica de negócio específica
 - ✅ Integração com hooks de domínio
 - ✅ Combinação complexa de genéricos
@@ -161,8 +171,7 @@ Claude deve entender:
 
 > **SEMPRE componentizar. SEMPRE reutilizar. NUNCA duplicar.**
 >
-> **Se um padrão aparece 2 vezes, COMPONENTIZAR.**
-> **Se pode ser genérico, CRIAR em `ui/` para reutilização futura.**
+> **Se um padrão aparece 2 vezes, COMPONENTIZAR.** > **Se pode ser genérico, CRIAR em `ui/` para reutilização futura.**
 
 ---
 
@@ -172,15 +181,15 @@ Claude deve entender:
 
 ### 🎯 QUANDO APLICAR AMBOS OS PROTOCOLOS
 
-| Situação | CIF | Protocolo Frontend | CHECKPOINT |
-|----------|-----|-------------------|------------|
-| **Refatoração visual de funcionalidade CIF** | ✅ Sim | ✅ Sim | ✅ Obrigatório |
-| **Nova funcionalidade complexa com UI** | ✅ Sim | ✅ Sim | ✅ Obrigatório |
-| **Refatoração visual isolada (sem lógica)** | ❌ Não | ✅ Sim | ⚠️ Opcional* |
-| **Bug visual em funcionalidade CIF** | ⚠️ CICLO** | ✅ Sim | ✅ Obrigatório |
+| Situação                                     | CIF          | Protocolo Frontend | CHECKPOINT     |
+| -------------------------------------------- | ------------ | ------------------ | -------------- |
+| **Refatoração visual de funcionalidade CIF** | ✅ Sim       | ✅ Sim             | ✅ Obrigatório |
+| **Nova funcionalidade complexa com UI**      | ✅ Sim       | ✅ Sim             | ✅ Obrigatório |
+| **Refatoração visual isolada (sem lógica)**  | ❌ Não       | ✅ Sim             | ⚠️ Opcional\*  |
+| **Bug visual em funcionalidade CIF**         | ⚠️ CICLO\*\* | ✅ Sim             | ✅ Obrigatório |
 
-*Opcional mas recomendado se mudança for significativa
-**Registrar no CICLO da funcionalidade + seguir Protocolo Frontend
+\*Opcional mas recomendado se mudança for significativa
+\*\*Registrar no CICLO da funcionalidade + seguir Protocolo Frontend
 
 ### 📝 FLUXO INTEGRADO: Refatoração Visual em Funcionalidade CIF
 
@@ -229,11 +238,13 @@ Claude deve entender:
 **Protocolo Frontend Aplicado:** ✅ Sim (Fases 1-3 completas)
 
 ### Captura Visual
+
 - **Screenshots antes:** [links ou descrição]
 - **Screenshots depois:** [links ou descrição]
 - **Contexto:** [navegação, tamanho, interações]
 
 ### Análise Estruturada
+
 - **Componentes analisados:** [lista de arquivos lidos]
 - **Checklist de compreensão:** ✅ Completo
 - **Oportunidades identificadas:**
@@ -242,17 +253,20 @@ Claude deve entender:
   - [ ] Criação de novo genérico Z
 
 ### Componentização Executada
+
 - **Componentes genéricos criados:** [ui/ComponenteNovo.tsx]
 - **Componentes genéricos reutilizados:** [ui/Button, ui/Input]
 - **Componentes personalizados modificados:** [components/Filtros.tsx]
 - **Arquivos modificados:** [lista completa com linhas]
 
 ### Atualização CIF
+
 - ✅ **TECNICO.md:** Seção de componentes atualizada (linhas X-Y)
 - ✅ **CICLO.md:** Entrada adicionada (data, mudança, impacto)
 - ⬜ **ESPECIFICACAO.md:** Não alterado (apenas visual)
 
 ### Validação Visual
+
 - ✅ Layout preservado
 - ✅ Responsividade mantida
 - ✅ Interações funcionando
@@ -304,11 +318,13 @@ Claude deve entender:
 **Passos:**
 
 1. ✅ **PROTOCOLO FRONTEND:**
+
    - FASE 1: Usuário fornece screenshot do formulário atual
    - FASE 2: Claude lê DadosAlunoEditavel.tsx + identifica campos duplicados
    - FASE 3: Claude busca FormField/Input em ui/, refatora usando genéricos
 
 2. ✅ **CIF - ATUALIZAR:**
+
    - `docs/ciclos/FLUXO_CERTIFICACAO_TECNICO.md`: atualizar seção de componentes
    - `docs/ciclos/FLUXO_CERTIFICACAO_CICLO.md`: adicionar entrada "Refatoração visual: componentização de campos"
 
@@ -325,10 +341,12 @@ Claude deve entender:
 **Passos:**
 
 1. ✅ **CIF - CICLO.md:**
+
    - Registrar bug no CICLO: "Bug visual V5.3.3: arrays vazios"
    - Motivo, solução implementada, testes afetados
 
 2. ✅ **PROTOCOLO FRONTEND (se necessário refatoração):**
+
    - FASE 1-3: Seguir protocolo se houver mudança visual
    - Se apenas fix de lógica: pular protocolo
 
@@ -340,16 +358,19 @@ Claude deve entender:
 ### 🎯 BENEFÍCIOS DA INTEGRAÇÃO
 
 1. **Rastreabilidade completa:**
+
    - CHECKPOINT registra O QUE mudou visualmente
    - CICLO registra POR QUE mudou
    - TECNICO registra COMO ficou implementado
 
 2. **Componentização documentada:**
+
    - CHECKPOINT lista componentes criados/reutilizados
    - TECNICO atualizado com novos componentes
    - Fácil encontrar padrões para reutilizar
 
 3. **Continuidade entre sessões:**
+
    - Próxima sessão sabe exatamente o estado da UI
    - Screenshots no CHECKPOINT facilitam contexto visual
    - Não precisa "adivinhar" como está a interface

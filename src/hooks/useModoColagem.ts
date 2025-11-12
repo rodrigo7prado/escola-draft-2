@@ -1,0 +1,241 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import type { DadosPessoais } from "@/lib/parsing/parseDadosPessoais";
+
+/**
+ * Hook para gerenciar o modo de colagem de dados estruturados
+ *
+ * Funcionalidades:
+ * - Ativa/desativa modo colagem por aluno
+ * - Envia texto colado para API de parsing
+ * - Gerencia modal de confirmação
+ * - Salva dados confirmados no banco
+ */
+
+type ModoColagemState = {
+  // Estado de ativação
+  alunoIdAtivo: string | null;
+
+  // Dados parseados (aguardando confirmação)
+  dadosParsed: DadosPessoais | null;
+  precisaConfirmarSexo: boolean;
+
+  // Loading states
+  isProcessando: boolean;
+  isSalvando: boolean;
+
+  // Modal
+  modalAberto: boolean;
+
+  // Erro
+  erro: string | null;
+
+  // Texto bruto (para salvar junto)
+  textoBruto: string | null;
+};
+
+export function useModoColagem() {
+  const [state, setState] = useState<ModoColagemState>({
+    alunoIdAtivo: null,
+    dadosParsed: null,
+    precisaConfirmarSexo: false,
+    isProcessando: false,
+    isSalvando: false,
+    modalAberto: false,
+    erro: null,
+    textoBruto: null,
+  });
+
+  /**
+   * Ativa modo colagem para um aluno específico
+   */
+  const ativarModoColagem = useCallback((alunoId: string) => {
+    setState((prev) => ({
+      ...prev,
+      alunoIdAtivo: alunoId,
+      dadosParsed: null,
+      precisaConfirmarSexo: false,
+      modalAberto: false,
+      erro: null,
+      textoBruto: null,
+    }));
+  }, []);
+
+  /**
+   * Desativa modo colagem
+   */
+  const desativarModoColagem = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      alunoIdAtivo: null,
+      dadosParsed: null,
+      precisaConfirmarSexo: false,
+      modalAberto: false,
+      erro: null,
+      textoBruto: null,
+    }));
+  }, []);
+
+  /**
+   * Processa texto colado (envia para API)
+   */
+  const handlePaste = useCallback(
+    async (texto: string, matricula: string, alunoId: string) => {
+      setState((prev) => ({ ...prev, isProcessando: true, erro: null }));
+
+      try {
+        const response = await fetch("/api/importacao-estruturada", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            texto,
+            matricula,
+            alunoId,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!data.sucesso) {
+          setState((prev) => ({
+            ...prev,
+            isProcessando: false,
+            erro: data.erro || "Erro ao processar dados",
+          }));
+          return;
+        }
+
+        // Sucesso - abrir modal de confirmação
+        if (data.tipoPagina === "dadosPessoais") {
+          setState((prev) => ({
+            ...prev,
+            isProcessando: false,
+            dadosParsed: data.dados,
+            precisaConfirmarSexo: data.precisaConfirmarSexo,
+            modalAberto: true,
+            textoBruto: texto,
+          }));
+        } else if (data.tipoPagina === "dadosEscolares") {
+          // Dados escolares salvos automaticamente
+          setState((prev) => ({
+            ...prev,
+            isProcessando: false,
+            alunoIdAtivo: null, // Desativa modo colagem
+          }));
+
+          // TODO: Mostrar notificação de sucesso
+          alert(data.mensagem);
+        }
+      } catch (error) {
+        console.error("Erro ao processar colagem:", error);
+        setState((prev) => ({
+          ...prev,
+          isProcessando: false,
+          erro: "Erro de conexão ao processar dados",
+        }));
+      }
+    },
+    []
+  );
+
+  /**
+   * Fecha modal sem salvar
+   */
+  const fecharModal = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      modalAberto: false,
+      dadosParsed: null,
+      precisaConfirmarSexo: false,
+      textoBruto: null,
+    }));
+  }, []);
+
+  /**
+   * Confirma e salva dados no banco
+   */
+  const confirmarDados = useCallback(
+    async (dados: DadosPessoais, sexoConfirmado?: "M" | "F") => {
+      if (!state.alunoIdAtivo || !state.textoBruto) {
+        console.error("Estado inválido para confirmação");
+        return;
+      }
+
+      setState((prev) => ({ ...prev, isSalvando: true, erro: null }));
+
+      try {
+        // Se sexo foi confirmado manualmente, adicionar aos dados
+        const dadosFinais = sexoConfirmado
+          ? { ...dados, sexo: sexoConfirmado }
+          : dados;
+
+        const response = await fetch("/api/importacao-estruturada/salvar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            alunoId: state.alunoIdAtivo,
+            textoBruto: state.textoBruto,
+            dados: dadosFinais,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!result.sucesso) {
+          setState((prev) => ({
+            ...prev,
+            isSalvando: false,
+            erro: result.erro || "Erro ao salvar dados",
+          }));
+          return;
+        }
+
+        // Sucesso - resetar estado e desativar modo colagem
+        setState({
+          alunoIdAtivo: null,
+          dadosParsed: null,
+          precisaConfirmarSexo: false,
+          isProcessando: false,
+          isSalvando: false,
+          modalAberto: false,
+          erro: null,
+          textoBruto: null,
+        });
+
+        // TODO: Mostrar notificação de sucesso
+        // TODO: Recarregar dados do aluno na UI
+        alert("Dados salvos com sucesso!");
+      } catch (error) {
+        console.error("Erro ao salvar dados:", error);
+        setState((prev) => ({
+          ...prev,
+          isSalvando: false,
+          erro: "Erro de conexão ao salvar dados",
+        }));
+      }
+    },
+    [state.alunoIdAtivo, state.textoBruto]
+  );
+
+  return {
+    // Estado
+    alunoIdAtivo: state.alunoIdAtivo,
+    dadosParsed: state.dadosParsed,
+    precisaConfirmarSexo: state.precisaConfirmarSexo,
+    isProcessando: state.isProcessando,
+    isSalvando: state.isSalvando,
+    modalAberto: state.modalAberto,
+    erro: state.erro,
+
+    // Ações
+    ativarModoColagem,
+    desativarModoColagem,
+    handlePaste,
+    fecharModal,
+    confirmarDados,
+
+    // Helpers
+    isModoColagemAtivo: (alunoId: string) => state.alunoIdAtivo === alunoId,
+  };
+}

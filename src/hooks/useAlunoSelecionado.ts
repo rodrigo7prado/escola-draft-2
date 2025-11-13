@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { AlunoCertificacao } from "./useAlunosCertificacao";
 import {
   CAMPOS_DADOS_PESSOAIS,
+  CAMPOS_DADOS_PESSOAIS_ALIASES,
   type CampoDadosPessoais,
 } from "@/lib/importacao/dadosPessoaisMetadata";
 
@@ -116,7 +117,10 @@ function mapearAlunoDetalhado(raw: Record<string, any> | null): AlunoDetalhado |
   };
 
   for (const campo of CAMPOS_DADOS_PESSOAIS) {
-    resultado[campo] = serializarValor(raw[campo]);
+    const alias = CAMPOS_DADOS_PESSOAIS_ALIASES[campo];
+    const valorCru =
+      raw[campo] ?? (alias ? raw[alias as keyof typeof raw] : undefined);
+    resultado[campo] = serializarValor(valorCru);
   }
 
   return resultado;

@@ -52,6 +52,13 @@ export type CampoDadosConfig = {
   normalizarComparacao?: (valor: string | null) => string;
 };
 
+export const CAMPOS_DADOS_PESSOAIS_ALIASES: Partial<
+  Record<CampoDadosPessoais, string>
+> = {
+  orgaoEmissor: "rgOrgaoEmissor",
+  dataEmissaoRG: "rgDataEmissao",
+};
+
 export const CAMPOS_DADOS_PESSOAIS_CONFIG: ReadonlyArray<CampoDadosConfig> = [
   { campo: "nome", label: "Nome", categoria: "cadastro" },
   { campo: "nomeSocial", label: "Nome Social", categoria: "cadastro" },

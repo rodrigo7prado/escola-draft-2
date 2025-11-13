@@ -1,28 +1,3 @@
-/**
- * Parser de Dados Pessoais - COMPLETO
- *
- * Extrai todos os campos disponíveis do texto colado (32 campos):
- *
- * DADOS CADASTRAIS:
- * - Nome, Nome Social, Data Nascimento, Sexo, Estado Civil
- * - País de Nascimento, Nacionalidade, UF de Nascimento
- * - Naturalidade, Necessidade Especial
- *
- * DOCUMENTOS:
- * - Tipo de documento, RG, Complemento da identidade
- * - Estado (emissão), Órgão Emissor, Data de Expedição, CPF
- *
- * FILIAÇÃO:
- * - Nome da Mãe, CPF (mãe), Nome do Pai, CPF (pai)
- *
- * CONTATO:
- * - E-mail
- *
- * CERTIDÃO CIVIL:
- * - Tipo, Número, UF Cartório, Município Cartório, Nome Cartório
- * - Número do Termo, Data de Emissão, Estado, Folha, Livro
- */
-
 import { normalizarSexo } from "./normalizarSexo";
 
 export interface DadosPessoais {
@@ -69,353 +44,470 @@ export interface DadosPessoais {
   livroCertidao?: string;
 }
 
-/**
- * Extrai um campo do texto usando regex
- *
- * REGRA GERAL: Se após um label só há outro label (ou valores inválidos), o campo é VAZIO.
- *
- * Formato comum:
- * - "Nome: ADRIEL" → valor na mesma linha
- * - "Nome:*\nADRIEL" → valor na próxima linha
- * - "Nome Social:\tData Nascimento:*" → Nome Social VAZIO (próximo texto é outro label)
- * - "Complemento:\nEstado*:\nRJ" → Complemento VAZIO (próximo não-vazio é label)
- *
- * A função procura linhas subsequentes até encontrar um valor válido
- * (que NÃO seja label, valor inválido, ou instrução)
- */
-function extrairCampo(texto: string, regex: RegExp): string | undefined {
-  const match = texto.match(regex);
-  if (!match) return undefined;
+type EstrategiaCaptura =
+  | "mesmaLinha"
+  | "mesmaOuProxima"
+  | "proximaLinha"
+  | "naturalidade";
 
-  // Lista de valores inválidos (placeholders vazios)
-  const valoresInvalidos = [
-    "*",
-    "v",
-    "Saiba Mais",
-    "Selecione",
-    "",
-    "\n",
-    "\t",
-  ];
+type SanitizeFn = (valor: string) => string | undefined;
 
-  // Helper: verifica se string é um label (contém ":" mas não é um valor válido)
-  // Labels terminam com ":" ou "*:" ou contêm apenas letras + ":"
-  const ehLabel = (str: string): boolean => {
-    const trimmed = str.trim();
+interface CampoDescritor {
+  campo: keyof DadosPessoais;
+  label: string;
+  estrategia: EstrategiaCaptura;
+  sanitize?: SanitizeFn;
+  ancora?: string;
+  aliases?: string[];
+}
 
-    // Termina com : ou *:
-    if (trimmed.endsWith(":") || trimmed.endsWith("*:")) return true;
+interface LinhaProcessada {
+  raw: string;
+  normalized: string;
+  normalizedLabel: string;
+}
 
-    // Padrão "Palavra(s) + dois pontos" (ex: "Data Nascimento:")
-    // Mas NÃO capturar valores válidos que por acaso têm : (ex: "10:30", "http://")
-    if (/^[A-Za-zÀ-ÿ\s]+\*?:/.test(trimmed)) return true;
+const PLACEHOLDERS = new Set([
+  "",
+  "*",
+  "V",
+  "SELECIONE",
+  "SAIBA MAIS",
+  "NAO DECLARADO",
+  "NAO DECLARADA",
+  "NAO INFORMADO",
+  "NAO INFORMADA",
+  "NAO SE APLICA",
+  "NAO SE APLICA.",
+  "NAO DECLARADO.",
+  "MASCULINO FEMININO",
+]);
 
-    return false;
+const CAMPOS_DESCRITORES: CampoDescritor[] = [
+  { campo: "nome", label: "NOME", estrategia: "mesmaOuProxima" },
+  { campo: "nomeSocial", label: "NOME SOCIAL", estrategia: "mesmaOuProxima" },
+  {
+    campo: "dataNascimento",
+    label: "DATA NASCIMENTO",
+    aliases: ["DATA DE NASCIMENTO"],
+    estrategia: "mesmaOuProxima",
+  },
+  { campo: "estadoCivil", label: "ESTADO CIVIL", estrategia: "mesmaOuProxima" },
+  {
+    campo: "paisNascimento",
+    label: "PAIS DE NASCIMENTO",
+    estrategia: "mesmaOuProxima",
+  },
+  {
+    campo: "nacionalidade",
+    label: "NACIONALIDADE",
+    estrategia: "mesmaOuProxima",
+  },
+  { campo: "uf", label: "UF DE NASCIMENTO", estrategia: "mesmaOuProxima" },
+  {
+    campo: "naturalidade",
+    label: "NATURALIDADE",
+    estrategia: "naturalidade",
+    sanitize: sanitizeNaturalidade,
+  },
+  {
+    campo: "necessidadeEspecial",
+    label: "NECESSIDADE ESPECIAL",
+    estrategia: "mesmaOuProxima",
+  },
+  { campo: "nomeMae", label: "NOME DA MAE", estrategia: "mesmaOuProxima" },
+  {
+    campo: "cpfMae",
+    label: "CPF",
+    estrategia: "mesmaOuProxima",
+    sanitize: sanitizeCPF,
+  },
+  { campo: "nomePai", label: "NOME DO PAI", estrategia: "mesmaOuProxima" },
+  {
+    campo: "cpfPai",
+    label: "CPF",
+    estrategia: "mesmaOuProxima",
+    sanitize: sanitizeCPF,
+  },
+  { campo: "email", label: "E-MAIL", estrategia: "mesmaOuProxima" },
+  {
+    campo: "cpf",
+    label: "CPF",
+    estrategia: "mesmaOuProxima",
+    sanitize: sanitizeCPF,
+    ancora: "OUTROS DOCUMENTOS",
+  },
+  {
+    campo: "tipoDocumento",
+    label: "TIPO",
+    estrategia: "mesmaOuProxima",
+    ancora: "OUTROS DOCUMENTOS",
+  },
+  {
+    campo: "rg",
+    label: "NUMERO",
+    estrategia: "mesmaOuProxima",
+    ancora: "OUTROS DOCUMENTOS",
+  },
+  {
+    campo: "complementoIdentidade",
+    label: "COMPLEMENTO DA IDENTIDADE",
+    estrategia: "mesmaOuProxima",
+    ancora: "OUTROS DOCUMENTOS",
+  },
+  {
+    campo: "estadoEmissao",
+    label: "ESTADO",
+    estrategia: "mesmaOuProxima",
+    ancora: "OUTROS DOCUMENTOS",
+  },
+  {
+    campo: "orgaoEmissor",
+    label: "ORGAO EMISSOR",
+    estrategia: "mesmaOuProxima",
+    ancora: "OUTROS DOCUMENTOS",
+  },
+  {
+    campo: "dataEmissaoRG",
+    label: "DATA DE EXPEDICAO",
+    estrategia: "mesmaOuProxima",
+    ancora: "OUTROS DOCUMENTOS",
+  },
+  {
+    campo: "tipoCertidaoCivil",
+    label: "TIPO CERTIDAO CIVIL",
+    estrategia: "mesmaOuProxima",
+    ancora: "CERTIDAO CIVIL",
+  },
+  {
+    campo: "numeroCertidaoCivil",
+    label: "CERTIDAO CIVIL",
+    estrategia: "mesmaOuProxima",
+    ancora: "CERTIDAO CIVIL",
+  },
+  {
+    campo: "ufCartorio",
+    label: "UF DO CARTORIO",
+    estrategia: "mesmaOuProxima",
+    ancora: "CERTIDAO CIVIL",
+  },
+  {
+    campo: "municipioCartorio",
+    label: "MUNICIPIO DO CARTORIO",
+    estrategia: "mesmaOuProxima",
+    ancora: "CERTIDAO CIVIL",
+  },
+  {
+    campo: "nomeCartorio",
+    label: "CARTORIO",
+    estrategia: "mesmaOuProxima",
+    ancora: "CERTIDAO CIVIL",
+  },
+  {
+    campo: "numeroTermo",
+    label: "NUMERO DO TERMO",
+    estrategia: "mesmaOuProxima",
+    ancora: "CERTIDAO CIVIL",
+  },
+  {
+    campo: "dataEmissaoCertidao",
+    label: "DATA DE EMISSAO",
+    estrategia: "mesmaOuProxima",
+    ancora: "CERTIDAO CIVIL",
+  },
+  {
+    campo: "estadoCertidao",
+    label: "ESTADO",
+    estrategia: "mesmaOuProxima",
+    ancora: "CERTIDAO CIVIL",
+  },
+  {
+    campo: "folhaCertidao",
+    label: "FOLHA",
+    estrategia: "mesmaOuProxima",
+    ancora: "CERTIDAO CIVIL",
+  },
+  {
+    campo: "livroCertidao",
+    label: "LIVRO",
+    estrategia: "mesmaOuProxima",
+    ancora: "CERTIDAO CIVIL",
+  },
+];
+
+export function parseDadosPessoais(texto: string): DadosPessoais {
+  const textoNormalizado = normalizarTextoBase(texto);
+  const trechoDados = extrairTrechoDadosPessoais(textoNormalizado);
+  const linhas = prepararLinhas(trechoDados);
+  const camposSequenciais = extrairCamposOrdenados(linhas);
+
+  const sexo = extrairSexo(textoNormalizado);
+
+  return {
+    ...camposSequenciais,
+    sexo: sexo as DadosPessoais["sexo"],
   };
+}
 
-  // Helper: verifica se é instrução entre parênteses
-  const ehInstrucao = (str: string): boolean => {
-    return /^\(.*\)$/.test(str.trim());
-  };
+function extrairCamposOrdenados(
+  linhas: LinhaProcessada[]
+): Partial<DadosPessoais> {
+  const resultado: Partial<DadosPessoais> = {};
+  let cursor = 0;
 
-  // Helper: verifica se é checkbox/radio (texto único: "Sim", "Não", "Masculino", "Feminino")
-  const ehOpcaoRadio = (str: string): boolean => {
-    const trimmed = str.trim();
-    return ["Sim", "Não", "Masculino", "Feminino"].includes(trimmed);
-  };
+  for (const descritor of CAMPOS_DESCRITORES) {
+    const indiceLabel = encontrarIndiceLabel(linhas, descritor, cursor);
+    if (indiceLabel === -1) {
+      continue;
+    }
 
-  // Valor capturado na mesma linha
-  const valorNaMesmaLinha = match[1]?.trim();
+    const { valor, nextIndex } = capturarValor(linhas, indiceLabel, descritor);
 
-  // Se valor na mesma linha é válido (não é label, não é inválido, não é instrução)
-  if (
-    valorNaMesmaLinha &&
-    !valoresInvalidos.includes(valorNaMesmaLinha) &&
-    !ehLabel(valorNaMesmaLinha) &&
-    !ehInstrucao(valorNaMesmaLinha) &&
-    !ehOpcaoRadio(valorNaMesmaLinha)
-  ) {
-    return valorNaMesmaLinha;
+    if (valor !== undefined) {
+      (resultado as Record<keyof DadosPessoais, string | undefined>)[
+        descritor.campo
+      ] = valor;
+    }
+
+    cursor = Math.max(cursor, nextIndex);
   }
 
-  // Valor na mesma linha é inválido/vazio, buscar nas próximas linhas
-  const posicaoMatch = match.index || 0;
-  const textoAposMatch = texto.substring(posicaoMatch + match[0].length);
-  const linhas = textoAposMatch.split("\n");
+  return resultado;
+}
 
-  // Procurar nas próximas linhas (máximo 10 linhas à frente)
-  for (let i = 0; i < Math.min(linhas.length, 10); i++) {
-    const linha = linhas[i]?.trim();
+function encontrarIndiceLabel(
+  linhas: LinhaProcessada[],
+  descritor: CampoDescritor,
+  inicio: number
+): number {
+  const possiveis = [
+    normalizarParaComparacao(descritor.label),
+    ...(descritor.aliases?.map(normalizarParaComparacao) ?? []),
+  ];
+  let inicioBusca = inicio;
 
-    // Pular linhas vazias
+  if (descritor.ancora) {
+    const ancoraNormalizada = normalizarParaComparacao(descritor.ancora);
+    for (let i = inicio; i < linhas.length; i++) {
+      if (linhas[i].normalizedLabel === ancoraNormalizada) {
+        inicioBusca = i;
+        break;
+      }
+    }
+  }
+
+  for (let i = inicioBusca; i < linhas.length; i++) {
+    if (!linhas[i].raw.includes(":")) {
+      continue;
+    }
+
+    const labelNormalizada = linhas[i].normalizedLabel;
+    const corresponde = possiveis.some(
+      (alvo) =>
+        labelNormalizada === alvo || labelNormalizada.endsWith(` ${alvo}`)
+    );
+
+    if (corresponde) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+function capturarValor(
+  linhas: LinhaProcessada[],
+  indiceLabel: number,
+  descritor: CampoDescritor
+): { valor?: string; nextIndex: number } {
+  let bruto: string | undefined;
+  let nextIndex = indiceLabel + 1;
+
+  switch (descritor.estrategia) {
+    case "mesmaLinha":
+      bruto = capturarMesmaLinha(linhas[indiceLabel]);
+      break;
+    case "proximaLinha":
+      ({ valor: bruto, nextIndex } = capturarProximaLinha(linhas, indiceLabel));
+      break;
+    case "mesmaOuProxima":
+      bruto = capturarMesmaLinha(linhas[indiceLabel]);
+      if (!valorDisponivel(bruto)) {
+        const resultadoProxima = capturarProximaLinha(linhas, indiceLabel);
+        bruto = resultadoProxima.valor;
+        nextIndex = resultadoProxima.nextIndex;
+      }
+      break;
+    case "naturalidade":
+      ({ valor: bruto, nextIndex } = capturarNaturalidade(linhas, indiceLabel));
+      break;
+  }
+
+  if (!valorDisponivel(bruto)) {
+    return { valor: undefined, nextIndex };
+  }
+
+  const valorSanitizado = descritor.sanitize
+    ? descritor.sanitize(bruto!)
+    : sanitizeValorBase(bruto);
+
+  return { valor: valorSanitizado, nextIndex };
+}
+
+function capturarMesmaLinha(linha: LinhaProcessada): string | undefined {
+  if (!linha.raw.includes(":")) {
+    return undefined;
+  }
+
+  const [, ...resto] = linha.raw.split(":");
+  const valor = resto.join(":");
+  return valor.trim();
+}
+
+function capturarProximaLinha(
+  linhas: LinhaProcessada[],
+  indiceLabel: number
+): { valor?: string; nextIndex: number } {
+  for (let i = indiceLabel + 1; i < linhas.length; i++) {
+    const candidato = linhas[i].raw.trim();
+
+    if (!candidato) {
+      continue;
+    }
+
+    if (ehInstrucao(candidato)) {
+      continue;
+    }
+
+    if (ehLinhaLabelSemValor(linhas[i])) {
+      break;
+    }
+
+    if (PLACEHOLDERS.has(normalizarParaComparacao(candidato))) {
+      continue;
+    }
+
+    return { valor: candidato, nextIndex: i + 1 };
+  }
+
+  return { valor: undefined, nextIndex: indiceLabel + 1 };
+}
+
+function capturarNaturalidade(
+  linhas: LinhaProcessada[],
+  indiceLabel: number
+): { valor?: string; nextIndex: number } {
+  const valorMesmaLinha = capturarMesmaLinha(linhas[indiceLabel]);
+  if (valorDisponivel(valorMesmaLinha)) {
+    return { valor: valorMesmaLinha, nextIndex: indiceLabel + 1 };
+  }
+
+  for (let i = indiceLabel + 1; i < linhas.length; i++) {
+    const linha = linhas[i].raw.trim();
     if (!linha) continue;
 
-    // DEBUG: Log para diagnosticar problema de "Complemento da Identidade"
-    if (regex.source.includes("COMPLEMENTO")) {
-      console.log(`[DEBUG] Linha ${i}: "${linha}"`, {
-        ehLabel: ehLabel(linha),
-        ehInstrucao: ehInstrucao(linha),
-        ehOpcaoRadio: ehOpcaoRadio(linha),
-        ehInvalido: valoresInvalidos.includes(linha),
-      });
-    }
-
-    // SE ENCONTROU UM LABEL, o campo original está VAZIO
-    if (ehLabel(linha)) {
-      return undefined;
-    }
-
-    // Pular valores inválidos (placeholders)
-    if (valoresInvalidos.includes(linha)) continue;
-
-    // Pular instruções entre parênteses
-    if (ehInstrucao(linha)) continue;
-
-    // Pular opções de radio/checkbox (não são valores de texto)
-    if (ehOpcaoRadio(linha)) continue;
-
-    // Encontrou valor válido!
-    return linha;
-  }
-
-  return undefined; // Campo vazio (não encontrou valor válido)
-}
-
-/**
- * Limpa CPF (remove formatação)
- */
-function limparCPF(cpf: string | undefined): string | undefined {
-  return cpf?.replace(/\D/g, "") || undefined;
-}
-
-/**
- * Extrai naturalidade (valor após código numérico + quebra de linha)
- * Formato do sistema:
- * "Naturalidade:*\n00007043\nRIO DE JANEIRO"
- * Deve retornar: "RIO DE JANEIRO"
- */
-function extrairNaturalidade(texto: string): string | undefined {
-  const match = texto.match(/NATURALIDADE:\s*\*?\s*\n\s*\d+\s*\n\s*(.+)/i);
-  if (match) {
-    return match[1].trim();
-  }
-
-  // Fallback: formato inline "Naturalidade: 00001404 IPU"
-  const matchInline = texto.match(/NATURALIDADE:\s*(.+)/i);
-  if (!matchInline) return undefined;
-
-  const valor = matchInline[1].trim();
-  const partes = valor.split(/\s+/);
-
-  // Se tem mais de uma parte, pegar a partir da segunda (remove código)
-  if (partes.length > 1) {
-    return partes.slice(1).join(" ");
-  }
-
-  return valor;
-}
-
-/**
- * Extrai CPFs usando contexto posicional
- *
- * Estratégia:
- * - CPF após "Nome da Mãe:" = CPF da mãe
- * - CPF após "Nome do Pai:" = CPF do pai
- * - CPF em seção de documentos (próximo a "Tipo:", "RG") = CPF do aluno
- */
-function extrairCPFs(texto: string): {
-  cpfAluno?: string;
-  cpfMae?: string;
-  cpfPai?: string;
-} {
-  const linhas = texto.split("\n");
-  let cpfAluno: string | undefined;
-  let cpfMae: string | undefined;
-  let cpfPai: string | undefined;
-
-  for (let i = 0; i < linhas.length; i++) {
-    const linha = linhas[i];
-    const linhaAnterior = i > 0 ? linhas[i - 1] : "";
-    const proximaLinha = i < linhas.length - 1 ? linhas[i + 1] : "";
-
-    // Detectar "CPF:" nesta linha
-    if (!linha.match(/CPF:\s*$/i) && !linha.match(/CPF:\s*(.+)/i)) continue;
-
-    // Tentar extrair CPF da mesma linha
-    const matchCPFMesmaLinha = linha.match(/CPF:\s*(.+)/i);
-    let cpfRaw = matchCPFMesmaLinha ? matchCPFMesmaLinha[1].trim() : undefined;
-
-    // Se CPF não está na mesma linha ou está vazio, procurar na próxima
-    if (!cpfRaw || cpfRaw === "" || cpfRaw === "\t") {
-      cpfRaw = proximaLinha?.trim();
-    }
-
-    // Ignorar valores vazios ou tabs
-    if (!cpfRaw || cpfRaw === "\t" || cpfRaw === "") continue;
-
-    // Contexto 1: CPF após "Nome da Mãe:"
-    // Procurar "Nome da Mãe" nas linhas anteriores (até 3 linhas atrás)
-    const contextomae = [
-      linhas[i - 3] || "",
-      linhas[i - 2] || "",
-      linhaAnterior,
-    ].some((l) => l.match(/NOME DA MÃE:/i));
-
-    if (contextomae && !cpfMae) {
-      cpfMae = cpfRaw;
+    if (/^\d+$/.test(linha)) {
+      const possivelCidade = linhas[i + 1]?.raw.trim();
+      if (possivelCidade) {
+        return { valor: possivelCidade, nextIndex: i + 2 };
+      }
       continue;
     }
 
-    // Contexto 2: CPF após "Nome do Pai:"
-    const contextoPai = [
-      linhas[i - 3] || "",
-      linhas[i - 2] || "",
-      linhaAnterior,
-    ].some((l) => l.match(/NOME DO PAI:/i));
-
-    if (contextoPai && !cpfPai) {
-      cpfPai = cpfRaw;
-      continue;
+    if (ehLinhaLabelSemValor(linhas[i])) {
+      break;
     }
 
-    // Contexto 3: CPF na seção "Outros Documentos"
-    const contextoDocumentos = [
-      linhas[i - 5] || "",
-      linhas[i - 4] || "",
-      linhas[i - 3] || "",
-      linhas[i - 2] || "",
-      linhaAnterior,
-    ].some((l) => l.match(/Outros Documentos|TIPO:|NÚMERO\*?:|ÓRGÃO EMISSOR/i));
-
-    if (contextoDocumentos && !cpfAluno) {
-      cpfAluno = cpfRaw;
-      continue;
-    }
-
-    // Se não encontrou contexto específico e ainda não tem CPF do aluno, assumir que é do aluno
-    if (!cpfAluno && !cpfMae && !cpfPai) {
-      cpfAluno = cpfRaw;
+    if (!PLACEHOLDERS.has(normalizarParaComparacao(linha))) {
+      return { valor: linha, nextIndex: i + 1 };
     }
   }
 
-  return {
-    cpfAluno: limparCPF(cpfAluno),
-    cpfMae: limparCPF(cpfMae),
-    cpfPai: limparCPF(cpfPai),
-  };
+  return { valor: undefined, nextIndex: indiceLabel + 1 };
 }
 
-/**
- * Parseia o texto de Dados Pessoais
- *
- * @param texto - Texto bruto colado pelo usuário
- * @returns Objeto com campos parseados
- */
-export function parseDadosPessoais(texto: string): DadosPessoais {
-  // ===== DADOS CADASTRAIS =====
-  const nome = extrairCampo(texto, /NOME:\s*(.+)/i);
-  const nomeSocial = extrairCampo(texto, /NOME SOCIAL:\s*(.+)/i);
-  const dataNascimento =
-    extrairCampo(texto, /DATA NASCIMENTO:\s*(.+)/i) ||
-    extrairCampo(texto, /DATA DE NASCIMENTO:\s*(.+)/i);
-  const sexoRaw = extrairCampo(texto, /SEXO:\s*(.+)/i);
-  const sexo = sexoRaw ? normalizarSexo(sexoRaw) : undefined;
-  const estadoCivil = extrairCampo(texto, /ESTADO CIVIL:\s*(.+)/i);
-  const paisNascimento = extrairCampo(texto, /PAÍS DE NASCIMENTO:\s*(.+)/i);
-  const nacionalidade = extrairCampo(texto, /NACIONALIDADE:\s*(.+)/i);
-  const uf = extrairCampo(texto, /UF DE NASCIMENTO:\s*(.+)/i);
-  const naturalidade = extrairNaturalidade(texto);
-  const necessidadeEspecial = extrairCampo(
-    texto,
-    /NECESSIDADE ESPECIAL:\s*(.+)/i
-  );
+function extrairSexo(texto: string): DadosPessoais["sexo"] {
+  const match = texto.match(/SEXO:\s*([^\n]+)/i);
+  if (!match) return undefined;
+  const sexoNormalizado = normalizarSexo(match[1]);
+  return sexoNormalizado ?? undefined;
+}
 
-  // ===== DOCUMENTOS =====
-  const tipoDocumento = extrairCampo(texto, /TIPO:\s*(.+)/i);
-  const rg = extrairCampo(texto, /NÚMERO\*?:\s*(.+)/i);
-  let complementoIdentidade = extrairCampo(
-    texto,
-    /COMPLEMENTO DA IDENTIDADE:\s*(.+)\\n/i
-  );
-  // Se capturou apenas tab ou whitespace, retornar undefined
-  if (complementoIdentidade && /^\s*$/.test(complementoIdentidade)) {
-    complementoIdentidade = undefined;
+function normalizarTextoBase(texto: string): string {
+  return texto
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\u00a0/g, " ")
+    .trim();
+}
+
+function extrairTrechoDadosPessoais(texto: string): string {
+  const inicio = texto.search(/Dados Pessoais/i);
+  if (inicio === -1) {
+    return texto;
   }
-  const estadoEmissao = extrairCampo(texto, /ESTADO\*?:\s*(.+)/i);
-  const orgaoEmissor = extrairCampo(texto, /ÓRGÃO EMISSOR\*?:\s*(.+)/i);
-  const dataEmissaoRG = extrairCampo(texto, /DATA DE EXPEDIÇÃO\*?:\s*(.+)/i);
 
-  // ===== CPFs (parsing contextual para distinguir aluno, mãe, pai) =====
-  const { cpfAluno, cpfMae, cpfPai } = extrairCPFs(texto);
+  const fim = texto.slice(inicio).search(/Pr[oó]ximo/iu);
+  if (fim === -1) {
+    return texto.slice(inicio);
+  }
 
-  // ===== FILIAÇÃO =====
-  const nomeMae = extrairCampo(texto, /NOME DA MÃE:\s*(.+)/i);
-  const nomePai = extrairCampo(texto, /NOME DO PAI:\s*(.+)/i);
+  return texto.slice(inicio, inicio + fim);
+}
 
-  // ===== CONTATO =====
-  const email =
-    extrairCampo(texto, /E-MAIL:\s*(.+)/i) ||
-    extrairCampo(texto, /EMAIL:\s*(.+)/i);
+function prepararLinhas(texto: string): LinhaProcessada[] {
+  return texto.split("\n").map((linha) => {
+    const raw = linha.replace(/\t/g, " ").trimEnd();
+    const normalized = normalizarParaComparacao(raw);
+    const normalizedLabel = normalizarParaComparacao(raw.split(":")[0] || raw);
+    return { raw, normalized, normalizedLabel };
+  });
+}
 
-  // ===== CERTIDÃO CIVIL =====
-  const tipoCertidaoCivil = extrairCampo(
-    texto,
-    /^TIPO CERTIDÃO CIVIL:\s*(.+)/im
-  );
-  const numeroCertidaoCivil = extrairCampo(texto, /^CERTIDÃO CIVIL:\s*(.+)/im);
-  const ufCartorio = extrairCampo(texto, /^UF DO CARTÓRIO:\s*(.+)/im);
-  const municipioCartorio = extrairCampo(
-    texto,
-    /^MUNICÍPIO DO CARTÓRIO:\s*(.+)/im
-  );
-  const nomeCartorio = extrairCampo(texto, /^CARTÓRIO:\s*(.+)/im);
-  const numeroTermo = extrairCampo(texto, /^NÚMERO DO TERMO:\s*(.+)/im);
-  const dataEmissaoCertidao = extrairCampo(texto, /^DATA DE EMISSÃO:\s*(.+)/im);
-  const estadoCertidao = extrairCampo(texto, /^ESTADO:\s*(.+)/im);
-  const folhaCertidao = extrairCampo(texto, /^FOLHA:\s*(.+)/im);
-  const livroCertidao = extrairCampo(texto, /^LIVRO:\s*(.+)/im);
+function normalizarParaComparacao(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\*/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+}
 
-  return {
-    // Dados Cadastrais
-    nome,
-    nomeSocial,
-    dataNascimento,
-    sexo,
-    estadoCivil,
-    paisNascimento,
-    nacionalidade,
-    uf,
-    naturalidade,
-    necessidadeEspecial,
+function sanitizeValorBase(valor?: string): string | undefined {
+  if (!valor) return undefined;
+  const normalizado = valor.replace(/\s+/g, " ").trim();
+  if (!normalizado) return undefined;
+  if (PLACEHOLDERS.has(normalizarParaComparacao(normalizado))) return undefined;
+  return normalizado;
+}
 
-    // Documentos
-    tipoDocumento,
-    rg,
-    complementoIdentidade,
-    estadoEmissao,
-    orgaoEmissor,
-    dataEmissaoRG,
-    cpf: cpfAluno, // CPF do aluno (extraído por contexto)
+function sanitizeCPF(valor: string): string | undefined {
+  const digitos = valor.replace(/\D/g, "");
+  return digitos.length ? digitos : undefined;
+}
 
-    // Filiação
-    nomeMae,
-    cpfMae, // CPF da mãe (extraído por contexto)
-    nomePai,
-    cpfPai, // CPF do pai (extraído por contexto)
+function sanitizeNaturalidade(valor: string): string | undefined {
+  return sanitizeValorBase(valor.replace(/^\d+\s*/, ""));
+}
 
-    // Contato
-    email,
+function valorDisponivel(valor?: string): boolean {
+  if (!valor) return false;
+  return !!sanitizeValorBase(valor);
+}
 
-    // Certidão Civil
-    tipoCertidaoCivil,
-    numeroCertidaoCivil,
-    ufCartorio,
-    municipioCartorio,
-    nomeCartorio,
-    numeroTermo,
-    dataEmissaoCertidao,
-    estadoCertidao,
-    folhaCertidao,
-    livroCertidao,
-  };
+function ehInstrucao(valor: string): boolean {
+  const trimmed = valor.trim();
+  return trimmed.startsWith("(") && trimmed.endsWith(")");
+}
+
+function ehLinhaLabelSemValor(linha: LinhaProcessada): boolean {
+  const trimmed = linha.raw.trim();
+  if (!trimmed.includes(":")) {
+    return false;
+  }
+
+  const [, ...resto] = trimmed.split(":");
+  const depois = resto.join(":").trim();
+  return depois === "" || depois === "*" || depois === "-";
 }

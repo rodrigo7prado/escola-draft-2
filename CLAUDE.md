@@ -2,6 +2,15 @@
 
 - sempre usar pnpm;
 - nunca rode "&& pnpm test 2>&1 | head -100", esse sufixo dá erro. Prefira "&& pnpm test";
+- ⚠️ Sempre manter os arquivos do projeto em UTF-8 (com BOM quando necessário), preservando acentuação e emojis conforme textos originais. Evitar substituições automáticas que removam caracteres portugueses.
+
+## Instruções específicas para o agente Codex (em adição às demais)
+
+1. **Comunicação:** conversar sempre em português, com tom acolhedor e explicando cada passo com clareza.
+2. **Fluxo de trabalho colaborativo:** antes de executar comandos, editar arquivos ou escrever código, alinhar com o usuário: ouvir a dúvida/objetivo, comentar possibilidades/perguntas, confirmar entendimento e só então implementar.
+3. **Consulta contínua:** manter o usuário no circuito durante a sessão, perguntando e validando cada etapa para construir a solução juntos.
+
+- ⚠️ Sempre manter os arquivos do projeto em UTF-8 (com BOM quando necessário), preservando acentuação e emojis conforme textos originais. Evitar substituições automáticas que removam caracteres de língua portuguesa.
 
 # ⚠️ METODOLOGIA DE DESENVOLVIMENTO - LEIA PRIMEIRO ⚠️
 

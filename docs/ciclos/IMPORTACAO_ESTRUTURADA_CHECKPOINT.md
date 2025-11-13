@@ -1,4 +1,4 @@
-# CHECKPOINT - Importação Estruturada por Texto
+﻿# CHECKPOINT - Importação Estruturada por Texto
 
 **Data:** 2025-11-11
 **Status:** ✅ Fase 1 (Backend) + Fase 2 (Frontend) COMPLETAS
@@ -77,25 +77,21 @@ dataImportacaoTextoDadosEscolares DateTime?
 #### `src/lib/parsing/parseDadosPessoais.ts`
 **Propósito:** Extrai todos os 32 campos do texto colado
 
-**Características principais:**
+**Atualização (2025-02-13): parser reescrito com descritores ordenados**
 
-1. **Parsing Contextual de CPFs** (CRÍTICO):
-   - CPF após "Nome da Mãe:" → CPF da mãe
-   - CPF após "Nome do Pai:" → CPF do pai
-   - CPF próximo a "TIPO:", "RG", "ÓRGÃO EMISSOR" → CPF do aluno
+1. **`CAMPOS_DESCRITORES` como fonte da verdade**
+   - Cada descritor define label, *aliases*, estratégia (`mesmaLinha`, `mesmaOuProxima`, `naturalidade`) e saneamentos específicos (CPF, naturalidade, placeholders).
+   - Labels repetidos usam âncoras de seção ("OUTROS DOCUMENTOS", "CERTIDÃO CIVIL") para evitar colisões.
 
-2. **Tratamento de Naturalidade:**
-   - "NATURALIDADE: 00001404 IPU" → "IPU" (remove código numérico)
+2. **Tratamento consistente de valores vazios**
+   - Lista centralizada de placeholders ("Selecione", "Saiba Mais", "Não declarado", etc.) evita salvar instruções do formulário.
+   - Recorte automático entre "Dados Pessoais" e "Próximo >>" remove menus e rodapés antes do parsing.
 
-3. **Normalização de CPF:**
-   - Remove toda formatação: "123.456.789-00" → "12345678900"
+3. **Normalizações dedicadas**
+   - `sanitizeCPF` limpa todos os CPFs (aluno, mãe, pai, documentos) e naturalidade aceita formato inline ou multiline.
+   - Sexo continua opcional no parser (campo rádio não aparece na colagem); confirmação ocorre no modal conforme CIF.
 
-4. **Regexes com word boundary para certidões:**
-   - Usa `^` (início de linha) + flag `m` (multiline)
-
-**Testes:** ✅ 12/12 passando
-
----
+**Testes:** ✅ `tests/lib/parsing/parsing.test.ts` atualizado com cenário real de colagem + casos básicos
 
 ### 3. APIs REST
 

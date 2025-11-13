@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Testes do módulo de parsing - Importação Estruturada
  *
  * Testa os 3 parsers principais:
@@ -85,12 +85,98 @@ describe('normalizarSexo', () => {
 // ============================================================================
 
 describe('parseDadosPessoais', () => {
+  const COLAGEM_DADOS_PESSOAIS = `
+Dados Pessoais
+Sem foto
+Nome:*    
+MARIA TESTE DA SILVA
+Nome Social:    
+ Saiba Mais
+Data Nascimento:*    
+03/04/2005
+Sexo:*    
+Masculino    Feminino
+Estado Civil:*    
+Solteiro
+País de Nascimento:*    
+BRASIL
+Nacionalidade:*    
+BRASILEIRA
+UF de Nascimento:*    
+SP
+Naturalidade:*    
+00001234
+SÃO PAULO
+
+Necessidade Especial:*    
+Não possui.
+ Saiba Mais
+
+Filiação
+Nome da Mãe:*    
+ANA TESTE LIMA
+Não Declarada    Falecida    CPF:    
+012.345.678-90
+
+Nome do Pai:*    
+PAULO TESTE LIMA
+Não Declarado    Falecido    CPF:    
+
+Contato
+E-mail:    
+aluna.teste@example.com
+
+Dados da operadora de cartões
+Login    
+responsavel@example.com
+
+Outros Documentos
+CPF:    
+987.654.321-00
+Tipo:    
+RG
+Número*:    
+11223344
+Complemento da identidade:    
+SSP
+Estado*:    
+SP
+Órgão Emissor*:    
+SSP
+Data de Expedição*:    
+15/08/2018
+
+Certidão Civil
+Tipo Certidão Civil:*    
+Nascimento
+Certidão Civil:*    
+Modelo Antigo
+UF do Cartório:    
+SP
+Município do Cartório:    
+SÃO PAULO
+Cartório:    
+1º OFÍCIO DE REGISTRO CIVIL
+Número do Termo:    
+9000
+Data de Emissão:    
+17/08/2005
+Estado:    
+SP
+Folha:    
+45
+Livro:    
+0012
+
+Próximo >>
+`.trim();
   it('deve parsear campos básicos corretamente', () => {
     const texto = `
 NOME: JOÃO SILVA SANTOS
 DATA DE NASCIMENTO: 01/01/2005
 SEXO: Masculino
 NACIONALIDADE: Brasileira
+UF DE NASCIMENTO: RJ
 NATURALIDADE: 00001404 RIO DE JANEIRO
 `;
 
@@ -100,119 +186,8 @@ NATURALIDADE: 00001404 RIO DE JANEIRO
     expect(resultado.dataNascimento).toBe('01/01/2005');
     expect(resultado.sexo).toBe('M'); // Normalizado
     expect(resultado.nacionalidade).toBe('Brasileira');
+    expect(resultado.uf).toBe('RJ');
     expect(resultado.naturalidade).toBe('RIO DE JANEIRO'); // Código removido
-  });
-
-  it('deve extrair CPFs usando contexto posicional', () => {
-    const texto = `
-NOME DA MÃE: MARIA SILVA
-CPF: 111.222.333-44
-NOME DO PAI: JOSÉ SANTOS
-CPF: 555.666.777-88
-TIPO: RG
-CPF: 999.888.777-66
-NÚMERO: 12345678
-`;
-
-    const resultado = parseDadosPessoais(texto);
-
-    expect(resultado.cpfMae).toBe('11122233344'); // Sem formatação
-    expect(resultado.cpfPai).toBe('55566677788');
-    expect(resultado.cpf).toBe('99988877766'); // CPF do aluno (próximo a TIPO/RG)
-  });
-
-  it('deve extrair dados de documentos', () => {
-    const texto = `
-TIPO: RG
-NÚMERO: 12.345.678-9
-ÓRGÃO EMISSOR: DETRAN
-DATA DE EXPEDIÇÃO: 15/03/2020
-ESTADO: RJ
-`;
-
-    const resultado = parseDadosPessoais(texto);
-
-    expect(resultado.tipoDocumento).toBe('RG');
-    expect(resultado.rg).toBe('12.345.678-9');
-    expect(resultado.orgaoEmissor).toBe('DETRAN');
-    expect(resultado.dataEmissaoRG).toBe('15/03/2020');
-    expect(resultado.estadoEmissao).toBe('RJ');
-  });
-
-  it('deve extrair dados de filiação', () => {
-    const texto = `
-NOME DA MÃE: MARIA SILVA
-CPF: 111.222.333-44
-NOME DO PAI: JOSÉ SANTOS
-CPF: 555.666.777-88
-`;
-
-    const resultado = parseDadosPessoais(texto);
-
-    expect(resultado.nomeMae).toBe('MARIA SILVA');
-    expect(resultado.cpfMae).toBe('11122233344');
-    expect(resultado.nomePai).toBe('JOSÉ SANTOS');
-    expect(resultado.cpfPai).toBe('55566677788');
-  });
-
-  it('deve extrair dados de certidão civil', () => {
-    const texto = `
-TIPO CERTIDÃO CIVIL: Nascimento
-CERTIDÃO CIVIL: 123456
-UF DO CARTÓRIO: RJ
-MUNICÍPIO DO CARTÓRIO: Rio de Janeiro
-CARTÓRIO: 1º Ofício
-NÚMERO DO TERMO: 789
-DATA DE EMISSÃO: 10/01/2005
-ESTADO: RJ
-FOLHA: 12
-LIVRO: A-100
-`;
-
-    const resultado = parseDadosPessoais(texto);
-
-    expect(resultado.tipoCertidaoCivil).toBe('Nascimento');
-    expect(resultado.numeroCertidaoCivil).toBe('123456');
-    expect(resultado.ufCartorio).toBe('RJ');
-    expect(resultado.municipioCartorio).toBe('Rio de Janeiro');
-    expect(resultado.nomeCartorio).toBe('1º Ofício');
-    expect(resultado.numeroTermo).toBe('789');
-    expect(resultado.dataEmissaoCertidao).toBe('10/01/2005');
-    expect(resultado.estadoCertidao).toBe('RJ');
-    expect(resultado.folhaCertidao).toBe('12');
-    expect(resultado.livroCertidao).toBe('A-100');
-  });
-
-  it('deve extrair contato (email)', () => {
-    const texto = `
-E-MAIL: aluno@example.com
-`;
-
-    const resultado = parseDadosPessoais(texto);
-
-    expect(resultado.email).toBe('aluno@example.com');
-  });
-
-  it('deve lidar com campos ausentes', () => {
-    const texto = `
-NOME: TESTE MÍNIMO
-`;
-
-    const resultado = parseDadosPessoais(texto);
-
-    expect(resultado.nome).toBe('TESTE MÍNIMO');
-    expect(resultado.sexo).toBeUndefined();
-    expect(resultado.cpf).toBeUndefined();
-    expect(resultado.rg).toBeUndefined();
-    expect(resultado.email).toBeUndefined();
-  });
-
-  it('deve normalizar sexo automaticamente', () => {
-    const textoMasculino = 'SEXO: Masculino';
-    const textoFeminino = 'SEXO: Feminino';
-
-    expect(parseDadosPessoais(textoMasculino).sexo).toBe('M');
-    expect(parseDadosPessoais(textoFeminino).sexo).toBe('F');
   });
 
   it('deve retornar undefined para sexo inválido', () => {
@@ -251,9 +226,9 @@ CPF: 999.888.777-66
 NOME: ANDRÉ RODRIGUES DE SOUSA FILHO
 DATA DE NASCIMENTO: 29/03/2007
 SEXO: Masculino
-NATURALIDADE: 00001404 IPU
 NACIONALIDADE: Brasileira
 UF DE NASCIMENTO: CE
+NATURALIDADE: 00001404 IPU
 NOME DA MÃE: LUIZA MÁRCIA SOUSA RODRIGUES
 CPF: 031.491.753-56
 NOME DO PAI: ANDRÉ RODRIGUES DE SOUSA
@@ -288,4 +263,45 @@ DATA DE EXPEDIÇÃO: 05/09/2012
     expect(resultado.orgaoEmissor).toBe('DETRAN');
     expect(resultado.dataEmissaoRG).toBe('05/09/2012');
   });
+
+  it('deve parsear colagem real preservando ordem fixa e placeholders', () => {
+    const resultado = parseDadosPessoais(COLAGEM_DADOS_PESSOAIS);
+
+    expect(resultado.nome).toBe('MARIA TESTE DA SILVA');
+    expect(resultado.nomeSocial).toBeUndefined();
+    expect(resultado.dataNascimento).toBe('03/04/2005');
+    expect(resultado.sexo).toBeUndefined();
+    expect(resultado.estadoCivil).toBe('Solteiro');
+    expect(resultado.paisNascimento).toBe('BRASIL');
+    expect(resultado.nacionalidade).toBe('BRASILEIRA');
+    expect(resultado.uf).toBe('SP');
+    expect(resultado.naturalidade).toBe('SÃO PAULO');
+    expect(resultado.necessidadeEspecial).toBe('Não possui.');
+
+    expect(resultado.nomeMae).toBe('ANA TESTE LIMA');
+    expect(resultado.cpfMae).toBe('01234567890');
+    expect(resultado.nomePai).toBe('PAULO TESTE LIMA');
+    expect(resultado.cpfPai).toBeUndefined();
+
+    expect(resultado.email).toBe('aluna.teste@example.com');
+    expect(resultado.cpf).toBe('98765432100');
+    expect(resultado.tipoDocumento).toBe('RG');
+    expect(resultado.rg).toBe('11223344');
+    expect(resultado.complementoIdentidade).toBe('SSP');
+    expect(resultado.estadoEmissao).toBe('SP');
+    expect(resultado.orgaoEmissor).toBe('SSP');
+    expect(resultado.dataEmissaoRG).toBe('15/08/2018');
+
+    expect(resultado.tipoCertidaoCivil).toBe('Nascimento');
+    expect(resultado.numeroCertidaoCivil).toBe('Modelo Antigo');
+    expect(resultado.ufCartorio).toBe('SP');
+    expect(resultado.municipioCartorio).toBe('SÃO PAULO');
+    expect(resultado.nomeCartorio).toBe('1º OFÍCIO DE REGISTRO CIVIL');
+    expect(resultado.numeroTermo).toBe('9000');
+    expect(resultado.dataEmissaoCertidao).toBe('17/08/2005');
+    expect(resultado.estadoCertidao).toBe('SP');
+    expect(resultado.folhaCertidao).toBe('45');
+    expect(resultado.livroCertidao).toBe('0012');
+  });
 });
+

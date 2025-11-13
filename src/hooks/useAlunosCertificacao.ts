@@ -1,19 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from "react";
+import {
+  calcularResumoDadosPessoais,
+  ResumoDadosPessoais,
+  ValoresDadosPessoais,
+} from "@/lib/importacao/dadosPessoaisMetadata";
 
-type Aluno = {
+type EnturmacaoResumo = {
+  anoLetivo: string;
+  regime: number;
+  modalidade: string;
+  turma: string;
+  serie: string;
+};
+
+type AlunoApiResponse = ValoresDadosPessoais & {
   id: string;
   matricula: string;
   nome: string | null;
   cpf: string | null;
   origemTipo: string;
   fonteAusente: boolean;
-  enturmacoes?: Array<{
-    anoLetivo: string;
-    regime: number;
-    modalidade: string;
-    turma: string;
-    serie: string;
-  }>;
+  enturmacoes?: EnturmacaoResumo[];
+};
+
+export type AlunoCertificacao = AlunoApiResponse & {
+  progressoDadosPessoais: ResumoDadosPessoais;
 };
 
 type FiltrosParams = {
@@ -21,8 +32,15 @@ type FiltrosParams = {
   turma: string;
 };
 
+export type ResumoDadosPessoaisTurma = {
+  total: number;
+  completos: number;
+  pendentes: number;
+  percentualGeral: number;
+};
+
 export function useAlunosCertificacao(filtros: FiltrosParams) {
-  const [alunos, setAlunos] = useState<Aluno[]>([]);
+  const [alunos, setAlunos] = useState<AlunoCertificacao[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,10 +74,19 @@ export function useAlunosCertificacao(filtros: FiltrosParams) {
         }
 
         const data = await response.json();
-        setAlunos(data.alunos || []);
+        const alunosResposta: AlunoApiResponse[] = data.alunos || [];
+
+        const alunosComResumo = alunosResposta.map<AlunoCertificacao>(
+          (aluno) => ({
+            ...aluno,
+            progressoDadosPessoais: calcularResumoDadosPessoais(aluno),
+          })
+        );
+
+        setAlunos(alunosComResumo);
       } catch (err) {
-        console.error('Erro ao buscar alunos:', err);
-        setError(err instanceof Error ? err.message : 'Erro desconhecido');
+        console.error("Erro ao buscar alunos:", err);
+        setError(err instanceof Error ? err.message : "Erro desconhecido");
         setAlunos([]);
       } finally {
         setIsLoading(false);
@@ -69,10 +96,30 @@ export function useAlunosCertificacao(filtros: FiltrosParams) {
     fetchAlunos();
   }, [filtros.anoLetivo, filtros.turma]);
 
+  const resumoDadosPessoais: ResumoDadosPessoaisTurma = useMemo(() => {
+    if (alunos.length === 0) {
+      return { total: 0, completos: 0, pendentes: 0, percentualGeral: 0 };
+    }
+
+    const completos = alunos.filter(
+      (aluno) => aluno.progressoDadosPessoais.completo
+    ).length;
+    const pendentes = alunos.length - completos;
+    const percentualGeral = Math.round((completos / alunos.length) * 100);
+
+    return {
+      total: alunos.length,
+      completos,
+      pendentes,
+      percentualGeral,
+    };
+  }, [alunos]);
+
   return {
     alunos,
     isLoading,
     error,
-    totalAlunos: alunos.length
+    totalAlunos: alunos.length,
+    resumoDadosPessoais,
   };
 }

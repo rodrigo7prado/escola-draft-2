@@ -3,6 +3,7 @@
 - sempre usar pnpm;
 - nunca rode "&& pnpm test 2>&1 | head -100", esse sufixo dá erro. Prefira "&& pnpm test";
 - ⚠️ Sempre manter os arquivos do projeto em UTF-8 (com BOM quando necessário), preservando acentuação e emojis conforme textos originais. Evitar substituições automáticas que removam caracteres portugueses.
+- Sempre que possível, centralizar consts/tabelas de campos em módulos de metadados reutilizáveis (fonte única), reutilizando-os em parser, API e UI para evitar divergências.
 
 ## Instruções específicas para o agente Codex (em adição às demais)
 

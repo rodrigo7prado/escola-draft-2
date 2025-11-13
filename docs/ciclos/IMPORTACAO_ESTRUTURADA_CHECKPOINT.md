@@ -523,6 +523,7 @@ dataImportacaoTextoDadosEscolares DateTime?
 7. **Zod API mudou**: usar `error.issues` ao invés de `error.errors`
 8. **TypeScript strict mode** exige casts explícitos (globalThis)
 9. **Metodologia CIF funciona** - descoberta evitou retrabalho
+10. **Fonte única de metadados evita divergências** - listas de campos e labels devem morar em módulos compartilhados e alimentar parser, API e UI simultaneamente
 
 ---
 

@@ -1,48 +1,147 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
+import type { AlunoCertificacao } from "./useAlunosCertificacao";
+import {
+  CAMPOS_DADOS_PESSOAIS,
+  type CampoDadosPessoais,
+} from "@/lib/importacao/dadosPessoaisMetadata";
 
-type Aluno = {
+export type AlunoDetalhado = {
   id: string;
   matricula: string;
   nome: string | null;
-  sexo: string | null;
-  dataNascimento: Date | null;
-  nacionalidade: string | null;
-  naturalidade: string | null;
-  uf: string | null;
-  rg: string | null;
-  rgOrgaoEmissor: string | null;
-  rgDataEmissao: Date | null;
-  cpf: string | null;
-  nomeMae: string | null;
-  nomePai: string | null;
-  dataConclusaoEnsinoMedio: Date | null;
-  certificacao: boolean;
-  dadosConferidos: boolean;
-  efInstituicao: string | null;
-  efMunicipioEstado: string | null;
-  efAnoConclusao: number | null;
-  efNumeroPagina: string | null;
-  efDataEmissao: Date | null;
-  observacoes: string | null;
-  origemTipo: string;
   fonteAusente: boolean;
+} & {
+  [K in CampoDadosPessoais]?: string | null;
 };
 
-export function useAlunoSelecionado() {
-  const [alunoSelecionado, setAlunoSelecionado] = useState<Aluno | null>(null);
+export type DadosOriginaisAluno = Record<string, unknown> | null;
 
-  const selecionarAluno = (aluno: Aluno | null) => {
+export function useAlunoSelecionado() {
+  const [alunoSelecionado, setAlunoSelecionado] =
+    useState<AlunoCertificacao | null>(null);
+  const [alunoDetalhes, setAlunoDetalhes] = useState<AlunoDetalhado | null>(
+    null
+  );
+  const [dadosOriginais, setDadosOriginais] =
+    useState<DadosOriginaisAluno>(null);
+  const [isLoadingDetalhes, setIsLoadingDetalhes] = useState(false);
+  const [erroDetalhes, setErroDetalhes] = useState<string | null>(null);
+
+  const selecionarAluno = (aluno: AlunoCertificacao | null) => {
     setAlunoSelecionado(aluno);
   };
 
   const limparSelecao = () => {
     setAlunoSelecionado(null);
+    setAlunoDetalhes(null);
+    setDadosOriginais(null);
+    setErroDetalhes(null);
   };
+
+  useEffect(() => {
+    if (!alunoSelecionado) {
+      setAlunoDetalhes(null);
+      setDadosOriginais(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const carregarDetalhes = async () => {
+      setIsLoadingDetalhes(true);
+      setErroDetalhes(null);
+
+      try {
+        const response = await fetch(
+          `/api/alunos?matricula=${alunoSelecionado.matricula}`,
+          { signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error("Erro ao carregar dados completos do aluno");
+        }
+
+        const data = await response.json();
+        const aluno = data.aluno;
+        const original =
+          aluno?.dadosOriginais ??
+          aluno?.linhaOrigem?.dadosOriginais ??
+          null;
+
+        setAlunoDetalhes(mapearAlunoDetalhado(aluno));
+        setDadosOriginais(original);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        console.error("Erro ao carregar aluno detalhado:", error);
+        setErroDetalhes(
+          error instanceof Error ? error.message : "Erro inesperado"
+        );
+        setAlunoDetalhes(null);
+        setDadosOriginais(null);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingDetalhes(false);
+        }
+      }
+    };
+
+    carregarDetalhes();
+    return () => controller.abort();
+  }, [alunoSelecionado?.matricula]);
+
+  const temAlunoSelecionado = useMemo(
+    () => Boolean(alunoSelecionado),
+    [alunoSelecionado]
+  );
 
   return {
     alunoSelecionado,
     selecionarAluno,
     limparSelecao,
-    temAlunoSelecionado: Boolean(alunoSelecionado)
+    temAlunoSelecionado,
+    alunoDetalhes,
+    dadosOriginais,
+    isLoadingDetalhes,
+    erroDetalhes,
   };
+}
+
+function mapearAlunoDetalhado(raw: Record<string, any> | null): AlunoDetalhado | null {
+  if (!raw) return null;
+
+  const resultado: AlunoDetalhado = {
+    id: raw.id,
+    matricula: raw.matricula,
+    nome: raw.nome ?? null,
+    fonteAusente: Boolean(raw.fonteAusente),
+  };
+
+  for (const campo of CAMPOS_DADOS_PESSOAIS) {
+    resultado[campo] = serializarValor(raw[campo]);
+  }
+
+  return resultado;
+}
+
+function serializarValor(valor: unknown): string | null {
+  if (valor === null || valor === undefined) {
+    return null;
+  }
+
+  if (typeof valor === "string") {
+    return valor;
+  }
+
+  if (valor instanceof Date) {
+    return valor.toISOString();
+  }
+
+  if (typeof valor === "number" || typeof valor === "boolean") {
+    return String(valor);
+  }
+
+  try {
+    return JSON.stringify(valor);
+  } catch {
+    return String(valor);
+  }
 }

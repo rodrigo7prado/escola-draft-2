@@ -8,7 +8,7 @@ import { ListaAlunosCertificacao } from "./ListaAlunosCertificacao";
 import { DadosAlunoEditavel } from "./DadosAlunoEditavel";
 import { AreaColagemDados } from "./AreaColagemDados";
 import { ModalConfirmacaoDados } from "./ModalConfirmacaoDados";
-import { Aluno } from "@prisma/client";
+import type { AlunoCertificacao } from "@/hooks/useAlunosCertificacao";
 
 export function FluxoCertificacao() {
   const {
@@ -25,11 +25,18 @@ export function FluxoCertificacao() {
     hasFiltrosAtivos,
   } = useFiltrosCertificacao();
 
-  const { alunoSelecionado, selecionarAluno } = useAlunoSelecionado();
+  const {
+    alunoSelecionado,
+    selecionarAluno,
+    alunoDetalhes,
+    dadosOriginais,
+    isLoadingDetalhes,
+    erroDetalhes,
+  } = useAlunoSelecionado();
 
-  // Forward selection to the hook; accept any to be compatible with ListaAlunosCertificacao callback signature
-  const handleSelecionarAluno = (aluno: unknown): void =>
-    selecionarAluno(aluno as Aluno | null);
+  const handleSelecionarAluno = (aluno: AlunoCertificacao): void => {
+    selecionarAluno(aluno);
+  };
 
   const {
     alunoIdAtivo,
@@ -86,7 +93,12 @@ export function FluxoCertificacao() {
 
           <div className="flex-1 min-h-0">
             <div className="border rounded-sm overflow-y-auto h-full">
-              <DadosAlunoEditavel aluno={alunoSelecionado} />
+              <DadosAlunoEditavel
+                aluno={alunoDetalhes}
+                dadosOriginais={dadosOriginais}
+                isLoading={isLoadingDetalhes}
+                erro={erroDetalhes}
+              />
             </div>
           </div>
         </div>

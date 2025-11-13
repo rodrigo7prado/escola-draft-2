@@ -35,6 +35,112 @@ export const CAMPOS_DADOS_PESSOAIS = [
 
 export type CampoDadosPessoais = (typeof CAMPOS_DADOS_PESSOAIS)[number];
 
+export type CategoriaDadosPessoais =
+  | "cadastro"
+  | "documentos"
+  | "filiacao"
+  | "contato"
+  | "certidao";
+
+export type TipoInputCampo = "text" | "date" | "textarea";
+
+export type CampoDadosConfig = {
+  campo: CampoDadosPessoais;
+  label: string;
+  categoria: CategoriaDadosPessoais;
+  input?: TipoInputCampo;
+};
+
+export const CAMPOS_DADOS_PESSOAIS_CONFIG: ReadonlyArray<CampoDadosConfig> = [
+  { campo: "nome", label: "Nome", categoria: "cadastro" },
+  { campo: "nomeSocial", label: "Nome Social", categoria: "cadastro" },
+  { campo: "sexo", label: "Sexo", categoria: "cadastro" },
+  {
+    campo: "dataNascimento",
+    label: "Data de Nascimento",
+    categoria: "cadastro",
+    input: "date",
+  },
+  { campo: "estadoCivil", label: "Estado Civil", categoria: "cadastro" },
+  {
+    campo: "paisNascimento",
+    label: "País de Nascimento",
+    categoria: "cadastro",
+  },
+  { campo: "nacionalidade", label: "Nacionalidade", categoria: "cadastro" },
+  { campo: "uf", label: "UF de Nascimento", categoria: "cadastro" },
+  { campo: "naturalidade", label: "Naturalidade", categoria: "cadastro" },
+  {
+    campo: "necessidadeEspecial",
+    label: "Necessidade Especial",
+    categoria: "cadastro",
+  },
+  {
+    campo: "tipoDocumento",
+    label: "Tipo de Documento",
+    categoria: "documentos",
+  },
+  { campo: "rg", label: "RG", categoria: "documentos" },
+  {
+    campo: "complementoIdentidade",
+    label: "Complemento da Identidade",
+    categoria: "documentos",
+  },
+  {
+    campo: "estadoEmissao",
+    label: "Estado de Emissão",
+    categoria: "documentos",
+  },
+  { campo: "orgaoEmissor", label: "Órgão Emissor", categoria: "documentos" },
+  {
+    campo: "dataEmissaoRG",
+    label: "Data de Expedição",
+    categoria: "documentos",
+    input: "date",
+  },
+  { campo: "cpf", label: "CPF", categoria: "documentos" },
+  { campo: "nomeMae", label: "Nome da Mãe", categoria: "filiacao" },
+  { campo: "cpfMae", label: "CPF da Mãe", categoria: "filiacao" },
+  { campo: "nomePai", label: "Nome do Pai", categoria: "filiacao" },
+  { campo: "cpfPai", label: "CPF do Pai", categoria: "filiacao" },
+  { campo: "email", label: "E-mail", categoria: "contato" },
+  {
+    campo: "tipoCertidaoCivil",
+    label: "Tipo Certidão Civil",
+    categoria: "certidao",
+  },
+  {
+    campo: "numeroCertidaoCivil",
+    label: "Número da Certidão",
+    categoria: "certidao",
+  },
+  { campo: "ufCartorio", label: "UF do Cartório", categoria: "certidao" },
+  {
+    campo: "municipioCartorio",
+    label: "Município do Cartório",
+    categoria: "certidao",
+  },
+  { campo: "nomeCartorio", label: "Nome do Cartório", categoria: "certidao" },
+  { campo: "numeroTermo", label: "Número do Termo", categoria: "certidao" },
+  {
+    campo: "dataEmissaoCertidao",
+    label: "Data de Emissão",
+    categoria: "certidao",
+    input: "date",
+  },
+  { campo: "estadoCertidao", label: "Estado", categoria: "certidao" },
+  { campo: "folhaCertidao", label: "Folha", categoria: "certidao" },
+  { campo: "livroCertidao", label: "Livro", categoria: "certidao" },
+];
+
+export const CATEGORIA_LABELS: Record<CategoriaDadosPessoais, string> = {
+  cadastro: "Dados Cadastrais",
+  documentos: "Documentos",
+  filiacao: "Filiação",
+  contato: "Contato",
+  certidao: "Certidão Civil",
+};
+
 export type ResumoDadosPessoais = {
   totalCampos: number;
   camposPreenchidos: number;

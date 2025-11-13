@@ -432,20 +432,21 @@ dataImportacaoTextoDadosEscolares DateTime?
 
 ---
 
-### 4. Componente MergeVisualDados
+### 4. Comparação Visual de Dados
 
-**Arquivo:** `src/components/MergeVisualDados.tsx` (criar)
+**Arquivo:** `src/components/ComparacaoDadosAluno.tsx` (criar)
 
-**Propósito:** Mostrar comparação Original vs Importado
+**Propósito:** Exibir lado a lado o valor atual (banco) e o valor original importado, com status visual indicando diferenças.
 
 **Funcionalidades:**
-- Layout lado a lado ou inline
-- Badge colorido quando valores diferem:
-  - 🔵 Azul: OK (não alterado)
-  - 🟢 Verde: CORRIGIDO (importado diferente do CSV)
-  - 🟡 Amarelo: FONTE AUSENTE
+- Layout lado a lado ou inline com labels.
+- Badge/cor destaca:
+  - 🔵 Azul: valor idêntico ao original.
+  - 🟢 Verde: valor atualizado (diferente do original).
+  - 🟡 Amarelo: valor ausente/não preenchido.
+- Ação de “Restaurar valor original” quando aplicável.
 
-**Integração:** Dentro de `DadosAlunoEditavel.tsx`
+**Integração:** Dentro de `DadosAlunoEditavel.tsx` por seção/campo.
 
 ---
 
@@ -495,7 +496,7 @@ dataImportacaoTextoDadosEscolares DateTime?
 - `src/components/ListaAlunosCertificacao.tsx` - Lista de alunos ✅ ATUALIZADO
 
 ### 🔜 Pendente (Fase 3 - Melhorias)
-- `src/components/MergeVisualDados.tsx` - A criar
+- `src/components/ComparacaoDadosAluno.tsx` - A criar
 - Sistema de notificações (Toast)
 - Testes de frontend
 
@@ -544,7 +545,7 @@ dataImportacaoTextoDadosEscolares DateTime?
 - ✅ Ao confirmar (Enter ou botão), dados são salvos no banco
 - ✅ Após salvar, modo colagem é desativado automaticamente
 - ⚠️ Dados aparecem em `DadosAlunoEditavel` (PENDENTE: recarregamento automático)
-- ⚠️ Badges de merge (PENDENTE: componente MergeVisualDados)
+- ⚠️ Comparação visual de campos (PENDENTE: componente ComparacaoDadosAluno)
 
 ---
 
@@ -559,7 +560,7 @@ dataImportacaoTextoDadosEscolares DateTime?
 4. Resolver erro de build production
 
 **Prioridade 3 (Desejável):**
-5. Criar componente `MergeVisualDados`
+5. Criar componente `ComparacaoDadosAluno`
 6. Adicionar testes de frontend
 7. Documentar TÉCNICO.md
 

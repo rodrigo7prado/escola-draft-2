@@ -49,6 +49,7 @@ export type CampoDadosConfig = {
   label: string;
   categoria: CategoriaDadosPessoais;
   input?: TipoInputCampo;
+  normalizarComparacao?: (valor: string | null) => string;
 };
 
 export const CAMPOS_DADOS_PESSOAIS_CONFIG: ReadonlyArray<CampoDadosConfig> = [
@@ -60,6 +61,7 @@ export const CAMPOS_DADOS_PESSOAIS_CONFIG: ReadonlyArray<CampoDadosConfig> = [
     label: "Data de Nascimento",
     categoria: "cadastro",
     input: "date",
+    normalizarComparacao: normalizarDataComparacao,
   },
   { campo: "estadoCivil", label: "Estado Civil", categoria: "cadastro" },
   {
@@ -97,6 +99,7 @@ export const CAMPOS_DADOS_PESSOAIS_CONFIG: ReadonlyArray<CampoDadosConfig> = [
     label: "Data de Expedição",
     categoria: "documentos",
     input: "date",
+    normalizarComparacao: normalizarDataComparacao,
   },
   { campo: "cpf", label: "CPF", categoria: "documentos" },
   { campo: "nomeMae", label: "Nome da Mãe", categoria: "filiacao" },
@@ -127,6 +130,7 @@ export const CAMPOS_DADOS_PESSOAIS_CONFIG: ReadonlyArray<CampoDadosConfig> = [
     label: "Data de Emissão",
     categoria: "certidao",
     input: "date",
+    normalizarComparacao: normalizarDataComparacao,
   },
   { campo: "estadoCertidao", label: "Estado", categoria: "certidao" },
   { campo: "folhaCertidao", label: "Folha", categoria: "certidao" },
@@ -199,4 +203,36 @@ function valorPreenchido(valor: unknown): boolean {
   }
 
   return true;
+}
+
+export function normalizarDataComparacao(valor: string | null): string {
+  if (!valor) return "";
+  const parsed = parseDataFlexivel(valor);
+  if (!parsed) {
+    return valor.trim().toUpperCase();
+  }
+  return parsed.toISOString().split("T")[0];
+}
+
+function parseDataFlexivel(valor: string): Date | null {
+  const trimmed = valor.trim();
+  if (!trimmed) return null;
+
+  // Formato ISO ou algo que o Date entenda
+  const isoDate = new Date(trimmed);
+  if (!Number.isNaN(isoDate.getTime())) {
+    return isoDate;
+  }
+
+  // Formato brasileiro DD/MM/AAAA
+  const match = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (match) {
+    const [, dia, mes, ano] = match;
+    const dateFromBR = new Date(`${ano}-${mes}-${dia}T00:00:00Z`);
+    if (!Number.isNaN(dateFromBR.getTime())) {
+      return dateFromBR;
+    }
+  }
+
+  return null;
 }

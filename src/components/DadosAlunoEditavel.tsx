@@ -167,7 +167,7 @@ function CampoComparado({
   valorOriginal,
   onChange,
 }: CampoComparadoProps) {
-  const status = obterStatusComparacao(valorBanco, valorOriginal);
+  const status = obterStatusComparacao(config, valorBanco, valorOriginal);
   const InputComponent = escolherInput(config.input);
   const valorOriginalDisplay = formatarValorDisplay(valorOriginal, config.input);
   const mostrarBadge = status !== "igual";
@@ -198,11 +198,15 @@ function CampoComparado({
 type StatusComparacao = "igual" | "diferente" | "ausente";
 
 function obterStatusComparacao(
+  config: (typeof CAMPOS_DADOS_PESSOAIS_CONFIG)[number],
   valorAtual: string | null,
   valorOriginal: string | null
 ): StatusComparacao {
-  const atual = normalizarComparacao(valorAtual);
-  const original = normalizarComparacao(valorOriginal);
+  const atual = normalizarComparacao(valorAtual, config.normalizarComparacao);
+  const original = normalizarComparacao(
+    valorOriginal,
+    config.normalizarComparacao
+  );
 
   if (!atual && !original) {
     return "ausente";
@@ -219,7 +223,13 @@ function obterStatusComparacao(
   return atual === original ? "igual" : "diferente";
 }
 
-function normalizarComparacao(valor: string | null): string {
+function normalizarComparacao(
+  valor: string | null,
+  normalizador?: (valor: string | null) => string
+): string {
+  if (normalizador) {
+    return normalizador(valor);
+  }
   if (!valor) return "";
   return valor.trim().toUpperCase();
 }

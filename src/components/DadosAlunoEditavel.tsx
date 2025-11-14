@@ -8,10 +8,12 @@ import { Textarea } from "@/components/ui/Textarea";
 import {
   CAMPOS_DADOS_PESSOAIS_CONFIG,
   CATEGORIA_LABELS,
+  normalizarValorParaComparacao,
   type CampoDadosPessoais,
   type CategoriaDadosPessoais,
   type TipoInputCampo,
 } from "@/lib/importacao/dadosPessoaisMetadata";
+import { Select } from "@/components/ui/Select";
 import type {
   AlunoDetalhado,
   DadosOriginaisAluno,
@@ -182,7 +184,11 @@ function CampoComparado({
         </div>
         {mostrarBadge && <BadgeComparacao status={status} />}
       </div>
-      <InputComponent value={value} onChangeValue={onChange} />
+      <InputComponent
+        value={value}
+        onChangeValue={onChange}
+        options={config.options}
+      />
       {mostrarOriginal && (
         <div className="text-[10px] text-neutral-500">
           Original:{" "}
@@ -202,11 +208,8 @@ function obterStatusComparacao(
   valorAtual: string | null,
   valorOriginal: string | null
 ): StatusComparacao {
-  const atual = normalizarComparacao(valorAtual, config.normalizarComparacao);
-  const original = normalizarComparacao(
-    valorOriginal,
-    config.normalizarComparacao
-  );
+  const atual = normalizarValorParaComparacao(config, valorAtual);
+  const original = normalizarValorParaComparacao(config, valorOriginal);
 
   if (!atual && !original) {
     return "ausente";
@@ -221,17 +224,6 @@ function obterStatusComparacao(
   }
 
   return atual === original ? "igual" : "diferente";
-}
-
-function normalizarComparacao(
-  valor: string | null,
-  normalizador?: (valor: string | null) => string
-): string {
-  if (normalizador) {
-    return normalizador(valor);
-  }
-  if (!valor) return "";
-  return valor.trim().toUpperCase();
 }
 
 function BadgeComparacao({ status }: { status: StatusComparacao }) {
@@ -268,12 +260,16 @@ function escolherInput(tipo: TipoInputCampo | undefined) {
   if (tipo === "textarea") {
     return TextareaWrapper;
   }
+  if (tipo === "select") {
+    return SelectWrapper;
+  }
   return InputWrapper;
 }
 
 type CampoInputProps = {
   value: string;
   onChangeValue: (valor: string) => void;
+  options?: Array<{ value: string; label: string }>;
 };
 
 function InputWrapper({ value, onChangeValue }: CampoInputProps) {
@@ -299,6 +295,17 @@ function TextareaWrapper({ value, onChangeValue }: CampoInputProps) {
       rows={2}
       value={value}
       onChange={(event) => onChangeValue(event.target.value)}
+    />
+  );
+}
+
+function SelectWrapper({ value, onChangeValue, options = [] }: CampoInputProps) {
+  return (
+    <Select
+      value={value}
+      onChange={(event) => onChangeValue(event.target.value)}
+      options={options}
+      className="text-xs"
     />
   );
 }

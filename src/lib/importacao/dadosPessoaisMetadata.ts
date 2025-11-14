@@ -42,7 +42,7 @@ export type CategoriaDadosPessoais =
   | "contato"
   | "certidao";
 
-export type TipoInputCampo = "text" | "date" | "textarea";
+export type TipoInputCampo = "text" | "date" | "textarea" | "select";
 
 export type CampoDadosConfig = {
   campo: CampoDadosPessoais;
@@ -50,6 +50,7 @@ export type CampoDadosConfig = {
   categoria: CategoriaDadosPessoais;
   input?: TipoInputCampo;
   normalizarComparacao?: (valor: string | null) => string;
+  options?: Array<{ value: string; label: string }>;
 };
 
 export const CAMPOS_DADOS_PESSOAIS_ALIASES: Partial<
@@ -62,13 +63,22 @@ export const CAMPOS_DADOS_PESSOAIS_ALIASES: Partial<
 export const CAMPOS_DADOS_PESSOAIS_CONFIG: ReadonlyArray<CampoDadosConfig> = [
   { campo: "nome", label: "Nome", categoria: "cadastro" },
   { campo: "nomeSocial", label: "Nome Social", categoria: "cadastro" },
-  { campo: "sexo", label: "Sexo", categoria: "cadastro" },
+  {
+    campo: "sexo",
+    label: "Sexo",
+    categoria: "cadastro",
+    input: "select",
+    options: [
+      { value: "", label: "Selecione..." },
+      { value: "M", label: "Masculino" },
+      { value: "F", label: "Feminino" },
+    ],
+  },
   {
     campo: "dataNascimento",
     label: "Data de Nascimento",
     categoria: "cadastro",
     input: "date",
-    normalizarComparacao: normalizarDataComparacao,
   },
   { campo: "estadoCivil", label: "Estado Civil", categoria: "cadastro" },
   {
@@ -106,13 +116,27 @@ export const CAMPOS_DADOS_PESSOAIS_CONFIG: ReadonlyArray<CampoDadosConfig> = [
     label: "Data de Expedição",
     categoria: "documentos",
     input: "date",
-    normalizarComparacao: normalizarDataComparacao,
   },
-  { campo: "cpf", label: "CPF", categoria: "documentos" },
+  {
+    campo: "cpf",
+    label: "CPF",
+    categoria: "documentos",
+    normalizarComparacao: normalizarCPF,
+  },
   { campo: "nomeMae", label: "Nome da Mãe", categoria: "filiacao" },
-  { campo: "cpfMae", label: "CPF da Mãe", categoria: "filiacao" },
+  {
+    campo: "cpfMae",
+    label: "CPF da Mãe",
+    categoria: "filiacao",
+    normalizarComparacao: normalizarCPF,
+  },
   { campo: "nomePai", label: "Nome do Pai", categoria: "filiacao" },
-  { campo: "cpfPai", label: "CPF do Pai", categoria: "filiacao" },
+  {
+    campo: "cpfPai",
+    label: "CPF do Pai",
+    categoria: "filiacao",
+    normalizarComparacao: normalizarCPF,
+  },
   { campo: "email", label: "E-mail", categoria: "contato" },
   {
     campo: "tipoCertidaoCivil",
@@ -137,7 +161,6 @@ export const CAMPOS_DADOS_PESSOAIS_CONFIG: ReadonlyArray<CampoDadosConfig> = [
     label: "Data de Emissão",
     categoria: "certidao",
     input: "date",
-    normalizarComparacao: normalizarDataComparacao,
   },
   { campo: "estadoCertidao", label: "Estado", categoria: "certidao" },
   { campo: "folhaCertidao", label: "Folha", categoria: "certidao" },
@@ -163,6 +186,38 @@ export type ResumoDadosPessoais = {
 export const TOTAL_CAMPOS_DADOS_PESSOAIS = CAMPOS_DADOS_PESSOAIS.length;
 
 export type ValoresDadosPessoais = Partial<Record<CampoDadosPessoais, unknown>>;
+
+type Normalizador = (valor: string | null) => string;
+
+const NORMALIZADORES_POR_INPUT: Partial<Record<TipoInputCampo, Normalizador>> = {
+  date: normalizarDataComparacao,
+  select: normalizarTextoGenerico,
+  text: normalizarTextoGenerico,
+  textarea: normalizarTextoGenerico,
+};
+
+function normalizarTextoGenerico(valor: string | null): string {
+  if (!valor) return "";
+  return valor.trim().toUpperCase();
+}
+
+export function normalizarValorParaComparacao(
+  config: CampoDadosConfig,
+  valor: string | null
+): string {
+  if (config.normalizarComparacao) {
+    return config.normalizarComparacao(valor);
+  }
+
+  if (config.input) {
+    const normalizador = NORMALIZADORES_POR_INPUT[config.input];
+    if (normalizador) {
+      return normalizador(valor);
+    }
+  }
+
+  return normalizarTextoGenerico(valor);
+}
 
 export function calcularResumoDadosPessoais(
   aluno: ValoresDadosPessoais
@@ -214,32 +269,34 @@ function valorPreenchido(valor: unknown): boolean {
 
 export function normalizarDataComparacao(valor: string | null): string {
   if (!valor) return "";
-  const parsed = parseDataFlexivel(valor);
-  if (!parsed) {
-    return valor.trim().toUpperCase();
+  const trimmed = valor.trim();
+  if (!trimmed) return "";
+
+  const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    const [, ano, mes, dia] = isoMatch;
+    return `${ano}-${mes}-${dia}`;
   }
-  return parsed.toISOString().split("T")[0];
+
+  const brMatch = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (brMatch) {
+    const [, dia, mes, ano] = brMatch;
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  // fallback: deixar o Date parsear e extrair em UTC
+  const parsed = new Date(trimmed);
+  if (!Number.isNaN(parsed.getTime())) {
+    const ano = parsed.getUTCFullYear();
+    const mes = String(parsed.getUTCMonth() + 1).padStart(2, "0");
+    const dia = String(parsed.getUTCDate()).padStart(2, "0");
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  return trimmed.toUpperCase();
 }
 
-function parseDataFlexivel(valor: string): Date | null {
-  const trimmed = valor.trim();
-  if (!trimmed) return null;
-
-  // Formato ISO ou algo que o Date entenda
-  const isoDate = new Date(trimmed);
-  if (!Number.isNaN(isoDate.getTime())) {
-    return isoDate;
-  }
-
-  // Formato brasileiro DD/MM/AAAA
-  const match = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (match) {
-    const [, dia, mes, ano] = match;
-    const dateFromBR = new Date(`${ano}-${mes}-${dia}T00:00:00Z`);
-    if (!Number.isNaN(dateFromBR.getTime())) {
-      return dateFromBR;
-    }
-  }
-
-  return null;
+function normalizarCPF(valor: string | null): string {
+  if (!valor) return "";
+  return valor.replace(/\D/g, "");
 }

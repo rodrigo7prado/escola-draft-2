@@ -40,7 +40,7 @@
     "lint-staged": "^16.2.6",
     "prisma": "^6.18.0",
     "tailwindcss": "^4",
-    "typescript": "^5",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.7"
   }
 }

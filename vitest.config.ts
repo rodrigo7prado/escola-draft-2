@@ -1,16 +1,15 @@
-import { defineConfig } from 'vitest/config';
-import path from 'path';
+import { defineConfig } from "vitest/config";
+import path from "path";
 
 export default defineConfig({
   plugins: [],
   test: {
     // Ambiente de teste (happy-dom é mais leve que jsdom)
-    environment: 'happy-dom',
+    environment: "happy-dom",
 
     // Pool: 'forks' é mais estável no Windows (evita segfaults)
     // 'threads' pode causar crash com crypto/banco de dados
-    pool: 'forks',
-
+    pool: "forks",
     // IMPORTANTE: Desabilitar paralelismo para testes de integração com banco
     // Testes que usam o mesmo banco não podem rodar em paralelo (race conditions)
     // clearTestDatabase() em um teste afeta outros testes rodando simultaneamente
@@ -21,29 +20,29 @@ export default defineConfig({
     maxWorkers: 1, // Modo sequencial garante estabilidade
 
     // Arquivos de setup global
-    setupFiles: ['./tests/setup.ts'],
+    setupFiles: ["./tests/setup.ts"],
 
     // Inclui apenas arquivos de teste
-    include: ['tests/**/*.test.{ts,tsx}'],
+    include: ["tests/**/*.test.{ts,tsx}"],
 
     // Exclui arquivos que não são testes
     exclude: [
-      'node_modules',
-      'dist',
-      '.next',
-      'tests/helpers/**',
-      'tests/fixtures/**',
+      "node_modules",
+      "dist",
+      ".next",
+      "tests/helpers/**",
+      "tests/fixtures/**",
     ],
 
     // Coverage (cobertura de código)
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      include: ['src/**/*.{ts,tsx}'],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      include: ["src/**/*.{ts,tsx}"],
       exclude: [
-        'src/**/*.d.ts',
-        'src/**/*.test.{ts,tsx}',
-        'src/app/**', // Rotas Next.js (testar com E2E)
+        "src/**/*.d.ts",
+        "src/**/*.test.{ts,tsx}",
+        "src/app/**", // Rotas Next.js (testar com E2E)
       ],
     },
 
@@ -53,7 +52,7 @@ export default defineConfig({
 
     // OTIMIZAÇÃO: Reporter mais rápido (dot ao invés de verbose)
     // verbose é lento pois imprime cada teste individualmente
-    reporters: process.env.CI ? ['dot'] : ['verbose'],
+    reporters: process.env.CI ? ["dot"] : ["verbose"],
 
     // Globals (permite usar expect, describe, etc sem import)
     globals: true,
@@ -62,7 +61,7 @@ export default defineConfig({
   // Resolver alias (para imports como @/components)
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
 });

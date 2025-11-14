@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
+import useSWR from "swr";
 import {
   calcularResumoDadosPessoais,
   ResumoDadosPessoais,
@@ -40,61 +41,30 @@ export type ResumoDadosPessoaisTurma = {
 };
 
 export function useAlunosCertificacao(filtros: FiltrosParams) {
-  const [alunos, setAlunos] = useState<AlunoCertificacao[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const chave = filtros.anoLetivo
+    ? ([
+        "alunos-certificacao",
+        filtros.anoLetivo,
+        filtros.turma || "",
+      ] as const)
+    : null;
 
-  useEffect(() => {
-    // Só buscar se tiver filtros selecionados
-    if (!filtros.anoLetivo) {
-      setAlunos([]);
-      return;
+  const {
+    data,
+    error,
+    isLoading,
+    isValidating,
+    mutate,
+  } = useSWR(
+    chave,
+    async () => obterAlunosCertificacao(filtros),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
     }
+  );
 
-    const fetchAlunos = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        // Construir query string
-        const params = new URLSearchParams();
-        params.append('anoLetivo', filtros.anoLetivo);
-        params.append('regime', '0'); // Sempre anual para certificação
-        params.append('modalidade', 'REGULAR');
-        params.append('serie', '3'); // Sempre 3ª série para certificação
-
-        if (filtros.turma) {
-          params.append('turma', filtros.turma);
-        }
-
-        const response = await fetch(`/api/alunos?${params.toString()}`);
-
-        if (!response.ok) {
-          throw new Error('Erro ao buscar alunos');
-        }
-
-        const data = await response.json();
-        const alunosResposta: AlunoApiResponse[] = data.alunos || [];
-
-        const alunosComResumo = alunosResposta.map<AlunoCertificacao>(
-          (aluno) => ({
-            ...aluno,
-            progressoDadosPessoais: calcularResumoDadosPessoais(aluno),
-          })
-        );
-
-        setAlunos(alunosComResumo);
-      } catch (err) {
-        console.error("Erro ao buscar alunos:", err);
-        setError(err instanceof Error ? err.message : "Erro desconhecido");
-        setAlunos([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchAlunos();
-  }, [filtros.anoLetivo, filtros.turma]);
+  const alunos = data ?? [];
 
   const resumoDadosPessoais: ResumoDadosPessoaisTurma = useMemo(() => {
     if (alunos.length === 0) {
@@ -117,9 +87,41 @@ export function useAlunosCertificacao(filtros: FiltrosParams) {
 
   return {
     alunos,
-    isLoading,
-    error,
+    isLoading: Boolean(chave && isLoading && !data),
+    isAtualizando: Boolean(chave && isValidating && !!data),
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : "Erro ao buscar alunos"
+      : null,
     totalAlunos: alunos.length,
     resumoDadosPessoais,
+    refreshAlunos: () => (chave ? mutate() : Promise.resolve(undefined)),
   };
+}
+
+async function obterAlunosCertificacao(filtros: FiltrosParams) {
+  const params = new URLSearchParams();
+  params.append("anoLetivo", filtros.anoLetivo);
+  params.append("regime", "0");
+  params.append("modalidade", "REGULAR");
+  params.append("serie", "3");
+
+  if (filtros.turma) {
+    params.append("turma", filtros.turma);
+  }
+
+  const response = await fetch(`/api/alunos?${params.toString()}`);
+
+  if (!response.ok) {
+    throw new Error("Erro ao buscar alunos");
+  }
+
+  const data = await response.json();
+  const alunosResposta: AlunoApiResponse[] = data.alunos || [];
+
+  return alunosResposta.map<AlunoCertificacao>((aluno) => ({
+    ...aluno,
+    progressoDadosPessoais: calcularResumoDadosPessoais(aluno),
+  }));
 }

@@ -11,7 +11,62 @@
 2. **Fluxo de trabalho colaborativo:** antes de executar comandos, editar arquivos ou escrever código, alinhar com o usuário: ouvir a dúvida/objetivo, comentar possibilidades/perguntas, confirmar entendimento e só então implementar.
 3. **Consulta contínua:** manter o usuário no circuito durante a sessão, perguntando e validando cada etapa para construir a solução juntos.
 
-- ⚠️ Sempre manter os arquivos do projeto em UTF-8 (com BOM quando necessário), preservando acentuação e emojis conforme textos originais. Evitar substituições automáticas que removam caracteres de língua portuguesa.
+4. Quando tiver problemas de encoding, lembre que é possível escrever diretamente. Exemplos:
+
+$ powershell.exe -NoLogo -NoProfile -Command '$env:PYTHONIOENCODING='"'"'utf-8'"'"';python show_section.py'
+
+### 3. ✅ Recarregamento automático após salvar
+
+**Status:** Concluído em 14/11/2025
+
+**Implementação técnica:**
+
+- `useAlunoSelecionado` e `useAlunosCertificacao` migraram para SWR e agora expõem `refreshAlunoSelecionado`/`refreshAlunos`, permitindo `mutate()` logo após o POST.
+- `useModoColagem` passou a aceitar `onDadosConfirmados` e dispara os dois refreshes assim que `/salvar` retorna sucesso.
+- `DadosAlunoEditavel` observa o objeto completo no `useMemo` e exibe o aviso “Atualizando dados...” enquanto o SWR revalida, evitando flicker no painel.
+
+**Cobertura de testes 🧪:**
+
+- `tests/hooks/useModoColagem.test.tsx` garante que o callback pós-salvar é disparado.
+- `tests/hooks/useAlunoSelecionado.test.tsx` e `tests/hooks/useAlunosCertificacao.test.tsx` simulam respostas diferentes e confirmam que os hooks aplicam os dados novos.
+- `tests/integration/api/importacao-salvar-refresh.test.ts` importa diretamente os route handlers e comprova que o GET já devolve a versão atualizada após o POST.
+
+**Resultado:** painel e lista refletem os dados confirmados imediatamente, sem recarregar a página nem trocar de aluno.
+
+4. **Escrita de texto em português e com emojis, sem conflitos**
+
+- O procedimento não deve envolver scripts complexos. Basta escrever diretamente no powershell.
+
+- Exemplos:
+
+  "$ powershell.exe -NoLogo -NoProfile -Command '$script = @'"'"'
+  from pathlib import Path
+  text = Path("docs/ciclos/IMPORTACAO_ESTRUTURADA_CHECKPOINT.md").read_text(encoding='"'"'utf-8'"'"')
+  start = text.index('"'"'### 3. ✅ Recarregamento automático após salvar'"'"', 100)
+  end = text.index('"'"'---'"'"', start + 5)
+  print(text[start:end])
+  '"'"'@
+  Set-Content -LiteralPath '"'"'show_section.py'"'"' -Value $script -Encoding UTF8'"
+
+  "$ powershell.exe -NoLogo -NoProfile -Command '$env:PYTHONIOENCODING='"'"'utf-8'"'"';python show_section.py'"
+
+### 3. ✅ Recarregamento automático após salvar
+
+**Status:** Concluído em 14/11/2025
+
+**Implementação técnica:**
+
+- `useAlunoSelecionado` e `useAlunosCertificacao` migraram para SWR e agora expõem `refreshAlunoSelecionado`/`refreshAlunos`, permitindo `mutate()` logo após o POST.
+- `useModoColagem` passou a aceitar `onDadosConfirmados` e dispara os dois refreshes assim que `/salvar` retorna sucesso.
+- `DadosAlunoEditavel` observa o objeto completo no `useMemo` e exibe o aviso “Atualizando dados...” enquanto o SWR revalida, evitando flicker no painel.
+
+**Cobertura de testes 🧪:**
+
+- `tests/hooks/useModoColagem.test.tsx` garante que o callback pós-salvar é disparado.
+- `tests/hooks/useAlunoSelecionado.test.tsx` e `tests/hooks/useAlunosCertificacao.test.tsx` simulam respostas diferentes e confirmam que os hooks aplicam os dados novos.
+- `tests/integration/api/importacao-salvar-refresh.test.ts` importa diretamente os route handlers e comprova que o GET já devolve a versão atualizada após o POST.
+
+**Resultado:** painel e lista refletem os dados confirmados imediatamente, sem recarregar a página nem trocar de aluno.
 
 # ⚠️ METODOLOGIA DE DESENVOLVIMENTO - LEIA PRIMEIRO ⚠️
 

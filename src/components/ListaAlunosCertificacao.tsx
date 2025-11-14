@@ -1,9 +1,8 @@
 "use client";
 
-import {
-  useAlunosCertificacao,
-  type AlunoCertificacao,
-  type ResumoDadosPessoaisTurma,
+import type {
+  AlunoCertificacao,
+  ResumoDadosPessoaisTurma,
 } from "@/hooks/useAlunosCertificacao";
 import type { FiltrosCertificacaoState } from "@/hooks/useFiltrosCertificacao";
 import { Button } from "@/components/ui/Button";
@@ -15,6 +14,12 @@ type ListaAlunosCertificacaoProps = {
   onSelecionarAluno: (aluno: AlunoCertificacao) => void;
   alunoIdModoColagemAtivo: string | null;
   onToggleModoColagem: (alunoId: string, ativo: boolean) => void;
+  alunos: AlunoCertificacao[];
+  isLoading: boolean;
+  isAtualizando: boolean;
+  error: string | null;
+  totalAlunos: number;
+  resumoDadosPessoais: ResumoDadosPessoaisTurma;
 };
 
 export function ListaAlunosCertificacao({
@@ -23,10 +28,13 @@ export function ListaAlunosCertificacao({
   onSelecionarAluno,
   alunoIdModoColagemAtivo,
   onToggleModoColagem,
+  alunos,
+  isLoading,
+  isAtualizando,
+  error,
+  totalAlunos,
+  resumoDadosPessoais,
 }: ListaAlunosCertificacaoProps) {
-  const { alunos, isLoading, error, totalAlunos, resumoDadosPessoais } =
-    useAlunosCertificacao(filtros);
-
   if (isLoading) {
     return (
       <div className="text-center py-8 text-neutral-500">
@@ -65,9 +73,14 @@ export function ListaAlunosCertificacao({
       <div className="bg-neutral-100 px-3 py-2 border-b shrink-0 space-y-1">
         <div className="flex items-center justify-between text-xs font-semibold text-neutral-700">
           <h3>Alunos ({totalAlunos})</h3>
-          <span className="text-[11px] font-medium text-neutral-500">
-            Dados pessoais
-          </span>
+          <div className="flex items-center gap-2 text-[11px] font-medium text-neutral-500">
+            <span>Dados pessoais</span>
+            {isAtualizando && (
+              <span className="text-[10px] text-neutral-400 animate-pulse">
+                Atualizando...
+              </span>
+            )}
+          </div>
         </div>
         <PainelResumoTurma resumo={resumoDadosPessoais} />
       </div>

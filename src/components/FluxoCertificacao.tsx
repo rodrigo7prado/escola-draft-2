@@ -1,8 +1,10 @@
 "use client";
 
+import { useCallback } from "react";
 import { useFiltrosCertificacao } from "@/hooks/useFiltrosCertificacao";
 import { useAlunoSelecionado } from "@/hooks/useAlunoSelecionado";
 import { useModoColagem } from "@/hooks/useModoColagem";
+import { useAlunosCertificacao } from "@/hooks/useAlunosCertificacao";
 import { FiltrosCertificacao } from "./FiltrosCertificacao";
 import { ListaAlunosCertificacao } from "./ListaAlunosCertificacao";
 import { DadosAlunoEditavel } from "./DadosAlunoEditavel";
@@ -26,17 +28,39 @@ export function FluxoCertificacao() {
   } = useFiltrosCertificacao();
 
   const {
+    alunos,
+    isLoading: isLoadingAlunos,
+    isAtualizando: isAtualizandoAlunos,
+    error: erroAlunos,
+    totalAlunos,
+    resumoDadosPessoais,
+    refreshAlunos,
+  } = useAlunosCertificacao(filtros);
+
+  const {
     alunoSelecionado,
     selecionarAluno,
     alunoDetalhes,
     dadosOriginais,
     isLoadingDetalhes,
     erroDetalhes,
+    isAtualizandoDetalhes,
+    refreshAlunoSelecionado,
   } = useAlunoSelecionado();
 
   const handleSelecionarAluno = (aluno: AlunoCertificacao): void => {
     selecionarAluno(aluno);
   };
+
+  const handleDadosConfirmados = useCallback(
+    async (alunoIdConfirmado: string) => {
+      if (alunoSelecionado?.id === alunoIdConfirmado) {
+        await refreshAlunoSelecionado();
+      }
+      await refreshAlunos();
+    },
+    [alunoSelecionado?.id, refreshAlunoSelecionado, refreshAlunos]
+  );
 
   const {
     alunoIdAtivo,
@@ -52,7 +76,9 @@ export function FluxoCertificacao() {
     fecharModal,
     confirmarDados,
     // isModoColagemAtivo,
-  } = useModoColagem();
+  } = useModoColagem({
+    onDadosConfirmados: handleDadosConfirmados,
+  });
 
   return (
     <>
@@ -71,6 +97,12 @@ export function FluxoCertificacao() {
                 desativarModoColagem();
               }
             }}
+            alunos={alunos}
+            isLoading={isLoadingAlunos}
+            isAtualizando={isAtualizandoAlunos}
+            error={erroAlunos}
+            totalAlunos={totalAlunos}
+            resumoDadosPessoais={resumoDadosPessoais}
           />
         </div>
 
@@ -97,6 +129,7 @@ export function FluxoCertificacao() {
                 aluno={alunoDetalhes}
                 dadosOriginais={dadosOriginais}
                 isLoading={isLoadingDetalhes}
+                isAtualizando={isAtualizandoDetalhes}
                 erro={erroDetalhes}
               />
             </div>

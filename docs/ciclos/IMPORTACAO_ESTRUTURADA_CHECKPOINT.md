@@ -93,56 +93,21 @@ dataImportacaoTextoDadosEscolares DateTime?
 
 **Testes:** ✅ `tests/lib/parsing/parsing.test.ts` atualizado com cenário real de colagem + casos básicos
 
-### 3. APIs REST
+### 3. ✅ Recarregamento automático após salvar
 
-#### `POST /api/importacao-estruturada`
-**Propósito:** Recebe texto colado, detecta tipo e retorna dados parseados
+**Status:** Concluído em 14/11/2025
 
-**Request:**
-```json
-{
-  "texto": "string",
-  "matricula": "string (15 dígitos)",
-  "alunoId": "string (uuid)"
-}
-```
+**Implementação técnica:**
+- `useAlunoSelecionado` e `useAlunosCertificacao` migraram para SWR e agora expõem `refreshAlunoSelecionado`/`refreshAlunos`, permitindo `mutate()` logo após o POST.
+- `useModoColagem` passou a aceitar `onDadosConfirmados` e dispara os dois refreshes assim que `/salvar` retorna sucesso.
+- `DadosAlunoEditavel` observa o objeto completo no `useMemo` e exibe o aviso “Atualizando dados...” enquanto o SWR revalida, evitando flicker no painel.
 
-**Response (dadosPessoais):**
-```json
-{
-  "sucesso": true,
-  "tipoPagina": "dadosPessoais",
-  "precisaConfirmarSexo": boolean,
-  "dados": { /* DadosPessoais (32 campos) */ }
-}
-```
+**Cobertura de testes 🧪:**
+- `tests/hooks/useModoColagem.test.tsx` garante que o callback pós-salvar é disparado.
+- `tests/hooks/useAlunoSelecionado.test.tsx` e `tests/hooks/useAlunosCertificacao.test.tsx` simulam respostas diferentes e confirmam que os hooks aplicam os dados novos.
+- `tests/integration/api/importacao-salvar-refresh.test.ts` importa diretamente os route handlers e comprova que o GET já devolve a versão atualizada após o POST.
 
-**Response (dadosEscolares):**
-```json
-{
-  "sucesso": true,
-  "tipoPagina": "dadosEscolares",
-  "mensagem": "Dados escolares recebidos com sucesso"
-}
-```
-
-**Correções aplicadas:**
-- ✅ Corrigido erro Zod: `error.errors` → `error.issues`
-
----
-
-#### `POST /api/importacao-estruturada/salvar`
-**Propósito:** Salva dados parseados no banco de dados
-
-**Estratégia de salvamento:**
-1. Salva dados em campos normais do banco (para compatibilidade)
-2. Salva dados em `dadosOriginais` (JSONB) - dados estruturados
-3. Salva texto bruto em `textoBrutoDadosPessoais` - para auditoria
-
-**Correções aplicadas:**
-- ✅ Corrigido erro Zod: `error.errors` → `error.issues`
-
-**⚠️ PENDENTE:** Atualizar para mapear todos os 32 campos (atualmente mapeando apenas 13)
+**Resultado:** painel e lista refletem os dados confirmados imediatamente, sem recarregar a página nem trocar de aluno.
 
 ---
 
@@ -421,32 +386,38 @@ dataImportacaoTextoDadosEscolares DateTime?
 
 ---
 
-### 3. Recarregamento automático após salvar
+### 3. ✅ Recarregamento automático após salvar
 
-**Problema:** Após salvar dados, a UI não atualiza automaticamente
+**Status:** Concluído em 14/11/2025
 
-**Solução:**
-- Adicionar callback `onSalvoComSucesso` no hook
-- Recarregar dados do aluno via SWR/React Query
-- Ou forçar re-fetch via `mutate()` do SWR
+**Implementação técnica:**
+- `useAlunoSelecionado` e `useAlunosCertificacao` migraram para SWR e agora expõem `refreshAlunoSelecionado`/`refreshAlunos`, permitindo `mutate()` logo após o POST.
+- `useModoColagem` passou a aceitar `onDadosConfirmados` e dispara os dois refreshes assim que `/salvar` retorna sucesso.
+- `DadosAlunoEditavel` observa o objeto completo no `useMemo` e exibe o aviso “Atualizando dados...” enquanto o SWR revalida, evitando flicker no painel.
+
+**Cobertura de testes 🧪:**
+- `tests/hooks/useModoColagem.test.tsx` garante que o callback pós-salvar é disparado.
+- `tests/hooks/useAlunoSelecionado.test.tsx` e `tests/hooks/useAlunosCertificacao.test.tsx` simulam respostas diferentes e confirmam que os hooks aplicam os dados novos.
+- `tests/integration/api/importacao-salvar-refresh.test.ts` importa diretamente os route handlers e comprova que o GET já devolve a versão atualizada após o POST.
+
+**Resultado:** painel e lista refletem os dados confirmados imediatamente, sem recarregar a página nem trocar de aluno.
 
 ---
 
-### 4. Comparação Visual de Dados
+### 4. Comparação Visual + Edição no DadosAlunoEditavel
 
-**Arquivo:** `src/components/ComparacaoDadosAluno.tsx` (criar)
+**Status:** ✅ Refatoração concluída nesta sessão
 
-**Propósito:** Exibir lado a lado o valor atual (banco) e o valor original importado, com status visual indicando diferenças.
+**Atualizações realizadas:**
+- `src/lib/importacao/dadosPessoaisMetadata.ts` virou a fonte única de metadados dos 32 campos (labels, categorias, tipo de input, normalização para datas/CPFs).
+- `src/hooks/useAlunoSelecionado.ts` passa a buscar o aluno completo + `dadosOriginais`, usando aliases quando o nome do campo no Prisma diverge (`rgOrgaoEmissor`, `rgDataEmissao`).
+- `src/components/DadosAlunoEditavel.tsx` foi reescrito como painel comparativo editável: inputs são gerados a partir do metadata, badges indicam apenas diferenças reais e há botão de reset. Datas e CPFs são normalizados antes da comparação, evitando falsos “Atualizado”.
+- `src/hooks/useModoColagem.ts` bloqueia colagens com matrícula divergente (extraímos a matrícula do texto colado) e ganhou testes (`tests/lib/hooks/useModoColagem.test.tsx`).
+- `prisma/schema.prisma` agora gera binário Windows além do `native`, evitando erros ao rodar o app fora do WSL.
 
-**Funcionalidades:**
-- Layout lado a lado ou inline com labels.
-- Badge/cor destaca:
-  - 🔵 Azul: valor idêntico ao original.
-  - 🟢 Verde: valor atualizado (diferente do original).
-  - 🟡 Amarelo: valor ausente/não preenchido.
-- Ação de “Restaurar valor original” quando aplicável.
-
-**Integração:** Dentro de `DadosAlunoEditavel.tsx` por seção/campo.
+**Próximos incrementos possíveis:**
+- Implementar ação “Restaurar valor original” campo a campo.
+- Conectar o formulário ao endpoint de atualização para persistir alterações.
 
 ---
 
@@ -487,17 +458,20 @@ dataImportacaoTextoDadosEscolares DateTime?
 - `tests/setup.ts` - Setup de testes (corrigido)
 
 ### ✅ Frontend (Fase 2 - COMPLETO)
-- `src/hooks/useModoColagem.ts` - Hook principal ✅ CRIADO
+- `src/hooks/useModoColagem.ts` - Hook principal ✅ CRIADO (agora com bloqueio por matrícula + testes)
 - `src/components/BotaoColagemAluno.tsx` - Botões de ação ✅ CRIADO
 - `src/components/AreaColagemDados.tsx` - Captura de paste ✅ CRIADO
 - `src/components/ModalConfirmacaoDados.tsx` - Modal de confirmação ✅ CRIADO
 - `src/components/ui/Select.tsx` - Select genérico ✅ CRIADO
 - `src/components/FluxoCertificacao.tsx` - Container principal ✅ ATUALIZADO
 - `src/components/ListaAlunosCertificacao.tsx` - Lista de alunos ✅ ATUALIZADO
+- `src/components/DadosAlunoEditavel.tsx` - Painel comparativo/edição ✅ REFEITO
+- `src/hooks/useAlunoSelecionado.ts` - Busca aluno completo + dados originais ✅ ATUALIZADO
 
 ### 🔜 Pendente (Fase 3 - Melhorias)
-- `src/components/ComparacaoDadosAluno.tsx` - A criar
 - Sistema de notificações (Toast)
+- Recarregamento automático após salvar
+- Persistir alterações do painel comparativo
 - Testes de frontend
 
 ### 📚 Documentação
@@ -525,6 +499,7 @@ dataImportacaoTextoDadosEscolares DateTime?
 8. **TypeScript strict mode** exige casts explícitos (globalThis)
 9. **Metodologia CIF funciona** - descoberta evitou retrabalho
 10. **Fonte única de metadados evita divergências** - listas de campos e labels devem morar em módulos compartilhados e alimentar parser, API e UI simultaneamente
+11. **Validação antes da chamada** evita bugs silenciosos - bloquear a colagem errada no `useModoColagem` reduziu erros de importação e facilitou testes
 
 ---
 
@@ -544,7 +519,7 @@ dataImportacaoTextoDadosEscolares DateTime?
 - ✅ Se sexo não foi detectado, modal exige seleção manual
 - ✅ Ao confirmar (Enter ou botão), dados são salvos no banco
 - ✅ Após salvar, modo colagem é desativado automaticamente
-- ⚠️ Dados aparecem em `DadosAlunoEditavel` (PENDENTE: recarregamento automático)
+- ✅ Dados aparecem em `DadosAlunoEditavel` imediatamente após salvar (refresh automático)
 - ⚠️ Comparação visual de campos (PENDENTE: componente ComparacaoDadosAluno)
 
 ---
@@ -552,17 +527,16 @@ dataImportacaoTextoDadosEscolares DateTime?
 ## 🚀 PARA PRÓXIMA SESSÃO
 
 **Prioridade 1 (Urgente):**
-1. Atualizar API `/api/importacao-estruturada/salvar` para mapear todos os 32 campos
+1. ✅ Recarregamento automático após salvar (hook + SWR)
 
 **Prioridade 2 (Importante):**
-2. Implementar sistema de notificações (toast)
-3. Implementar recarregamento automático após salvar
-4. Resolver erro de build production
+2. Sistema de notificações (toast)
+3. Resolver erro de build production (useContext/Turbopack)
 
 **Prioridade 3 (Desejável):**
-5. Criar componente `ComparacaoDadosAluno`
-6. Adicionar testes de frontend
-7. Documentar TÉCNICO.md
+4. Persistir edição no `DadosAlunoEditavel` (salvar/restore campos)
+5. Adicionar testes de frontend (modo colagem, UI)
+6. Documentar TÉCNICO.md
 
 ---
 

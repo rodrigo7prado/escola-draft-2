@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import useSWR from "swr";
 import type { AlunoCertificacao } from "./useAlunosCertificacao";
 import {
   CAMPOS_DADOS_PESSOAIS,
@@ -20,74 +21,41 @@ export type DadosOriginaisAluno = Record<string, unknown> | null;
 export function useAlunoSelecionado() {
   const [alunoSelecionado, setAlunoSelecionado] =
     useState<AlunoCertificacao | null>(null);
-  const [alunoDetalhes, setAlunoDetalhes] = useState<AlunoDetalhado | null>(
-    null
+
+  const chaveDetalhes = alunoSelecionado
+    ? (["aluno-detalhe", alunoSelecionado.matricula] as const)
+    : null;
+
+  const {
+    data,
+    error,
+    isLoading,
+    isValidating,
+    mutate,
+  } = useSWR(chaveDetalhes, async ([, matricula]) => {
+    return obterAlunoDetalhadoPorMatricula(matricula);
+  }, {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+  });
+
+  const selecionarAluno = useCallback(
+    (aluno: AlunoCertificacao | null) => {
+      setAlunoSelecionado(aluno);
+    },
+    []
   );
-  const [dadosOriginais, setDadosOriginais] =
-    useState<DadosOriginaisAluno>(null);
-  const [isLoadingDetalhes, setIsLoadingDetalhes] = useState(false);
-  const [erroDetalhes, setErroDetalhes] = useState<string | null>(null);
 
-  const selecionarAluno = (aluno: AlunoCertificacao | null) => {
-    setAlunoSelecionado(aluno);
-  };
-
-  const limparSelecao = () => {
+  const limparSelecao = useCallback(() => {
     setAlunoSelecionado(null);
-    setAlunoDetalhes(null);
-    setDadosOriginais(null);
-    setErroDetalhes(null);
-  };
+  }, []);
 
-  useEffect(() => {
-    if (!alunoSelecionado) {
-      setAlunoDetalhes(null);
-      setDadosOriginais(null);
-      return;
+  const refreshAlunoSelecionado = useCallback(() => {
+    if (!chaveDetalhes) {
+      return Promise.resolve(undefined);
     }
-
-    const controller = new AbortController();
-    const carregarDetalhes = async () => {
-      setIsLoadingDetalhes(true);
-      setErroDetalhes(null);
-
-      try {
-        const response = await fetch(
-          `/api/alunos?matricula=${alunoSelecionado.matricula}`,
-          { signal: controller.signal }
-        );
-
-        if (!response.ok) {
-          throw new Error("Erro ao carregar dados completos do aluno");
-        }
-
-        const data = await response.json();
-        const aluno = data.aluno;
-        const original =
-          aluno?.dadosOriginais ??
-          aluno?.linhaOrigem?.dadosOriginais ??
-          null;
-
-        setAlunoDetalhes(mapearAlunoDetalhado(aluno));
-        setDadosOriginais(original);
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        console.error("Erro ao carregar aluno detalhado:", error);
-        setErroDetalhes(
-          error instanceof Error ? error.message : "Erro inesperado"
-        );
-        setAlunoDetalhes(null);
-        setDadosOriginais(null);
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoadingDetalhes(false);
-        }
-      }
-    };
-
-    carregarDetalhes();
-    return () => controller.abort();
-  }, [alunoSelecionado?.matricula]);
+    return mutate();
+  }, [chaveDetalhes, mutate]);
 
   const temAlunoSelecionado = useMemo(
     () => Boolean(alunoSelecionado),
@@ -99,10 +67,16 @@ export function useAlunoSelecionado() {
     selecionarAluno,
     limparSelecao,
     temAlunoSelecionado,
-    alunoDetalhes,
-    dadosOriginais,
-    isLoadingDetalhes,
-    erroDetalhes,
+    alunoDetalhes: data?.detalhes ?? null,
+    dadosOriginais: data?.dadosOriginais ?? null,
+    isLoadingDetalhes: Boolean(chaveDetalhes && isLoading && !data),
+    erroDetalhes: error
+      ? error instanceof Error
+        ? error.message
+        : "Erro ao carregar dados completos do aluno"
+      : null,
+    isAtualizandoDetalhes: Boolean(chaveDetalhes && isValidating && !!data),
+    refreshAlunoSelecionado,
   };
 }
 
@@ -148,4 +122,22 @@ function serializarValor(valor: unknown): string | null {
   } catch {
     return String(valor);
   }
+}
+
+async function obterAlunoDetalhadoPorMatricula(matricula: string) {
+  const response = await fetch(`/api/alunos?matricula=${matricula}`);
+
+  if (!response.ok) {
+    throw new Error("Erro ao carregar dados completos do aluno");
+  }
+
+  const data = await response.json();
+  const aluno = data.aluno ?? null;
+  const original =
+    aluno?.dadosOriginais ?? aluno?.linhaOrigem?.dadosOriginais ?? null;
+
+  return {
+    detalhes: mapearAlunoDetalhado(aluno),
+    dadosOriginais: original,
+  };
 }

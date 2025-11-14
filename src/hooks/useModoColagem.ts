@@ -35,7 +35,12 @@ type ModoColagemState = {
   textoBruto: string | null;
 };
 
-export function useModoColagem() {
+type UseModoColagemOptions = {
+  onDadosConfirmados?: (alunoId: string) => void | Promise<void>;
+};
+
+export function useModoColagem(options: UseModoColagemOptions = {}) {
+  const { onDadosConfirmados } = options;
   const [state, setState] = useState<ModoColagemState>({
     alunoIdAtivo: null,
     dadosParsed: null,
@@ -212,6 +217,8 @@ export function useModoColagem() {
           return;
         }
 
+        const alunoConfirmadoId = state.alunoIdAtivo;
+
         // Sucesso - resetar estado e desativar modo colagem
         setState({
           alunoIdAtivo: null,
@@ -223,6 +230,17 @@ export function useModoColagem() {
           erro: null,
           textoBruto: null,
         });
+
+        if (alunoConfirmadoId && onDadosConfirmados) {
+          try {
+            await onDadosConfirmados(alunoConfirmadoId);
+          } catch (callbackError) {
+            console.error(
+              "Erro ao executar ação pós-confirmação:",
+              callbackError
+            );
+          }
+        }
 
         // TODO: Mostrar notificação de sucesso
         // TODO: Recarregar dados do aluno na UI
@@ -236,7 +254,7 @@ export function useModoColagem() {
         }));
       }
     },
-    [state.alunoIdAtivo, state.textoBruto]
+    [state.alunoIdAtivo, state.textoBruto, onDadosConfirmados]
   );
 
   return {

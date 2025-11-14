@@ -25,6 +25,7 @@ type DadosAlunoEditavelProps = {
   aluno: AlunoDetalhado | null;
   dadosOriginais: DadosOriginaisAluno;
   isLoading: boolean;
+  isAtualizando?: boolean;
   erro?: string | null;
 };
 
@@ -40,11 +41,12 @@ export function DadosAlunoEditavel({
   aluno,
   dadosOriginais,
   isLoading,
+  isAtualizando = false,
   erro,
 }: DadosAlunoEditavelProps) {
   const valoresBase = useMemo(
     () => extrairValoresDoAluno(aluno),
-    [aluno?.id]
+    [aluno]
   );
   const [formState, setFormState] = useState<ValoresFormulario>(valoresBase);
 
@@ -106,14 +108,21 @@ export function DadosAlunoEditavel({
             importação.
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={resetarAlteracoes}
-          disabled={!possuiAlteracoes}
-        >
-          Resetar alterações
-        </Button>
+        <div className="flex items-center gap-3">
+          {isAtualizando && (
+            <span className="text-[11px] text-neutral-500 animate-pulse">
+              Atualizando dados...
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={resetarAlteracoes}
+            disabled={!possuiAlteracoes}
+          >
+            Resetar alterações
+          </Button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto pr-1 space-y-6">

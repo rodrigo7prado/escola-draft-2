@@ -36,6 +36,9 @@ CONCEITO → DESCOBERTA → ESPECIFICAÇÃO → TÉCNICO → CICLO DE VIDA
 **Ponto de corte:** Ignorar tudo até primeira linha que seja claramente um campo de formulário (contém `:` e valor)
 
 **Registro de exemplos:**
+
+> 📄 **Modelo completo de colagem:** [modelos/DadosPessoaisColagemModelo.md](./modelos/DadosPessoaisColagemModelo.md)
+
 ```
 ✅ EXEMPLO 1 - PÁGINA: DADOS PESSOAIS
 --------------------------------------
@@ -158,29 +161,171 @@ Total: 13 campos
 
 ---
 
-### 1.3 Tipos de Seções ⚪
+### 1.3 Tipos de Seções ✅
 
 **Pergunta:** Quantas e quais "páginas" ou seções diferentes existem?
 
-**Necessário:**
-- [ ] Identificar todas as seções/páginas do sistema externo
-- [ ] Definir quais serão importadas (escopo)
-- [ ] Verificar se há interdependência entre seções
-- [ ] Determinar ordem de importação (se relevante)
-
-**Ação:** Listar e priorizar seções
+**Resposta:**
+- ✅ Identificadas 3 seções principais no sistema oficial
+- ✅ Definido escopo de importação (2 de 3)
+- ✅ Não há interdependência obrigatória (são independentes)
+- ✅ Ordem de importação: livre (usuário escolhe)
 
 **Registro de seções:**
 ```
-[ ] Seção 1: _______________
-[ ] Seção 2: _______________
-[ ] Seção 3: _______________
-...
+✅ Seção 1: Dados Pessoais (IMPLEMENTADA)
+✅ Seção 2: Períodos Cursados - Renovação de Matrícula (NOVA)
+❌ Seção 3: Histórico Escolar Detalhado (FORA DO ESCOPO)
 ```
+
+**Detalhes:**
+
+**Seção 1 - Dados Pessoais** (já implementada):
+- Origem: Aba "Dados Pessoais" no sistema oficial
+- 32 campos capturados
+- Destino: Model `Aluno` + JSONB `dadosOriginais`
+
+**Seção 2 - Períodos Cursados** (nova):
+- Origem: Tabela "Renovação de Matrícula" no sistema oficial
+- Dados de Ingresso (1ª linha) + Dados de Renovação (todas as linhas)
+- Destino: Model `PeriodoCursado` (novo)
+
+**Seção 3 - Histórico Escolar Detalhado** (fora do escopo):
+- Origem: Tabela "Histórico de Confirmação de Matrícula" (segunda tabela)
+- Motivo da exclusão: Foco nos períodos cursados, não nas confirmações individuais
+- Será implementado futuramente quando houver necessidade de disciplinas/notas
 
 ---
 
-### 1.4 Dados Opcionais vs Obrigatórios ⚪
+### 1.4 Estrutura da Tabela "Renovação de Matrícula" ✅
+
+**Pergunta:** Como é exatamente a estrutura da tabela de renovação de matrícula?
+
+**Resposta:**
+- ✅ Formato: Tabela HTML copiada do sistema oficial
+- ✅ Múltiplas linhas (uma por período letivo cursado)
+- ✅ Primeira linha contém TAMBÉM os dados de ingresso
+- ✅ Cabeçalhos fixos separados por TAB
+
+**Exemplo real de colagem fornecido pelo usuário:**
+
+> 📄 **Modelo completo de colagem:** [modelos/DadosPessoaisColagemModelo.md](./modelos/DadosPessoaisColagemModelo.md)
+
+```
+Renovação de Matrícula
+Ano Letivo	Período Letivo	Unidade de Ensino	Modalidade / Segmento / Curso	Série/Ano Escolar	Turno	Ensino Religioso	Língua Estrangeira Facultativa	Situação	Tipo Vaga
+2024	0	CE ESCOLA TESTE	REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA	3	M			Possui confirmação	Vaga de Continuidade
+2023	0	CE OUTRA ESCOLA TESTE / MÉDIO / NEM ITINERÁRIO FORMATIVO DE LINGUAGENS E SUAS TECNOLOGIAS - MÍDIAS: LINGUAGENS EM AÇÃO	2	M			Possui confirmação	Vaga de Continuidade
+```
+
+**Dados de Ingresso (aparecem separadamente, ANTES da tabela):**
+
+```
+Dados de Ingresso
+Ano Ingresso:*	<2022>
+Período Ingresso:*	0
+Data de Inclusão do Aluno:	11/01/2022 11:45:07
+Tipo Ingresso:*	Outros
+Rede de Ensino Origem:*	Estadual
+```
+
+**Estrutura de Escolaridade (contexto do aluno, ANTES dos dados de ingresso):**
+
+```
+Escolaridade
+Unidade de Ensino:*	33063397	CE ESCOLA TESTE
+Nível/Segmento*:	MÉDIO
+Modalidade*:	REGULAR
+Curso:*	0023.29	NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA
+Turno:*	MANHÃ
+Matriz Curricular:*	NEM_IF_LGG+CHS_01_24
+Série/Ano Escolar:*	ENSINO MÉDIO REGULAR - 3ª SÉRIE
+```
+
+**Mapeamento de Campos - Tabela de Renovação:**
+
+| Coluna da Tabela                 | Campo no Model `PeriodoCursado` | Tipo        | Transformação            | Observações                                    |
+|----------------------------------|---------------------------------|-------------|--------------------------|------------------------------------------------|
+| `Ano Letivo`                     | `anoLetivo`                     | String(4)   | Trim                     | ✅ Sempre presente (ex: "2024")                |
+| `Período Letivo`                 | `periodoLetivo`                 | String(1)   | Trim                     | ✅ "0" (anual), "1" ou "2" (semestral)         |
+| `Unidade de Ensino`              | `unidadeEnsino` + `codigoEscola`| String      | Split por tab            | ✅ Pode vir só nome ou código + nome           |
+| `Modalidade / Segmento / Curso`  | 3 campos separados              | String      | Split por " / "          | ✅ Ex: "REGULAR / MÉDIO / NEM ITINERÁRIO..."   |
+| `Série/Ano Escolar`              | `serie`                         | String(10)  | Trim                     | ✅ Ex: "3" ou "3ª SÉRIE"                       |
+| `Turno`                          | `turno`                         | String(1)   | Trim                     | ✅ "M", "T", "N"                               |
+| `Ensino Religioso`               | `ensinoReligioso`               | String?     | NULL                     | ⚠️ NÃO capturável (input radio vazio na colagem)|
+| `Língua Estrangeira Facultativa` | `linguaEstrangeira`             | String?     | NULL                     | ⚠️ NÃO capturável (input radio vazio na colagem)|
+| `Situação`                       | `situacao`                      | String(50)  | Trim                     | ✅ Ex: "Possui confirmação"                    |
+| `Tipo Vaga`                      | `tipoVaga`                      | String(50)  | Trim                     | ✅ Ex: "Vaga de Continuidade"                  |
+
+**Mapeamento de Campos - Dados de Ingresso (primeira linha apenas):**
+
+| Label no Texto          | Campo no Model `PeriodoCursado` | Tipo        | Transformação            | Observações                                    |
+|-------------------------|---------------------------------|-------------|--------------------------|------------------------------------------------|
+| `Ano Ingresso:`         | `anoIngresso`                   | String(4)   | Remover `<>` se presente | ✅ Ex: "<2022>" → "2022"                       |
+| `Período Ingresso:`     | `periodoIngresso`               | String(1)   | Trim                     | ✅ "0", "1" ou "2"                             |
+| `Data de Inclusão do Aluno:` | `dataInclusao`             | DateTime    | Parse DD/MM/YYYY HH:mm:ss| ⚠️ Formato com horário: "11/01/2022 11:45:07"  |
+| `Tipo Ingresso:`        | `tipoIngresso`                  | String(50)  | Trim                     | ✅ Ex: "Outros", "Transferência"               |
+| `Rede de Ensino Origem:`| `redeEnsinoOrigem`              | String(50)  | Trim                     | ✅ Ex: "Estadual", "Municipal", "Particular"   |
+
+**Mapeamento de Campos - Escolaridade Atual (contexto, para primeira linha):**
+
+| Label no Texto          | Campo no Model `PeriodoCursado` | Tipo        | Transformação            | Observações                                    |
+|-------------------------|---------------------------------|-------------|--------------------------|------------------------------------------------|
+| `Matriz Curricular:`    | `matrizCurricular`              | String(100) | Trim                     | ✅ Ex: "NEM_IF_LGG+CHS_01_24"                  |
+
+**Campos que serão importados por período:**
+
+```
+✅ Ano Letivo
+✅ Período Letivo
+✅ Unidade de Ensino (nome)
+✅ Código da Escola (se presente)
+✅ Modalidade
+✅ Segmento
+✅ Curso (descrição completa)
+✅ Série/Ano Escolar
+✅ Turno
+✅ Situação
+✅ Tipo Vaga
+✅ Matriz Curricular (se presente)
+
+Apenas na primeira linha (dados de ingresso):
+✅ Ano Ingresso
+✅ Período Ingresso
+✅ Data de Inclusão do Aluno
+✅ Tipo Ingresso
+✅ Rede de Ensino Origem
+
+Não capturáveis (sempre NULL):
+❌ Ensino Religioso
+❌ Língua Estrangeira Facultativa
+```
+
+**Características especiais:**
+
+1. **Primeira linha = Dados de Ingresso + Renovação:**
+   - Contém TODOS os campos de renovação
+   - MAIS os campos de ingresso (ano, período, data, tipo, rede)
+
+2. **Demais linhas = Apenas Renovação:**
+   - Apenas os campos da tabela
+   - Campos de ingresso ficam NULL
+
+3. **Parsing de "Modalidade / Segmento / Curso":**
+   - Split por " / " (espaço barra espaço)
+   - 3 partes: modalidade, segmento, curso
+
+4. **Parsing de "Unidade de Ensino":**
+   - Pode vir como "CE ESCOLA TESTE" (só nome)
+   - Ou "33063397 CE ESCOLA TESTE" (código + nome)
+   - Split por tab ou espaço múltiplo
+
+5. **Formato de data com horário:**
+   - "11/01/2022 11:45:07" → precisa parsear com hora
+
+---
+
+### 1.5 Dados Opcionais vs Obrigatórios ⚪
 
 **Pergunta:** Quais campos são obrigatórios vs opcionais no sistema externo?
 

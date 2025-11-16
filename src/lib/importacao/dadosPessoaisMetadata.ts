@@ -183,7 +183,8 @@ export type ResumoDadosPessoais = {
   pendentes: CampoDadosPessoais[];
 };
 
-export const TOTAL_CAMPOS_DADOS_PESSOAIS = CAMPOS_DADOS_PESSOAIS.length;
+export const TOTAL_CAMPOS_DADOS_PESSOAIS: number =
+  CAMPOS_DADOS_PESSOAIS.length;
 
 export type ValoresDadosPessoais = Partial<Record<CampoDadosPessoais, unknown>>;
 

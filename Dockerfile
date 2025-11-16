@@ -3,8 +3,12 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json* ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml* ./
+# Instala o pnpm dentro da imagem
+RUN npm install -g pnpm
+
+# Instala dependências usando o lockfile do PNPM
+RUN pnpm install --frozen-lockfile
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
@@ -15,6 +19,10 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma Client
+ARG DATABASE_URL="postgresql://postgres:postgres@db:5432/certificados?schema=public"
+ARG DATABASE_URL_TEST="postgresql://postgres:postgres@db:5432/certificados_test?schema=public"
+ENV DATABASE_URL=${DATABASE_URL}
+ENV DATABASE_URL_TEST=${DATABASE_URL_TEST}
 RUN npx prisma generate
 
 # Build Next.js

@@ -82,10 +82,16 @@ model Aluno {
   atualizadoEm                      DateTime        @updatedAt
   atualizadoPor                     String?
   dadosOriginais                    Json?
+  anoIngressoEscolar                Int?
+  periodoIngressoEscolar           Int?
+  dataInclusaoIngressoEscolar      DateTime?
+  tipoIngressoEscolar              String?         @db.VarChar(50)
+  redeOrigemIngressoEscolar        String?         @db.VarChar(100)
+  matrizCurricularEscolar          String?         @db.VarChar(100)
   dataImportacaoTextoDadosEscolares DateTime?
   dataImportacaoTextoDadosPessoais  DateTime?
-  textoBrutoDadosEscolares          String?
-  textoBrutoDadosPessoais           String?
+  textoBrutoDadosEscolares          String?         @db.Text
+  textoBrutoDadosPessoais           String?         @db.Text
   tipoDocumento                     String?         @db.VarChar(20)
   complementoIdentidade             String?         @db.VarChar(100)
   cpfMae                            String?         @db.VarChar(14)
@@ -106,8 +112,9 @@ model Aluno {
   paisNascimento                    String?         @db.VarChar(100)
   tipoCertidaoCivil                 String?         @db.VarChar(50)
   ufCartorio                        String?         @db.VarChar(2)
-  linhaOrigem                       LinhaImportada? @relation(fields: [linhaOrigemId], references: [id])
+  linhaOrigem                       LinhaImportada?  @relation(fields: [linhaOrigemId], references: [id])
   enturmacoes                       Enturmacao[]
+  seriesCursadas                    SerieCursada[]
 
   @@index([matricula])
   @@index([nome])
@@ -138,6 +145,36 @@ model Enturmacao {
   @@index([modalidade])
   @@index([turma])
   @@map("enturmacoes")
+}
+
+model SerieCursada {
+  id                String   @id @default(uuid())
+  alunoMatricula    String   @db.VarChar(15)
+  anoLetivo         String   @db.VarChar(4)
+  periodoLetivo     String   @db.VarChar(2)
+  unidadeEnsino     String?  @db.VarChar(200)
+  codigoEscola      String?  @db.VarChar(20)
+  modalidade        String?  @db.VarChar(100)
+  segmento          String?  @db.VarChar(100)
+  curso             String?  @db.VarChar(200)
+  serie             String?  @db.VarChar(100)
+  turno             String?  @db.VarChar(20)
+  situacao          String?  @db.VarChar(100)
+  tipoVaga          String?  @db.VarChar(100)
+  matrizCurricular  String?  @db.VarChar(100)
+  dataInclusaoAluno DateTime?
+  tipoIngresso      String?  @db.VarChar(50)
+  redeEnsinoOrigem  String?  @db.VarChar(100)
+  ensinoReligioso   Boolean?
+  linguaEstrangeira Boolean?
+  textoBrutoOrigemId String?
+  criadoEm          DateTime @default(now())
+  atualizadoEm      DateTime @updatedAt
+  aluno             Aluno    @relation(fields: [alunoMatricula], references: [matricula], onDelete: Cascade)
+
+  @@index([alunoMatricula])
+  @@unique([alunoMatricula, modalidade, segmento, curso, serie])
+  @@map("series_cursadas")
 }
 
 model Auditoria {

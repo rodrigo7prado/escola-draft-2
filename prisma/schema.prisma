@@ -82,6 +82,10 @@ model Aluno {
   atualizadoEm                      DateTime        @updatedAt
   atualizadoPor                     String?
   dadosOriginais                    Json?
+  situacaoEscolar                   String?         @db.VarChar(50)
+  causaEncerramentoEscolar          String?         @db.VarChar(100)
+  motivoEncerramento                String?         @db.VarChar(100)
+  recebeOutroEspacoEscolar          String?         @db.VarChar(50)
   anoIngressoEscolar                Int?
   periodoIngressoEscolar            Int?
   dataInclusaoIngressoEscolar       DateTime?

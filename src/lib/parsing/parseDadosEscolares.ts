@@ -186,26 +186,34 @@ function somenteDigitos(valor: string): string {
 }
 
 function extrairBlocoIngresso(texto: string): IngressoInfo {
-  const bloco = extrairBetween(texto, "Dados de Ingresso", "Escolaridade");
+  const bloco = extrairTrechoEntre(texto, "Dados de Ingresso", [
+    "Renovação de Matrícula",
+    "Histórico de Confirmação",
+    "<< Anterior",
+  ]);
   if (!bloco) {
     throw new Error("Sessão 'Dados de Ingresso' não encontrada");
   }
 
   const mapa = mapearCampos(bloco);
-  const ano = limparChaves(mapa.get("ano ingresso"));
-  const periodo = limparChaves(mapa.get("período ingresso"));
+  const ano = limparChaves(mapa.get(normalizarLabel("Ano Ingresso")));
+  const periodo = limparChaves(mapa.get(normalizarLabel("Período Ingresso")));
 
   return {
     anoIngresso: ano ? parseInt(ano, 10) : undefined,
     periodoIngresso: periodo ? parseInt(periodo, 10) : undefined,
-    dataInclusao: limparChaves(mapa.get("data de inclusão do aluno")),
-    tipoIngresso: limparChaves(mapa.get("tipo ingresso")),
-    redeOrigem: limparChaves(mapa.get("rede de ensino origem")),
+    dataInclusao: limparChaves(
+      mapa.get(normalizarLabel("Data de Inclusão do Aluno"))
+    ),
+    tipoIngresso: limparChaves(mapa.get(normalizarLabel("Tipo Ingresso"))),
+    redeOrigem: limparChaves(
+      mapa.get(normalizarLabel("Rede de Ensino Origem"))
+    ),
   };
 }
 
 function extrairBlocoEscolaridade(texto: string): EscolaridadeInfo {
-  const bloco = extrairBetween(texto, "Escolaridade", "Dados de Ingresso");
+  const bloco = extrairTrechoEntre(texto, "Escolaridade", ["Dados de Ingresso"]);
   if (!bloco) {
     throw new Error("Sessão 'Escolaridade' não encontrada");
   }
@@ -216,16 +224,24 @@ function extrairBlocoEscolaridade(texto: string): EscolaridadeInfo {
   };
 }
 
-function extrairBetween(
+function extrairTrechoEntre(
   texto: string,
   inicioLabel: string,
-  fimLabel: string
+  finais: string[]
 ): string | null {
   const inicio = texto.indexOf(inicioLabel);
   if (inicio === -1) return null;
+
   const depois = texto.slice(inicio + inicioLabel.length);
-  const fim = depois.indexOf(fimLabel);
-  return fim === -1 ? depois : depois.slice(0, fim);
+  let menorFim: number | null = null;
+  for (const fimLabel of finais) {
+    const idx = depois.indexOf(fimLabel);
+    if (idx !== -1 && (menorFim === null || idx < menorFim)) {
+      menorFim = idx;
+    }
+  }
+
+  return menorFim === null ? depois : depois.slice(0, menorFim);
 }
 
 function mapearCampos(bloco: string): Map<string, string> {
@@ -257,14 +273,14 @@ function normalizarLabel(label: string): string {
   return label
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\*/g, "")
+    .replace(/[*:_]/g, "")
     .trim()
     .toLowerCase();
 }
 
 function limparChaves(valor?: string): string | undefined {
   if (!valor) return undefined;
-  return valor.replace(/[<>]/g, "").trim() || undefined;
+  return valor.replace(/[<>*]/g, "").trim() || undefined;
 }
 
 function extrairSeriesCursadas(
@@ -290,7 +306,7 @@ function extrairSeriesCursadas(
     linha.match(/Ano Letivo/i)
   );
   if (headerIndex === -1) {
-    throw new Error("Cabeçalho da tabela de renovação não encontrado");
+    throw new Error("Tabela 'Renovação de Matrícula' não encontrada");
   }
 
   const dados = linhas.slice(headerIndex + 1);
@@ -358,11 +374,30 @@ function extrairBlocoRenovacao(texto: string): string | null {
 }
 
 function dividirLinhaTabela(linha: string): string[] {
-  const viaTab = linha.split(/\t+/).map((parte) => parte.trim()).filter(Boolean);
-  if (viaTab.length >= 9) {
-    return viaTab;
+  const normalizado = linha.replace(/\u00a0/g, " ").replace(/\t/g, "  ");
+  const delimitador = /\s{2,}/g;
+  const partes: string[] = [];
+  let inicio = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = delimitador.exec(normalizado)) !== null) {
+    const trecho = normalizado.slice(inicio, match.index).trim();
+    partes.push(trecho);
+    inicio = match.index + match[0].length;
   }
-  return linha.split(/\s{2,}/).map((parte) => parte.trim()).filter(Boolean);
+
+  const final = normalizado.slice(inicio).trim();
+  partes.push(final);
+
+  return preencherColunas(partes);
+}
+
+function preencherColunas(colunas: string[]): string[] {
+  const resultado: string[] = [];
+  for (let i = 0; i < 10; i++) {
+    resultado.push(colunas[i] ?? "");
+  }
+  return resultado;
 }
 
 function separarCodigoEscola(valor?: string): {
@@ -388,3 +423,38 @@ function separarModalidadeSegmentoCurso(valor?: string): {
 } {
   if (!valor) return {};
   const partes = valor
+    .split("/")
+    .map((parte) => parte.trim())
+    .filter(Boolean);
+  const [modalidade, segmento, ...resto] = partes;
+  return {
+    modalidade,
+    segmento,
+    curso: resto.length ? resto.join(" / ") : undefined,
+  };
+}
+
+function traduzirBooleano(valor?: string): boolean | null {
+  if (!valor) return null;
+  const normalizado = valor
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toUpperCase();
+
+  if (normalizado === "SIM" || normalizado === "S") return true;
+  if (normalizado === "NAO" || normalizado === "N") return false;
+  return null;
+}
+
+function limparObrigatorio(valor?: string): string {
+  if (!valor) {
+    throw new Error("Campo obrigatório da tabela está vazio");
+  }
+  return valor.trim();
+}
+
+function limparOpcional(valor?: string): string | undefined {
+  const limpo = valor?.trim();
+  return limpo ? limpo : undefined;
+}

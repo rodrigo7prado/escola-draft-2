@@ -8,7 +8,7 @@
 2. **Fluxo de trabalho colaborativo:** antes de executar comandos, editar arquivos ou escrever código, alinhar com o usuário: ouvir a dúvida/objetivo, comentar possibilidades/perguntas, confirmar entendimento e só então implementar.
 3. **Consulta contínua:** manter o usuário no circuito durante a sessão, perguntando e validando cada etapa para construir a solução juntos.
 
-4. **Escrita de texto em português e SEM emojis, com excessão de "Check" e de "X"**
+4. **Escrita de texto em português e SEM emojis**
 
 # ⚠️ METODOLOGIA DE DESENVOLVIMENTO - LEIA PRIMEIRO ⚠️
 
@@ -22,10 +22,12 @@
 
 **Princípio:** Documentar de forma incremental enquanto desenvolve, com checkpoints entre sessões de IA.
 
+Referência do IDD: [docs/IDD.md](./docs/IDD.md)
+
 ## Estrutura de Documentação
 
 Cada feature possui:
-- **FLUXO.md** - Fluxo de uso (perspectiva do usuário)
+- **FLUXO.md** - Fluxos de uso (perspectiva do usuário ) e dos mecanismos internos;
 - **TECNICO.md** - Decisões técnicas + checkpoints de sessões
 
 ## 📚 DOCUMENTAÇÃO COMPLETA

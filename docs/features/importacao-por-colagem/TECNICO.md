@@ -23,3 +23,26 @@ T2. Integração do parser de dados escolares ao endpoint de importação
     T2.3.3. Alternativa futura: implementar upsert inteligente preservando dados históricos
   T2.4. Tratamento de datas: campos de data são convertidos de string para Date quando presentes
   T2.5. Resposta do endpoint agora inclui dados parseados e contagem de séries cadastradas
+
+## Sessão 3 - Expansão do detector de tipo de página (CP3.1)
+
+T3. Melhoria do detectarTipoPagina para distinguir páginas com campos ambíguos
+  T3.1. Problema identificado: Campo MATRÍCULA aparece em ambas páginas (pessoais e escolares)
+  T3.2. Solução implementada: Remover campos ambíguos + adicionar marcadores exclusivos
+    T3.2.1. Removido MATRÍCULA dos marcadores fortes de dados pessoais
+    T3.2.2. Adicionados 9 marcadores exclusivos de dados escolares:
+      - SITUAÇÃO: (Concluído, Cursando, etc)
+      - CURSO: seguido de código (padrão 0023.29)
+      - SÉRIE/ANO ESCOLAR:
+      - MODALIDADE*:
+      - NÍVEL/SEGMENTO*:
+      - CAUSA DO ENCERRAMENTO:
+      - DADOS DE INGRESSO
+      - ANO INGRESSO:
+      - REDE DE ENSINO ORIGEM:
+  T3.3. Testes expandidos de 4 para 18 casos no total
+    T3.3.1. Adicionados testes individuais para cada marcador forte
+    T3.3.2. Teste com template completo DadosEscolaresColagemModelo.md
+    T3.3.3. Teste de campo ambíguo (MATRÍCULA isolada retorna null)
+  T3.4. Motivação: Páginas com Ctrl+A contêm campos de ambos tipos, necessário usar marcadores exclusivos
+  T3.5. Todos os 110 testes passando

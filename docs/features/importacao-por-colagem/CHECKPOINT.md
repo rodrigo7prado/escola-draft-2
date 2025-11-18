@@ -38,7 +38,7 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
       [ ] TEC2.1.1.2: Definir quais campos escolares serão armazenados no sistema e quais serão ignorados;
     [ ] TEC2.1.2: Implementação dos modelos de dados no Prisma e criação das migrações necessárias para ambos os ambientes (desenvolvimento e teste) com `migrate:all`;
 [ ] CP3: Implementação do processamento de parsers;
-  [ ] CP3.1: Expansão do reconhecimento de páginas de dados escolares usando o parser `detectarTipoPagina`;
+  [x] CP3.1: Expansão do reconhecimento de páginas de dados escolares usando o parser `detectarTipoPagina`;
   [ ] CP3.2: Implementação do parser `parseDadosEscolares`, reutilizando a lógica do parser de dados pessoais conforme as orientações em [`REUSO.md`](REUSO.md);
     [x] CP3.2.1: Reutilização do pré-processamento do parser de dados pessoais (remoção de dados não utilizados, etc), adaptando-o para dados escolares conforme necessário;
       [x] REFACT3.2.1: Criado arquivo `parsingUtils.ts` centralizando `normalizarTextoBase()` para reutilização entre parsers;

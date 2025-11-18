@@ -21,7 +21,7 @@ export function detectarTipoPagina(texto: string): TipoPagina {
   // Marcadores FORTES de Dados Pessoais
   const marcadoresFortesDadosPessoais = [
     /NOME COMPLETO:/i,
-    /MATRÍCULA:/i,
+    // MATRÍCULA removido: aparece em ambas páginas (pessoais E escolares)
     /DATA\s+DE\s+NASCIMENTO:/i,  // Aceita espaços variáveis
     /NOME\s+DA\s+MÃE:/i,
     /CPF:\s*\d/i,  // CPF seguido de dígitos
@@ -34,6 +34,17 @@ export function detectarTipoPagina(texto: string): TipoPagina {
     /\bBIMESTRE\s*\d/i,  // Bimestre seguido de número
     /\b(FREQUÊNCIA|PRESENÇA)\s*:/i,  // Frequência: (completo)
     /RESULTADO\s*:/i,  // Resultado: (com dois pontos)
+
+    // Marcadores exclusivos da página de Dados Escolares
+    /SITUAÇÃO:\s*(Concluido|Cursando|Transferido|Remanejado|Cancelado)/i,
+    /CURSO:\s*\d{4}\.\d{2}/i,  // Padrão "0023.29"
+    /SÉRIE\/ANO ESCOLAR:/i,
+    /MODALIDADE\s*\*:/i,
+    /NÍVEL\/SEGMENTO\s*\*:/i,
+    /CAUSA DO ENCERRAMENTO:/i,
+    /DADOS DE INGRESSO/i,
+    /ANO INGRESSO:/i,
+    /REDE DE ENSINO ORIGEM:/i,
   ];
 
   // ===== MARCADORES FRACOS: Menor confiança, contextuais =====

@@ -16,7 +16,9 @@ import { normalizarSexo } from '@/lib/parsing/normalizarSexo';
 // ============================================================================
 
 describe('detectarTipoPagina', () => {
-  it('deve detectar dados pessoais corretamente', () => {
+  // ========== DADOS PESSOAIS ==========
+
+  it('deve detectar dados pessoais por marcador forte: NOME COMPLETO', () => {
     const texto = `
 NOME COMPLETO: JOÃO SILVA
 MATRÍCULA: 123456789012345
@@ -25,7 +27,30 @@ DATA DE NASCIMENTO: 01/01/2005
     expect(detectarTipoPagina(texto)).toBe('dadosPessoais');
   });
 
-  it('deve detectar dados escolares corretamente', () => {
+  it('deve retornar null para MATRÍCULA isolada (campo ambíguo)', () => {
+    // MATRÍCULA aparece em ambas páginas, não é discriminador
+    const texto = 'MATRÍCULA: 202212345678901';
+    expect(detectarTipoPagina(texto)).toBe(null);
+  });
+
+  it('deve detectar dados pessoais por marcador forte: DATA DE NASCIMENTO', () => {
+    const texto = 'DATA DE NASCIMENTO: 15/03/2005';
+    expect(detectarTipoPagina(texto)).toBe('dadosPessoais');
+  });
+
+  it('deve detectar dados pessoais por marcador forte: NOME DA MÃE', () => {
+    const texto = 'NOME DA MÃE: MARIA SILVA';
+    expect(detectarTipoPagina(texto)).toBe('dadosPessoais');
+  });
+
+  it('deve detectar dados pessoais por marcador forte: CPF com dígitos', () => {
+    const texto = 'CPF: 123.456.789-00';
+    expect(detectarTipoPagina(texto)).toBe('dadosPessoais');
+  });
+
+  // ========== DADOS ESCOLARES ==========
+
+  it('deve detectar dados escolares por marcador forte: COMPONENTE CURRICULAR', () => {
     const texto = `
 COMPONENTE CURRICULAR          CH    NOTA  FREQ  RESULTADO
 LÍNGUA PORTUGUESA              160   7.5   85%   APROVADO
@@ -33,16 +58,132 @@ LÍNGUA PORTUGUESA              160   7.5   85%   APROVADO
     expect(detectarTipoPagina(texto)).toBe('dadosEscolares');
   });
 
+  it('deve detectar dados escolares por marcador forte: DISCIPLINA', () => {
+    const texto = 'DISCIPLINA: Matemática';
+    expect(detectarTipoPagina(texto)).toBe('dadosEscolares');
+  });
+
+  it('deve detectar dados escolares por marcador forte: BIMESTRE', () => {
+    const texto = 'BIMESTRE 1: 7.5 pontos';
+    expect(detectarTipoPagina(texto)).toBe('dadosEscolares');
+  });
+
+  it('deve detectar dados escolares por marcador forte: FREQUÊNCIA', () => {
+    const texto = 'FREQUÊNCIA: 85%';
+    expect(detectarTipoPagina(texto)).toBe('dadosEscolares');
+  });
+
+  it('deve detectar dados escolares por marcador forte: RESULTADO', () => {
+    const texto = 'RESULTADO: APROVADO';
+    expect(detectarTipoPagina(texto)).toBe('dadosEscolares');
+  });
+
+  it('deve detectar dados escolares com template completo (DadosEscolaresColagemModelo.md)', () => {
+    const textoTemplateEscolares = `
+Alunos
+Usuário: 01234567 (IP: 123.456.7.990)
+
+Aluno:
+202212345678901
+BERNARDO TESTE SILVA
+
+Dados Pessoais
+Dados Escolares
+Aluno
+Matrícula:
+202212345678901
+Situação:
+Concluido
+Causa do Encerramento:
+Motivo:
+CONCLUINTE
+Dados de Ingresso
+Ano Ingresso:
+<2022>
+Período Ingresso:
+0
+Data de Inclusão do Aluno:
+11/01/2022 11:45:07
+Tipo Ingresso:
+Outros
+Rede de Ensino Origem:
+Estadual
+Escolaridade
+Unidade de Ensino:
+33063397
+CE SENOR ABRAVANEL
+Nível/Segmento*:
+MÉDIO
+Modalidade*:
+REGULAR
+Curso:
+0023.29
+NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA
+Turno:
+MANHÃ
+Série/Ano Escolar:
+ENSINO MÉDIO REGULAR - 3ª SÉRIE
+`;
+    expect(detectarTipoPagina(textoTemplateEscolares)).toBe('dadosEscolares');
+  });
+
+  // ========== MARCADORES FRACOS ==========
+
+  it('deve detectar dados escolares por marcador fraco: NOTA:', () => {
+    const texto = 'NOTA: 8.5';
+    expect(detectarTipoPagina(texto)).toBe('dadosEscolares');
+  });
+
+  it('deve detectar dados escolares por marcador fraco: NOTA FINAL', () => {
+    const texto = 'NOTA FINAL: 7.0';
+    expect(detectarTipoPagina(texto)).toBe('dadosEscolares');
+  });
+
+  // ========== CASOS NEGATIVOS ==========
+
   it('deve retornar null para texto vazio', () => {
     expect(detectarTipoPagina('')).toBe(null);
   });
 
-  it('deve lançar erro para texto ambíguo', () => {
+  it('deve retornar null para texto só com espaços', () => {
+    expect(detectarTipoPagina('   \n  \t  ')).toBe(null);
+  });
+
+  it('deve retornar null para texto sem marcadores reconhecidos', () => {
+    const texto = 'Apenas texto aleatório sem marcadores específicos';
+    expect(detectarTipoPagina(texto)).toBe(null);
+  });
+
+  // ========== CASOS DE AMBIGUIDADE ==========
+
+  it('deve lançar erro para texto ambíguo (marcadores fortes de ambos tipos)', () => {
     const texto = `
 NOME COMPLETO: TESTE
 COMPONENTE CURRICULAR
 `;
     expect(() => detectarTipoPagina(texto)).toThrow('múltiplos formatos');
+  });
+
+  it('deve lançar erro quando CPF (forte) + RESULTADO (forte) aparecem juntos', () => {
+    const texto = `
+CPF: 123.456.789-00
+RESULTADO: APROVADO
+`;
+    expect(() => detectarTipoPagina(texto)).toThrow('múltiplos formatos');
+  });
+
+  // ========== PREVENÇÃO DE FALSOS POSITIVOS ==========
+
+  it('NÃO deve confundir "NOTA" em "NASCIMENTO" (bug anterior)', () => {
+    const texto = 'DATA DE NASCIMENTO: 15/03/2005';
+    // Deve detectar como dados pessoais (pelo marcador forte DATA DE NASCIMENTO)
+    // e NÃO como dados escolares (por causa de "NascimeNOTA")
+    expect(detectarTipoPagina(texto)).toBe('dadosPessoais');
+  });
+
+  it('deve aceitar variações de espaçamento em marcadores', () => {
+    const textoComEspacos = 'DATA  DE   NASCIMENTO: 15/03/2005';
+    expect(detectarTipoPagina(textoComEspacos)).toBe('dadosPessoais');
   });
 });
 

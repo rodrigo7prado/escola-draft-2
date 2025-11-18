@@ -134,51 +134,6 @@ Realizamos uma **auditoria completa** da implementação de dados escolares vers
 [ ] CP7: Testes completos (NÃO IMPLEMENTADO)
 ```
 
----
-
-## 🎯 PRIORIDADES PARA PRÓXIMA SESSÃO
-
-### ✅ CONCLUÍDO NESTA SESSÃO
-1. ✅ Testes validados (confirmado pelo usuário)
-2. ✅ GAP-5 resolvido (parser integrado ao endpoint)
-3. ✅ GAP-6 resolvido (dados parseados sendo salvos)
-
-### 🔴 ALTA PRIORIDADE
-
-1. **Expandir `detectarTipoPagina`** (CP3.1 - ainda não implementado)
-   - Atualmente só detecta dados pessoais
-   - Adicionar detecção de dados escolares usando marcadores específicos
-   - Atualizar testes do detector
-
-2. **Implementar modal de confirmação** (GAP-10, CP5)
-   - CRÍTICO: Usuário não vê preview antes de salvar
-   - Reutilizar estrutura de `ModalConfirmacaoDados`
-   - Adaptar para exibir dados escolares (séries cursadas, ingresso, etc)
-   - Manter padrão de confirmação usado em dados pessoais
-
-3. **Refatorar para seguir REUSO.md (GAP-1, GAP-3)**
-   - Extrair funções compartilhadas adicionais
-   - Aplicar estratégias de captura simétricas entre parsers
-   - Melhorar simetria nomenclatural
-
-### 🟡 MÉDIA PRIORIDADE
-
-4. **Atualização automática da UI** (CP6)
-   - Após salvar dados escolares, atualizar interface
-   - Exibir séries cursadas na tela do aluno
-
-5. **Resolver GAP-11** (Constraint unique)
-   - Avaliar se constraint atual é adequada
-   - Decidir entre remover ou adicionar anoLetivo na unique
-
-### 🟢 BAIXA PRIORIDADE
-
-6. Testes com template completo (GAP-7, GAP-8)
-7. Melhorar pré-processamento (GAP-4)
-8. Testes de integração E2E (GAP-9)
-
----
-
 ## 📝 DOCUMENTAÇÃO A ATUALIZAR
 
 ### CHECKPOINT.md

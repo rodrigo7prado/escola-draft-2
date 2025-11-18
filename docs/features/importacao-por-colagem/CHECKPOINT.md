@@ -1,11 +1,15 @@
 *Para uso das IAs*
 
-⚠️ **LEITURA OBRIGATÓRIA ANTES DE QUALQUER AÇÃO:**
-1. 🔴 **PARE AQUI** - Leia [`IDD.md`](../../IDD.md) PRIMEIRO (metodologia base)
-2. 🔴 Leia [`REUSO.md`](REUSO.md) (princípios DRY obrigatórios)
-3. 🟢 Depois volte e continue lendo este arquivo
+# 🚨 PROTOCOLO OBRIGATÓRIO DE INÍCIO DE SESSÃO
 
-**Checkpoint**: Confirme que leu os arquivos acima antes de prosseguir.
+**ANTES de ler qualquer checkpoint ou propor ações, o agente DEVE:**
+
+- [ ] **PASSO 1:** Ler [`IDD.md`](../../IDD.md) e resumir a metodologia IDD em 2-3 frases
+- [ ] **PASSO 2:** Ler [`REUSO.md`](REUSO.md) e listar os 3 princípios DRY principais
+- [ ] **PASSO 3:** Ler este CHECKPOINT até o final
+- [ ] **PASSO 4:** Perguntar ao usuário: "Confirmei leitura dos docs. Qual checkpoint devemos trabalhar?"
+
+**⚠️ NÃO pule estes passos. NÃO assuma que já conhece o contexto.**
 
 **Metodologia seguida**: IDD [`IDD`](./IDD.md) (Importante: se ainda não leu, por favor leia antes de prosseguir)
 

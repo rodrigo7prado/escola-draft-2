@@ -1,3 +1,11 @@
+# ⚠️ PROTOCOLO OBRIGATÓRIO DE INÍCIO DE SESSÃO ⚠️
+
+**ANTES de responder a PRIMEIRA mensagem do usuário em QUALQUER sessão, você DEVE executar a leitura de `/home/rprado/projetos/next/_escolas/escola-draft-2/docs/IDD.md`
+
+**NÃO pule esta etapa. NÃO assuma que já leu. SEMPRE leia no início de CADA sessão nova.**
+
+---
+
 # INSTRUÇÕES GERAIS
 
 - sempre usar pnpm;

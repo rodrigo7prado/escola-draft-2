@@ -1,0 +1,6 @@
+{
+  "SessionStart": {
+    "command": "cat /home/rprado/projetos/next/_escolas/escola-draft-2/docs/IDD.md && echo '\n=== REUSO.md ===' && cat /home/rprado/projetos/next/_escolas/escola-draft-2/docs/features/importacao-por-colagem/REUSO.md && echo '\n=== NEXT_CHECKPOINT.md ===' && cat /home/rprado/projetos/next/_escolas/escola-draft-2/docs/features/importacao-por-colagem/NEXT_CHECKPOINT.md",
+    "description": "Carrega contexto obrigatório IDD no início da sessão"
+  }
+}

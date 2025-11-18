@@ -1,4 +1,5 @@
 import { normalizarSexo } from "./normalizarSexo";
+import { normalizarTextoBase, normalizarTextoParaComparacao } from "./parsingUtils";
 
 export interface DadosPessoais {
   // Dados Cadastrais
@@ -433,13 +434,6 @@ function extrairSexo(texto: string): DadosPessoais["sexo"] {
   return sexoNormalizado ?? undefined;
 }
 
-function normalizarTextoBase(texto: string): string {
-  return texto
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
-    .replace(/\u00a0/g, " ")
-    .trim();
-}
 
 function extrairTrechoDadosPessoais(texto: string): string {
   const inicio = texto.search(/Dados Pessoais/i);
@@ -464,14 +458,9 @@ function prepararLinhas(texto: string): LinhaProcessada[] {
   });
 }
 
+// Função mantida como wrapper para manter compatibilidade com código existente
 function normalizarParaComparacao(texto: string): string {
-  return texto
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\*/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toUpperCase();
+  return normalizarTextoParaComparacao(texto);
 }
 
 function sanitizeValorBase(valor?: string): string | undefined {

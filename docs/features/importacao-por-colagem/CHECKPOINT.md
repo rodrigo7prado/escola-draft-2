@@ -1,5 +1,12 @@
 *Para uso das IAs*
-**Importante**: *em toda a implementação, **PARA CADA CHECKPOINT**, seguir rigorosamente as instruções de DRY presentes em [`REUSO.md`](REUSO.md)*
+
+⚠️ **LEITURA OBRIGATÓRIA ANTES DE QUALQUER AÇÃO:**
+1. 🔴 **PARE AQUI** - Leia [`IDD.md`](../../IDD.md) PRIMEIRO (metodologia base)
+2. 🔴 Leia [`REUSO.md`](REUSO.md) (princípios DRY obrigatórios)
+3. 🟢 Depois volte e continue lendo este arquivo
+
+**Checkpoint**: Confirme que leu os arquivos acima antes de prosseguir.
+
 **Metodologia seguida**: IDD [`IDD`](./IDD.md) (Importante: se ainda não leu, por favor leia antes de prosseguir)
 
 # CHECKPOINTS DE SESSÕES DE TRABALHO
@@ -33,8 +40,12 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
 [ ] CP3: Implementação do processamento de parsers;
   [ ] CP3.1: Expansão do reconhecimento de páginas de dados escolares usando o parser `detectarTipoPagina`;
   [ ] CP3.2: Implementação do parser `parseDadosEscolares`, reutilizando a lógica do parser de dados pessoais conforme as orientações em [`REUSO.md`](REUSO.md);
-    [ ] CP3.2.1: Reutilização do pré-processamento do parser de dados pessoais (remoção de dados não utilizados, etc), adaptando-o para dados escolares conforme necessário;
-    [ ] TEC3.2.2: Analisar o pré-processamento existente para dados pessoais e identificar quais partes podem ser reaproveitadas;
+    [x] CP3.2.1: Reutilização do pré-processamento do parser de dados pessoais (remoção de dados não utilizados, etc), adaptando-o para dados escolares conforme necessário;
+      [x] REFACT3.2.1: Criado arquivo `parsingUtils.ts` centralizando `normalizarTextoBase()` para reutilização entre parsers;
+      [x] REFACT3.2.2: Expandido `parsingUtils.ts` com `normalizarTextoParaComparacao()` configurável (uppercase/lowercase, remoção de caracteres customizável);
+      [x] REFACT3.2.3: Refatorados `parseDadosPessoais.ts` e `parseDadosEscolares.ts` para importar funções de `parsingUtils.ts`;
+      [x] REFACT3.2.4: Testes validados e passando após refatorações;
+    [x] TEC3.2.2: Analisar o pré-processamento existente para dados pessoais e identificar quais partes podem ser reaproveitadas;
     [ ] TEC3.2.3: Adaptar as funções de remoção de cabeçalhos, rodapés e menus para considerar os formatos específicos de páginas de dados escolares;
     [ ] TEC3.2.4: Garantir reaproveitamento da validacão de matrícula do aluno selecionado;
 [ ] CP4: Implementação dos testes do parser de dados escolares;

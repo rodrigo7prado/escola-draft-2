@@ -1,3 +1,5 @@
+import { normalizarTextoBase, normalizarTextoParaComparacao } from "./parsingUtils";
+
 export interface SerieCursadaDTO {
   anoLetivo: string;
   periodoLetivo: string;
@@ -100,14 +102,6 @@ interface IngressoInfo {
 
 interface EscolaridadeInfo {
   matrizCurricular?: string;
-}
-
-function normalizarTextoBase(texto: string): string {
-  return texto
-    .replace(/\uFEFF/g, "")
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
-    .trim();
 }
 
 function extrairTrechoDadosEscolares(texto: string): string {
@@ -269,13 +263,13 @@ function mapearCampos(bloco: string): Map<string, string> {
   return mapa;
 }
 
+// Função mantida como wrapper para manter compatibilidade com código existente
 function normalizarLabel(label: string): string {
-  return label
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[*:_]/g, "")
-    .trim()
-    .toLowerCase();
+  return normalizarTextoParaComparacao(label, {
+    uppercase: false,
+    removerCaracteres: ["*", ":", "_"],
+    normalizarEspacos: false,
+  });
 }
 
 function limparChaves(valor?: string): string | undefined {

@@ -1,5 +1,10 @@
 import { defineConfig } from "vitest/config";
 import path from "path";
+import dotenv from "dotenv";
+
+// Carrega variáveis de ambiente do .env
+// IMPORTANTE: Necessário para DATABASE_URL_TEST e outras vars
+dotenv.config();
 
 export default defineConfig({
   plugins: [],

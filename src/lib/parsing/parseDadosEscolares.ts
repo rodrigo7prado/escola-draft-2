@@ -47,15 +47,20 @@ export interface DadosEscolaresParseResult {
   alunoInfo: DadosEscolaresAlunoInfo;
   series: SerieCursadaDTO[];
   textoLimpo: string;
+  avisos: string[];
 }
 
 type EstrategiaCaptura = "mesmaLinha" | "mesmaOuProxima" | "proximaLinha";
 
 type SanitizeFn = (valor: string) => string | undefined;
 
+type NomeBloco = keyof typeof CATALOGO_ELEMENTOS_COLAGEM.blocos;
+
+type LabelReferencia = string | readonly string[];
+
 interface CampoDescritor<T> {
   campo: keyof T;
-  label: string;
+  label: LabelReferencia;
   estrategia: EstrategiaCaptura;
   sanitize?: SanitizeFn;
   ancora?: string;
@@ -82,32 +87,101 @@ interface EscolaridadeInfo {
   matrizCurricular?: string;
 }
 
+const CATALOGO_ELEMENTOS_COLAGEM = {
+  blocos: {
+    aluno: {
+      inicio: /Aluno\s*\nInscri[cç][aã]o Matr[ií]cula F[áa]cil/i,
+      fim: /Dados de Ingresso/i,
+    },
+    dadosIngresso: {
+      inicio: /Dados de Ingresso/i,
+      fim: /Escolaridade/i,
+    },
+    escolaridade: {
+      inicio: /Escolaridade/i,
+      fim: /Confirma[cç][aã]o\/?Renova[cç][aã]o de Matr[ií]cula/i,
+    },
+    renovacao: {
+      inicio: /Renova[cç][aã]o de Matr[ií]cula/i,
+      fim: /Hist[oó]rico de Confirma[cç][aã]o de Matr[ií]cula/i,
+    },
+  },
+  labels: {
+    matricula: ["Matrícula"],
+    situacao: ["Situação"],
+    causaEncerramento: ["Causa do Encerramento"],
+    motivo: ["Motivo"],
+    recebeOutroEspaco: [
+      "Recebe Escolarização em Outro Espaço (diferente da escola)?",
+    ],
+    anoIngresso: ["Ano Ingresso"],
+    periodoIngresso: ["Período Ingresso"],
+    dataInclusao: ["Data de Inclusão do Aluno"],
+    tipoIngresso: ["Tipo Ingresso"],
+    redeOrigem: ["Rede de Ensino Origem"],
+    matrizCurricular: ["Matriz Curricular"],
+  },
+  ruidos: {
+    palavrasChave: [
+      "GESTAO ESCOLAR",
+      "ALUNOS",
+      "GESTAO DO ENSINO",
+      "GESTAO DA REDE",
+      "RELATORIO",
+      "CONFIGURACOES",
+      "TRANSPORTE ESCOLAR",
+      "PROGRAMAS SOCIAS/ESPECIAIS",
+      "ATENDIMENTO EDUCACIONAL ESPECIALIZADO",
+      "AEDH - ESCOLARIZACAO EM OUTROS ESPACOS",
+      "DADOS PESSOAIS",
+      "DADOS ESCOLARES",
+      "TRANSPORTE ESCOLAR",
+      "DOCUMENTOS ENTREGUES",
+      "PROGRAMAS SOCIAS/ESPECIAIS",
+      "ATENDIMENTO EDUCACIONAL ESPECIALIZADO",
+      "IRMÃOS",
+      "EDITARNOVOALUNOS",
+      "INFORME A MATRICULA OU O NOME DO ALUNO",
+      "ENVIAR",
+      "CONTROLE DE ACESSO",
+      "CONFIGURACOES GERAIS",
+      "NOTA:",
+    ],
+    navegacao: ["<< ANTERIOR", "PRÓXIMO >>", "PRÓXIMO", "ANTERIOR", "[1]"],
+    regex: [/^Página \d+/i, /^\[\d+\]$/, /^Próximo$/i],
+  },
+} as const;
+
+const VALORES_CONHECIDOS_TABELA = {
+  turnos: ["M", "T", "N", "I", "A"],
+  situacoes: ["POSSUI CONFIRMACAO"],
+  tiposVaga: ["VAGA DE CONTINUIDADE"],
+};
+
 const CAMPOS_DESCRITORES_ALUNO: CampoDescritor<AlunoBlocoInfo>[] = [
   {
     campo: "matriculaExtraida",
-    label: "MATRICULA",
+    label: CATALOGO_ELEMENTOS_COLAGEM.labels.matricula,
     estrategia: "mesmaOuProxima",
-    ancora: "ALUNO",
   },
   {
     campo: "situacaoEscolar",
-    label: "SITUACAO",
+    label: CATALOGO_ELEMENTOS_COLAGEM.labels.situacao,
     estrategia: "mesmaLinha",
   },
   {
     campo: "causaEncerramentoEscolar",
-    label: "CAUSA DO ENCERRAMENTO",
+    label: CATALOGO_ELEMENTOS_COLAGEM.labels.causaEncerramento,
     estrategia: "mesmaLinha",
   },
   {
     campo: "motivoEscolar",
-    label: "MOTIVO",
+    label: CATALOGO_ELEMENTOS_COLAGEM.labels.motivo,
     estrategia: "mesmaOuProxima",
   },
   {
     campo: "recebeOutroEspacoEscolar",
-    label: "RECEBE ESCOLARIZACAO EM OUTRO ESPACO",
-    aliases: ["RECEBE ESCOLARIZACAO EM OUTRO ESPACO (DIFERENTE DA ESCOLA)"],
+    label: CATALOGO_ELEMENTOS_COLAGEM.labels.recebeOutroEspaco,
     estrategia: "mesmaOuProxima",
   },
 ];
@@ -115,31 +189,30 @@ const CAMPOS_DESCRITORES_ALUNO: CampoDescritor<AlunoBlocoInfo>[] = [
 const CAMPOS_DESCRITORES_INGRESSO: CampoDescritor<Record<string, string | undefined>>[] = [
   {
     campo: "anoIngresso",
-    label: "ANO INGRESSO",
+    label: CATALOGO_ELEMENTOS_COLAGEM.labels.anoIngresso,
     estrategia: "mesmaLinha",
-    ancora: "DADOS DE INGRESSO",
     sanitize: sanitizeValorComChaves,
   },
   {
     campo: "periodoIngresso",
-    label: "PERIODO INGRESSO",
+    label: CATALOGO_ELEMENTOS_COLAGEM.labels.periodoIngresso,
     estrategia: "mesmaLinha",
     sanitize: sanitizeValorComChaves,
   },
   {
     campo: "dataInclusao",
-    label: "DATA DE INCLUSAO DO ALUNO",
+    label: CATALOGO_ELEMENTOS_COLAGEM.labels.dataInclusao,
     estrategia: "mesmaOuProxima",
   },
   {
     campo: "tipoIngresso",
-    label: "TIPO INGRESSO",
+    label: CATALOGO_ELEMENTOS_COLAGEM.labels.tipoIngresso,
     estrategia: "mesmaOuProxima",
     sanitize: sanitizeValorComChaves,
   },
   {
     campo: "redeOrigem",
-    label: "REDE DE ENSINO ORIGEM",
+    label: CATALOGO_ELEMENTOS_COLAGEM.labels.redeOrigem,
     estrategia: "mesmaOuProxima",
     sanitize: sanitizeValorComChaves,
   },
@@ -148,10 +221,8 @@ const CAMPOS_DESCRITORES_INGRESSO: CampoDescritor<Record<string, string | undefi
 const CAMPOS_DESCRITORES_ESCOLARIDADE: CampoDescritor<EscolaridadeInfo>[] = [
   {
     campo: "matrizCurricular",
-    label: "MATRIZ CURRICULAR",
-    aliases: ["MATRIZ CURRICULAR"],
+    label: CATALOGO_ELEMENTOS_COLAGEM.labels.matrizCurricular,
     estrategia: "mesmaOuProxima",
-    ancora: "ESCOLARIDADE",
     sanitize: sanitizeValorComChaves,
   },
 ];
@@ -165,40 +236,377 @@ export function parseDadosEscolares(
     throw new Error("Texto de dados escolares vazio");
   }
 
-  const trecho = extrairTrechoDadosEscolares(textoNormalizado);
-  if (!trecho) {
+  const trechoPrincipal = extrairConteudoPrincipal(textoNormalizado);
+  if (!trechoPrincipal) {
     throw new Error("Estrutura de dados escolares não encontrada");
   }
 
-  const alunoInfo = extrairBlocoAluno(trecho);
-  validarMatricula(alunoInfo, matriculaEsperada);
+  const blocoAluno = extrairBlocoPorNome(trechoPrincipal, "aluno");
+  const infoAluno = extrairBlocoAluno(blocoAluno);
+  validarMatricula(infoAluno, matriculaEsperada);
 
-  const ingresso = extrairBlocoIngresso(trecho);
-  const escolaridade = extrairBlocoEscolaridade(trecho);
-  const series = extrairSeriesCursadas(trecho, ingresso, escolaridade);
+  const blocoIngresso = extrairBlocoPorNome(trechoPrincipal, "dadosIngresso");
+  const infoIngresso = extrairBlocoIngresso(blocoIngresso);
 
-  if (series.length === 0) {
-    throw new Error("Nenhuma série encontrada em Renovações de Matrícula");
-  }
+  const blocoEscolaridade = extrairBlocoPorNome(trechoPrincipal, "escolaridade");
+  const infoEscolaridade = extrairBlocoEscolaridade(blocoEscolaridade);
 
-  const resultadoAluno: DadosEscolaresAlunoInfo = {
-    situacao: alunoInfo.situacaoEscolar,
-    causaEncerramento: alunoInfo.causaEncerramentoEscolar,
-    motivoEncerramento: alunoInfo.motivoEscolar,
-    recebeOutroEspaco: alunoInfo.recebeOutroEspacoEscolar,
-    anoIngresso: ingresso.anoIngresso,
-    periodoIngresso: ingresso.periodoIngresso,
-    dataInclusao: ingresso.dataInclusao,
-    tipoIngresso: ingresso.tipoIngresso,
-    redeOrigem: ingresso.redeOrigem,
-    matrizCurricular: escolaridade.matrizCurricular,
+  const blocoRenovacao = extrairBlocoPorNome(trechoPrincipal, "renovacao");
+  const avisos: string[] = [];
+  const series = extrairSeriesRenovacao(
+    blocoRenovacao,
+    infoIngresso,
+    infoEscolaridade,
+    avisos
+  );
+
+  const alunoInfo: DadosEscolaresAlunoInfo = {
+    situacao: infoAluno.situacaoEscolar,
+    causaEncerramento: infoAluno.causaEncerramentoEscolar,
+    motivoEncerramento: infoAluno.motivoEscolar,
+    recebeOutroEspaco: infoAluno.recebeOutroEspacoEscolar,
+    anoIngresso: infoIngresso.anoIngresso,
+    periodoIngresso: infoIngresso.periodoIngresso,
+    dataInclusao: infoIngresso.dataInclusao,
+    tipoIngresso: infoIngresso.tipoIngresso,
+    redeOrigem: infoIngresso.redeOrigem,
+    matrizCurricular: infoEscolaridade.matrizCurricular,
   };
 
   return {
-    alunoInfo: resultadoAluno,
+    alunoInfo,
     series,
-    textoLimpo: trecho.trim(),
+    textoLimpo: trechoPrincipal.trim(),
+    avisos,
   };
+}
+
+function extrairConteudoPrincipal(texto: string): string {
+  const bloco = extrairTrechoLimpo(
+    texto,
+    CATALOGO_ELEMENTOS_COLAGEM.blocos.aluno.inicio,
+    [
+      CATALOGO_ELEMENTOS_COLAGEM.blocos.renovacao.fim,
+      /<<\s*Anterior/i,
+      /©\s*Todos os direitos/i,
+    ],
+    false
+  );
+
+  if (!bloco) {
+    return "";
+  }
+
+  const semMenus = removerElementosEstranhos(bloco);
+  return removerLinhasRuido(semMenus);
+}
+
+function removerElementosEstranhos(texto: string): string {
+  const linhas = texto.split("\n");
+  return linhas
+    .filter((linha) => manterLinha(linha))
+    .join("\n");
+}
+
+function manterLinha(linha: string): boolean {
+  const trimmed = linha.trim();
+  if (!trimmed) {
+    return true;
+  }
+
+  const normalizada = normalizarParaComparacao(trimmed);
+  if (
+    CATALOGO_ELEMENTOS_COLAGEM.ruidos.palavrasChave.some(
+      (palavra) => normalizada === normalizarParaComparacao(palavra)
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    CATALOGO_ELEMENTOS_COLAGEM.ruidos.navegacao.some(
+      (palavra) => normalizada === normalizarParaComparacao(palavra)
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    CATALOGO_ELEMENTOS_COLAGEM.ruidos.regex.some((regex) => regex.test(trimmed))
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function extrairBlocoPorNome(texto: string, nome: NomeBloco): string {
+  const bloco = CATALOGO_ELEMENTOS_COLAGEM.blocos[nome];
+  const inicioMatch = texto.match(bloco.inicio);
+  if (!inicioMatch || inicioMatch.index === undefined) {
+    throw new Error(`Bloco "${nome}" não encontrado no texto`);
+  }
+
+  const inicio = inicioMatch.index;
+  const textoAPartirDoInicio = texto.slice(inicio);
+  const fimMatch = textoAPartirDoInicio.match(bloco.fim);
+  const fimIndex = fimMatch && fimMatch.index !== undefined
+    ? fimMatch.index
+    : textoAPartirDoInicio.length;
+
+  return textoAPartirDoInicio.slice(0, fimIndex);
+}
+
+function extrairBlocoAluno(texto: string): AlunoBlocoInfo {
+  const linhas = prepararLinhas(texto);
+  return extrairCamposOrdenados(linhas, CAMPOS_DESCRITORES_ALUNO);
+}
+
+function validarMatricula(info: AlunoBlocoInfo, matriculaEsperada?: string) {
+  if (!matriculaEsperada) {
+    return;
+  }
+
+  const extraida = somenteDigitos(info.matriculaExtraida ?? "");
+  const esperada = somenteDigitos(matriculaEsperada);
+
+  if (!extraida) {
+    throw new Error("Matrícula não foi localizada no texto escolar");
+  }
+
+  if (extraida !== esperada) {
+    throw new Error("Matrícula do texto não corresponde ao aluno ativo");
+  }
+}
+
+function extrairBlocoIngresso(texto: string): IngressoInfo {
+  const linhas = prepararLinhas(texto);
+  const campos = extrairCamposOrdenados(linhas, CAMPOS_DESCRITORES_INGRESSO);
+
+  const ano = campos.anoIngresso ? parseInt(campos.anoIngresso as string, 10) : undefined;
+  const periodo = campos.periodoIngresso
+    ? parseInt(campos.periodoIngresso as string, 10)
+    : undefined;
+
+  return {
+    anoIngresso: Number.isNaN(ano) ? undefined : ano,
+    periodoIngresso: Number.isNaN(periodo) ? undefined : periodo,
+    dataInclusao: campos.dataInclusao as string | undefined,
+    tipoIngresso: campos.tipoIngresso as string | undefined,
+    redeOrigem: campos.redeOrigem as string | undefined,
+  };
+}
+
+function extrairBlocoEscolaridade(texto: string): EscolaridadeInfo {
+  const linhas = prepararLinhas(texto);
+  return extrairCamposOrdenados(linhas, CAMPOS_DESCRITORES_ESCOLARIDADE);
+}
+
+function extrairSeriesRenovacao(
+  texto: string,
+  ingresso: IngressoInfo,
+  escolaridade: EscolaridadeInfo,
+  avisos: string[]
+): SerieCursadaDTO[] {
+  const linhas = texto
+    .split("\n")
+    .map((linha) => linha.trim())
+    .filter((linha) => Boolean(linha));
+
+  const series: SerieCursadaDTO[] = [];
+
+  for (const linha of linhas) {
+    if (/^Página \d+/i.test(linha) || /^Nota:/i.test(linha)) {
+      break;
+    }
+
+    if (!/^\d{4}/.test(linha)) {
+      continue;
+    }
+
+    const colunas = dividirLinhaTabela(linha);
+    if (colunas.length < 10) {
+      throw new Error("Linha da tabela 'Renovação de Matrícula' está incompleta");
+    }
+
+    const [
+      anoLetivo,
+      periodoLetivo,
+      unidadeColuna,
+      modalidadeColuna,
+      serieColuna,
+      turno,
+      ensinoReligiosoColuna,
+      linguaEstrangeiraColuna,
+      situacaoColuna,
+      tipoVagaColuna,
+    ] = colunas;
+
+    const serie = validarSerie(serieColuna);
+    const turnoNormalizado = validarTurno(turno);
+
+    const situacao = registrarAvisoSeNecessario(
+      "Situação",
+      situacaoColuna,
+      VALORES_CONHECIDOS_TABELA.situacoes,
+      avisos
+    );
+
+    const tipoVaga = registrarAvisoSeNecessario(
+      "Tipo de Vaga",
+      tipoVagaColuna,
+      VALORES_CONHECIDOS_TABELA.tiposVaga,
+      avisos
+    );
+
+    const { unidadeEnsino, codigoEscola } = separarCodigoEscola(unidadeColuna);
+    const { modalidade, segmento, curso } = separarModalidadeSegmentoCurso(
+      modalidadeColuna
+    );
+
+    series.push({
+      anoLetivo: sanitizeCampoObrigatorio(anoLetivo),
+      periodoLetivo: sanitizeCampoObrigatorio(periodoLetivo),
+      unidadeEnsino,
+      codigoEscola,
+      modalidade,
+      segmento,
+      curso,
+      serie,
+      turno: turnoNormalizado,
+      situacao,
+      tipoVaga,
+      matrizCurricular: escolaridade.matrizCurricular,
+      dataInclusaoAluno: ingresso.dataInclusao,
+      redeEnsinoOrigem: ingresso.redeOrigem,
+      ensinoReligioso: parseBooleano(ensinoReligiosoColuna),
+      linguaEstrangeira: parseBooleano(linguaEstrangeiraColuna),
+    });
+  }
+
+  if (!series.length) {
+    throw new Error("Nenhuma série encontrada em 'Renovação de Matrícula'");
+  }
+
+  return series;
+}
+
+function dividirLinhaTabela(linha: string): string[] {
+  if (linha.includes("\t")) {
+    const partes = linha.split("\t").map((parte) => parte.trim());
+    return ajustarColunasTabela(partes);
+  }
+
+  const partes = linha
+    .split(/\s{2,}/)
+    .map((parte) => parte.trim());
+
+  return ajustarColunasTabela(partes);
+}
+
+function ajustarColunasTabela(partes: string[]): string[] {
+  const limpas = partes.map((parte) => parte.replace(/\s+/g, " ").trim());
+
+  if (limpas.length >= 10) {
+    const primeiras = limpas.slice(0, 9);
+    const restante = limpas.slice(9).filter(Boolean).join(" ");
+    return [...primeiras, restante];
+  }
+
+  if (limpas.length === 8) {
+    return [
+      limpas[0],
+      limpas[1],
+      limpas[2],
+      limpas[3],
+      limpas[4],
+      limpas[5],
+      "",
+      "",
+      limpas[6],
+      limpas[7],
+    ];
+  }
+
+  if (limpas.length === 9) {
+    return [
+      limpas[0],
+      limpas[1],
+      limpas[2],
+      limpas[3],
+      limpas[4],
+      limpas[5],
+      limpas[6],
+      "",
+      limpas[7],
+      limpas[8],
+    ];
+  }
+
+  throw new Error(
+    "Não foi possível identificar todas as colunas da tabela 'Renovação de Matrícula'"
+  );
+}
+
+function validarSerie(valor: string): string {
+  const limpo = sanitizeCampoObrigatorio(valor);
+  if (!/^\d+$/.test(limpo)) {
+    throw new Error(`Valor de Série/Ano Escolar inválido: "${valor}"`);
+  }
+  return limpo;
+}
+
+function validarTurno(valor: string): string {
+  const limpo = sanitizeCampoObrigatorio(valor).toUpperCase();
+  if (!VALORES_CONHECIDOS_TABELA.turnos.includes(limpo)) {
+    throw new Error(`Turno desconhecido encontrado na tabela: "${valor}"`);
+  }
+  return limpo;
+}
+
+function registrarAvisoSeNecessario(
+  campo: string,
+  valor: string,
+  conhecidos: string[],
+  avisos: string[]
+): string | undefined {
+  const limpo = sanitizeCampoOpcional(valor);
+  if (!limpo) {
+    return undefined;
+  }
+
+  const normalizado = normalizarParaComparacao(limpo);
+  if (!conhecidos.includes(normalizado)) {
+    avisos.push(
+      `${campo} desconhecido encontrado: "${limpo}". Atualize a lista de valores conhecidos.`
+    );
+  }
+  return limpo;
+}
+
+function extrairCamposOrdenados<T>(
+  linhas: LinhaProcessada[],
+  descritores: CampoDescritor<T>[]
+): Partial<T> {
+  const resultado: Partial<T> = {};
+  let cursor = 0;
+
+  for (const descritor of descritores) {
+    const indiceLabel = encontrarIndiceLabel(linhas, descritor, cursor);
+    if (indiceLabel === -1) {
+      continue;
+    }
+
+    const { valor, nextIndex } = capturarValor(linhas, indiceLabel, descritor);
+
+    if (valor !== undefined) {
+      (resultado as Record<keyof T, string | undefined>)[descritor.campo] = valor;
+    }
+
+    cursor = Math.max(cursor, nextIndex);
+  }
+
+  return resultado;
 }
 
 function encontrarIndiceLabel<T>(
@@ -206,10 +614,15 @@ function encontrarIndiceLabel<T>(
   descritor: CampoDescritor<T>,
   inicio: number
 ): number {
+  const labels = Array.isArray(descritor.label)
+    ? descritor.label
+    : [descritor.label];
+
   const possiveis = [
-    normalizarParaComparacao(descritor.label),
-    ...(descritor.aliases?.map(normalizarParaComparacao) ?? []),
+    ...labels.map((label) => normalizarParaComparacao(label)),
+    ...(descritor.aliases?.map((alias) => normalizarParaComparacao(alias)) ?? []),
   ];
+
   let inicioBusca = inicio;
 
   if (descritor.ancora) {
@@ -277,31 +690,6 @@ function capturarValor<T>(
   return { valor: valorSanitizado, nextIndex };
 }
 
-function extrairCamposOrdenados<T>(
-  linhas: LinhaProcessada[],
-  descritores: CampoDescritor<T>[]
-): Partial<T> {
-  const resultado: Partial<T> = {};
-  let cursor = 0;
-
-  for (const descritor of descritores) {
-    const indiceLabel = encontrarIndiceLabel(linhas, descritor, cursor);
-    if (indiceLabel === -1) {
-      continue;
-    }
-
-    const { valor, nextIndex } = capturarValor(linhas, indiceLabel, descritor);
-
-    if (valor !== undefined) {
-      (resultado as Record<keyof T, string | undefined>)[descritor.campo] = valor;
-    }
-
-    cursor = Math.max(cursor, nextIndex);
-  }
-
-  return resultado;
-}
-
 function normalizarParaComparacao(texto: string): string {
   return normalizarTextoParaComparacao(texto);
 }
@@ -309,8 +697,7 @@ function normalizarParaComparacao(texto: string): string {
 function sanitizeValorBase(valor?: string): string | undefined {
   if (!valor) return undefined;
   const normalizado = valor.replace(/\s+/g, " ").trim();
-  if (!normalizado) return undefined;
-  return normalizado;
+  return normalizado || undefined;
 }
 
 function sanitizeValorComChaves(valor: string): string | undefined {
@@ -318,222 +705,8 @@ function sanitizeValorComChaves(valor: string): string | undefined {
   return limpo || undefined;
 }
 
-function extrairTrechoDadosEscolares(texto: string): string {
-  const trechoBase = extrairTrechoLimpo(
-    texto,
-    /^\s*Aluno\b/im,
-    [
-      /<<\s*Anterior/i,
-      /Próximo\s*>>/i,
-      /©\s*Todos os direitos/i,
-      /Imprimir Fichas de Matrícula/i,
-    ],
-    false // Retorna string vazia se não encontrar o marcador
-  );
-
-  // Limpeza adicional de linhas de ruído
-  return removerLinhasRuido(trechoBase);
-}
-
-function extrairBlocoAluno(texto: string): AlunoBlocoInfo {
-  const linhas = prepararLinhas(texto);
-  return extrairCamposOrdenados(linhas, CAMPOS_DESCRITORES_ALUNO);
-}
-
-function validarMatricula(
-  info: AlunoBlocoInfo,
-  matriculaEsperada?: string
-) {
-  if (!matriculaEsperada) {
-    return;
-  }
-
-  const extraida = somenteDigitos(info.matriculaExtraida ?? "");
-  const esperada = somenteDigitos(matriculaEsperada);
-
-  if (!extraida) {
-    throw new Error("Matrícula não foi localizada no texto escolar");
-  }
-
-  if (extraida !== esperada) {
-    throw new Error("Matrícula do texto não corresponde ao aluno ativo");
-  }
-}
-
 function somenteDigitos(valor: string): string {
   return valor.replace(/\D/g, "");
-}
-
-function extrairBlocoIngresso(texto: string): IngressoInfo {
-  const bloco = extrairTrechoEntre(texto, "Dados de Ingresso", [
-    "Renovação de Matrícula",
-    "Histórico de Confirmação",
-    "<< Anterior",
-  ]);
-  if (!bloco) {
-    throw new Error("Sessão 'Dados de Ingresso' não encontrada");
-  }
-
-  const linhas = prepararLinhas(bloco);
-  const resultado = extrairCamposOrdenados(linhas, CAMPOS_DESCRITORES_INGRESSO);
-
-  const anoStr = resultado.anoIngresso as string | undefined;
-  const periodoStr = resultado.periodoIngresso as string | undefined;
-
-  return {
-    anoIngresso: anoStr ? parseInt(anoStr, 10) : undefined,
-    periodoIngresso: periodoStr ? parseInt(periodoStr, 10) : undefined,
-    dataInclusao: resultado.dataInclusao as string | undefined,
-    tipoIngresso: resultado.tipoIngresso as string | undefined,
-    redeOrigem: resultado.redeOrigem as string | undefined,
-  };
-}
-
-function extrairBlocoEscolaridade(texto: string): EscolaridadeInfo {
-  const bloco = extrairTrechoEntre(texto, "Escolaridade", ["Dados de Ingresso"]);
-  if (!bloco) {
-    throw new Error("Sessão 'Escolaridade' não encontrada");
-  }
-
-  const linhas = prepararLinhas(bloco);
-  return extrairCamposOrdenados(linhas, CAMPOS_DESCRITORES_ESCOLARIDADE);
-}
-
-function extrairTrechoEntre(
-  texto: string,
-  inicioLabel: string,
-  finais: string[]
-): string | null {
-  const inicio = texto.indexOf(inicioLabel);
-  if (inicio === -1) return null;
-
-  const depois = texto.slice(inicio + inicioLabel.length);
-  let menorFim: number | null = null;
-  for (const fimLabel of finais) {
-    const idx = depois.indexOf(fimLabel);
-    if (idx !== -1 && (menorFim === null || idx < menorFim)) {
-      menorFim = idx;
-    }
-  }
-
-  return menorFim === null ? depois : depois.slice(0, menorFim);
-}
-
-function extrairSeriesCursadas(
-  texto: string,
-  ingresso: IngressoInfo,
-  escolaridade: EscolaridadeInfo
-): SerieCursadaDTO[] {
-  const bloco = extrairBlocoRenovacao(texto);
-  if (!bloco) {
-    throw new Error("Tabela 'Renovação de Matrícula' não encontrada");
-  }
-
-  const linhas = bloco
-    .split("\n")
-    .map((linha) => linha.trim())
-    .filter(Boolean);
-
-  if (!linhas.length) {
-    return [];
-  }
-
-  const headerIndex = linhas.findIndex((linha) =>
-    linha.match(/Ano Letivo/i)
-  );
-  if (headerIndex === -1) {
-    throw new Error("Tabela 'Renovação de Matrícula' não encontrada");
-  }
-
-  const dados = linhas.slice(headerIndex + 1);
-  const series: SerieCursadaDTO[] = [];
-
-  for (const linha of dados) {
-    if (linha.startsWith("Página") || linha.startsWith("Nota")) {
-      break;
-    }
-
-    const colunas = dividirLinhaTabela(linha);
-    if (colunas.length < 9) {
-      continue;
-    }
-
-    const [anoLetivo, periodoLetivo, unidadeColuna, modalidadeColuna, serie, turno, ensinoRel, linguaEstr, situacao, tipoVaga, ...resto] =
-      colunas;
-
-    const tipoVagaCompleto = [tipoVaga, ...resto].filter(Boolean).join(" ");
-
-    const { unidadeEnsino, codigoEscola } = separarCodigoEscola(unidadeColuna);
-    const { modalidade, segmento, curso } = separarModalidadeSegmentoCurso(
-      modalidadeColuna
-    );
-
-    series.push({
-      anoLetivo: sanitizeCampoObrigatorio(anoLetivo),
-      periodoLetivo: sanitizeCampoObrigatorio(periodoLetivo),
-      unidadeEnsino,
-      codigoEscola,
-      modalidade,
-      segmento,
-      curso,
-      serie: sanitizeCampoOpcional(serie),
-      turno: sanitizeCampoOpcional(turno),
-      situacao: sanitizeCampoOpcional(situacao),
-      tipoVaga: sanitizeCampoOpcional(tipoVagaCompleto),
-      matrizCurricular: escolaridade.matrizCurricular,
-      dataInclusaoAluno: ingresso.dataInclusao,
-      redeEnsinoOrigem: ingresso.redeOrigem,
-      ensinoReligioso: parseBooleano(ensinoRel),
-      linguaEstrangeira: parseBooleano(linguaEstr),
-    });
-  }
-
-  if (series.length && ingresso.anoIngresso !== undefined) {
-    series[0].anoLetivo = ingresso.anoIngresso.toString();
-  }
-  if (series.length && ingresso.periodoIngresso !== undefined) {
-    series[0].periodoLetivo = ingresso.periodoIngresso.toString();
-  }
-
-  return series;
-}
-
-function extrairBlocoRenovacao(texto: string): string | null {
-  const inicio = texto.indexOf("Renovação de Matrícula");
-  if (inicio === -1) {
-    return null;
-  }
-
-  const depois = texto.slice(inicio);
-  const fim = depois.search(/Histórico de Confirmação|Nota:|<<\s*Anterior/i);
-  return fim === -1 ? depois : depois.slice(0, fim);
-}
-
-function dividirLinhaTabela(linha: string): string[] {
-  const normalizado = linha.replace(/\u00a0/g, " ").replace(/\t/g, "  ");
-  const delimitador = /\s{2,}/g;
-  const partes: string[] = [];
-  let inicio = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = delimitador.exec(normalizado)) !== null) {
-    const trecho = normalizado.slice(inicio, match.index).trim();
-    partes.push(trecho);
-    inicio = match.index + match[0].length;
-  }
-
-  const final = normalizado.slice(inicio).trim();
-  partes.push(final);
-
-  return preencherColunas(partes);
-}
-
-function preencherColunas(colunas: string[]): string[] {
-  const resultado: string[] = [];
-  for (let i = 0; i < 10; i++) {
-    resultado.push(colunas[i] ?? "");
-  }
-  return resultado;
 }
 
 function separarCodigoEscola(valor?: string): {
@@ -587,7 +760,11 @@ function sanitizeCampoObrigatorio(valor?: string): string {
   if (!valor) {
     throw new Error("Campo obrigatório da tabela está vazio");
   }
-  return valor.trim();
+  const limpo = valor.trim();
+  if (!limpo) {
+    throw new Error("Campo obrigatório da tabela está vazio");
+  }
+  return limpo;
 }
 
 function sanitizeCampoOpcional(valor?: string): string | undefined {

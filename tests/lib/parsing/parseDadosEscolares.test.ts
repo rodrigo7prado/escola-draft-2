@@ -1,78 +1,91 @@
 import { describe, expect, it } from "vitest";
 import { parseDadosEscolares } from "@/lib/parsing/parseDadosEscolares";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const TEXTO_ESCOLAR = `
-Aluno
-Matrícula:*	202212345678901
-Situação:	Concluido
-Motivo:
-CONCLUINTE
-Recebe Escolarização em Outro Espaço (diferente da escola)? :*
-NÃO RECEBE
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-Dados de Ingresso
-Ano Ingresso:*	<2022>
-Período Ingresso:*	0
-Data de Inclusão do Aluno:	11/01/2022 11:45:07
-Tipo Ingresso:*	Outros
-Rede de Ensino Origem:*	Estadual
+const TEMPLATE_PATH = join(
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "docs",
+  "templates",
+  "DadosEscolaresColagemModelo.txt"
+);
+const ESPERADO_PATH = join(
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "docs",
+  "templates",
+  "DadosEscolaresEsperados.json"
+);
 
-Escolaridade
-Unidade de Ensino:*	33063397	CE SENOR ABRAVANEL
-Nível/Segmento*:	MÉDIO
-Modalidade*:	REGULAR
-Curso:*	0023.29	NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA
-Turno:*	MANHÃ
-Matriz Curricular:*	NEM_IF_LGG+CHS_01_24
-Série/Ano Escolar:*	ENSINO MÉDIO REGULAR - 3ª SÉRIE
-
-Renovação de Matrícula
-Ano Letivo	Período Letivo	Unidade de Ensino	Modalidade / Segmento / Curso	Série/Ano Escolar	Turno	Ensino Religioso	Língua Estrangeira Facultativa	Situação	Tipo Vaga
-2024	0	33063397 - CE SENOR ABRAVANEL	REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA	3	M			Possui confirmação	Vaga de Continuidade
-2023	0	33062222 - CE ANTONIO PRADO JUNIOR	REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO DE LINGUAGENS	2	T			Possui confirmação	Vaga de Continuidade
-Página 1 de 1 (2 itens)
-<< Anterior
-`;
+const TEXTO_COMPLETO = readFileSync(TEMPLATE_PATH, "utf8");
+const DADOS_ESPERADOS = JSON.parse(readFileSync(ESPERADO_PATH, "utf8"));
 
 describe("parseDadosEscolares", () => {
-  it("deve extrair séries cursadas e dados principais", () => {
-    const resultado = parseDadosEscolares(TEXTO_ESCOLAR, "202212345678901");
+  it("deve extrair dados conforme modelo oficial", () => {
+    const resultado = parseDadosEscolares(TEXTO_COMPLETO, "202215211346542");
 
-    expect(resultado.alunoInfo.anoIngresso).toBe(2022);
-    expect(resultado.alunoInfo.periodoIngresso).toBe(0);
-    expect(resultado.alunoInfo.matrizCurricular).toBe("NEM_IF_LGG+CHS_01_24");
-    expect(resultado.alunoInfo.motivoEncerramento).toBe("CONCLUINTE");
-    expect(resultado.series).toHaveLength(2);
+    expect(resultado.avisos).toHaveLength(0);
 
-    const primeira = resultado.series[0];
-    expect(primeira.anoLetivo).toBe("2022"); // substituído pelos dados de ingresso
-    expect(primeira.periodoLetivo).toBe("0");
-    expect(primeira.modalidade).toBe("REGULAR");
-    expect(primeira.segmento).toBe("MÉDIO");
-    expect(primeira.curso).toMatch(/LGG\+CHS/);
-    expect(primeira.matrizCurricular).toBe("NEM_IF_LGG+CHS_01_24");
-    expect(primeira.redeEnsinoOrigem).toBe("Estadual");
+    expect(resultado.alunoInfo.situacao).toBe(DADOS_ESPERADOS.Aluno["Situação"]);
+    expect(resultado.alunoInfo.motivoEncerramento).toBe(
+      DADOS_ESPERADOS.Aluno.Motivo
+    );
+    expect(resultado.alunoInfo.anoIngresso).toBe(
+      DADOS_ESPERADOS["Dados de Ingresso"]["Ano Ingresso"]
+    );
+    expect(resultado.alunoInfo.matrizCurricular).toBe(
+      DADOS_ESPERADOS.Escolaridade["Matriz Curricular"]
+    );
 
-    const segunda = resultado.series[1];
-    expect(segunda.anoLetivo).toBe("2023");
-    expect(segunda.periodoLetivo).toBe("0");
-    expect(segunda.codigoEscola).toBe("33062222");
+    expect(resultado.series).toHaveLength(
+      DADOS_ESPERADOS["Confirmação/Renovação de Matrícula"]["Renovação de Matrícula (Tabela)"].length
+    );
+
+    resultado.series.forEach((serie, index) => {
+      const esperado =
+        DADOS_ESPERADOS["Confirmação/Renovação de Matrícula"][
+          "Renovação de Matrícula (Tabela)"
+        ][index];
+
+      expect(Number(serie.anoLetivo)).toBe(esperado["Ano Letivo"]);
+      expect(Number(serie.periodoLetivo)).toBe(esperado["Período Letivo"]);
+      expect(serie.unidadeEnsino).toBe(esperado["Unidade de Ensino"]);
+      expect(serie.serie).toBe(String(esperado["Série/Ano Escolar"]));
+      expect(serie.turno).toBe(esperado["Turno"]);
+      expect(serie.situacao).toBe(esperado["Situação"]);
+      expect(serie.tipoVaga).toBe(esperado["Tipo Vaga"]);
+    });
   });
 
-  it("deve lançar erro se matrícula não corresponder", () => {
+  it("lança erro se matrícula divergente", () => {
     expect(() =>
-      parseDadosEscolares(TEXTO_ESCOLAR, "000000000000000")
+      parseDadosEscolares(TEXTO_COMPLETO, "000000000000000")
     ).toThrow("Matrícula do texto não corresponde ao aluno ativo");
   });
 
-  it("deve lançar erro se faltar tabela de renovação", () => {
-    const textoSemTabela = TEXTO_ESCOLAR.replace(
-      /Renovação de Matrícula[\s\S]+<< Anterior/,
-      "Renovação de Matrícula\n<< Anterior"
+  it("lança erro para turno desconhecido", () => {
+    const textoInvalido = TEXTO_COMPLETO.replace("\tM\t\t\t", "\tX\t\t\t");
+    expect(() => parseDadosEscolares(textoInvalido)).toThrow(
+      "Turno desconhecido"
     );
+  });
 
-    expect(() =>
-      parseDadosEscolares(textoSemTabela, "202212345678901")
-    ).toThrow("Tabela 'Renovação de Matrícula' não encontrada");
+  it("emite aviso para tipo de vaga inesperado", () => {
+    const textoAviso = TEXTO_COMPLETO.replace(
+      /Vaga de Continuidade/,
+      "Outro tipo"
+    );
+    const resultado = parseDadosEscolares(textoAviso);
+    expect(resultado.avisos).toContain(
+      expect.stringContaining("Tipo de Vaga desconhecido")
+    );
   });
 });

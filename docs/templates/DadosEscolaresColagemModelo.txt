@@ -1,7 +1,7 @@
 
 Alunos
-Usuário: 02493963 (IP: 179.218.8.236)
-E-mail: angelosantos@prof.educacao.rj.gov.br
+Usuário: 00000000 (IP: 000.000.0.000)
+E-mail: admineduc@sistemaexterno.br
    
 Gestão Escolar
 Alunos
@@ -163,8 +163,8 @@ Configurações Gerais
 Consultas/Relatório
 Informe a matrícula ou o nome do aluno
 Aluno:*	
-202215211346542
-BERNARDO AMORIM SILVA
+202200001111222
+JOÃO TESTE DA SILVA
 Enviar
 
 
@@ -180,9 +180,9 @@ Atendimento Educacional Especializado
 Irmãos
 AEDH - Escolarização em Outros Espaços
 Aluno
-Inscrição Matrícula Fácil:	3102679
+Inscrição Matrícula Fácil:	3333333
 Matrícula:*	
-202215211346542
+202200001111222
 Situação:	
 Concluido
 Causa do Encerramento:	

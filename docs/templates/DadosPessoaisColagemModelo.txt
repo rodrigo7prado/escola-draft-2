@@ -1,7 +1,7 @@
 
 Alunos
-Usuário: 02493963 (IP: 179.218.8.236)
-E-mail: angelosantos@prof.educacao.rj.gov.br
+Usuário: 00000000 (IP: 000.000.0.000)
+E-mail: admineduc@sistemaexterno.br
    
 Gestão Escolar
 Alunos
@@ -163,8 +163,8 @@ Configurações Gerais
 Consultas/Relatório
 Informe a matrícula ou o nome do aluno
 Aluno:*	
-202215211346542
-BERNARDO AMORIM SILVA
+202200001111222
+JOÃO TESTE DA SILVA
 Enviar
 
 
@@ -182,12 +182,12 @@ AEDH - Escolarização em Outros Espaços
 Dados Pessoais
 sem foto
 Nome:*	
-BERNARDO AMORIM SILVA
+JOÃO TESTE DA SILVA
  (Preencher sem abreviações)
 Nome Social:	
  Saiba Mais
 Data Nascimento:*	
-10/03/2007
+15/07/2007
 v
 Sexo:*	
 Masculino	Feminino
@@ -221,38 +221,38 @@ Sim	Não
 
 Filiação
 Nome da Mãe:*	
-MERCIA APARECIDA DE AMORIM
+MARIA EXEMPLO DA SILVA
 Não Declarada	Falecida	CPF:	
-042.666.197-40
+111.222.333-44
 Telefone:	
 Nome do Pai:*	
-MANOEL ANTONIO DE JESUS SILVA
+CARLOS EXEMPLO DA SILVA
 Não Declarado	Falecido	CPF:	
 Telefone:	
 Responsável Legal:*	
 Mãe	Pai	Próprio Aluno	Outros
 Nome do Responsável:*	
-MERCIA APARECIDA DE AMORIM
+MARIA EXEMPLO DA SILVA
 CPF:	
-042.666.197-40
+111.222.333-44
 Telefone:	
-(219)9850-8799
+(21)99000-0001
 Possui irmão matriculado na rede estadual de ensino.
 Endereço
 CEP:*	
-20396130
+20000000
 Município:*	
 RIO DE JANEIRO
 Estado:*	
 RJ
 Endereço:*	
-PRA MANUEL LUÍS
+RUA EXEMPLO CENTRAL
 N.º:*	
-79
+123
 Compl.:	
-CASA 57
+APTO 101
 Bairro:*	
-PAQUETÁ
+CENTRO
 Localização/Zona
 de Residência:*	
 Urbana
@@ -269,36 +269,36 @@ Longitude:*
 
 Contato
 Telefone ou Celular:	
-(21)99850-8799
+(21)99000-0002
 Celular:	
-(21)97219-7767
+(21)99000-0003
 E-mail:	
-PAQUETABR2018@GMAIL.COM
+aluno.teste@emailpessoal.com
 Data de Atualização do E-mail:	
 E-mail Google for Education:	
 Dados da operadora de cartões
 Login	
-paquetabr2018@gmail.com
+responsavel.teste@emailpessoal.br
 Operadora	
 Riocard
 Código do Aluno na Operadora	
-4995386
+7777777
 Data de Atualização do Login	
 27/01/2022 00:35:15
 Outros Documentos
 CPF:	
-165.599.577-48
+123.456.789-09
 Tipo:	
 RG
 Número*:	
-263083917
+123456789
 Complemento da identidade:	
 Estado*:	
 RJ
 Órgão Emissor*:	
 DETRAN
 Data de Expedição*:	
-15/01/2015
+10/02/2015
 v
 Outras Informações
 Número de Identificação no INEP:	
@@ -313,18 +313,18 @@ RJ
 Município do Cartório:	
 RIO DE JANEIRO
 Cartório:	
-5ª CIRCUNSCRICAO DE REGISTRO CIVIL DE PESSOAS NATURAIS DA CAPITAL DO RIO DE JANEIRO
+CARTORIO DEMONSTRACAO CAPITAL
 Número do Termo:	
-249931
+123456
 Data de Emissão:	
-13/03/2008
+20/07/2007
 v
 Estado:	
 RJ
 Folha:	
-31
+12
 Livro:	
-A01214
+A0001
 
 Próximo >>
 

@@ -30,7 +30,7 @@ const DADOS_ESPERADOS = JSON.parse(readFileSync(ESPERADO_PATH, "utf8"));
 
 describe("parseDadosEscolares", () => {
   it("deve extrair dados conforme modelo oficial", () => {
-    const resultado = parseDadosEscolares(TEXTO_COMPLETO, "202215211346542");
+    const resultado = parseDadosEscolares(TEXTO_COMPLETO, "202200001111222");
 
     expect(resultado.avisos).toHaveLength(0);
 

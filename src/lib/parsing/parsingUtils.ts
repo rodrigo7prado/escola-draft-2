@@ -219,3 +219,99 @@ export function capturarNaturalidade(
 
   return { valor: undefined, nextIndex: indiceLabel + 1 };
 }
+
+/**
+ * Remove ruído de colagem do sistema SEEDUC
+ * Extrai apenas o trecho relevante entre marcador de início e marcadores de fim
+ *
+ * @param texto - Texto completo colado
+ * @param marcadorInicio - Marcador (string ou regex) que indica início do conteúdo relevante
+ * @param marcadoresFim - Marcadores (string ou regex) que indicam fim do conteúdo relevante
+ * @param retornarTextoSeNaoEncontrar - Se true, retorna o texto completo se não encontrar o marcador de início. Padrão: true
+ * @returns Texto limpo contendo apenas conteúdo entre marcadores
+ */
+export function extrairTrechoLimpo(
+  texto: string,
+  marcadorInicio: string | RegExp,
+  marcadoresFim: (string | RegExp)[],
+  retornarTextoSeNaoEncontrar: boolean = true
+): string {
+  // 1. Normalizar texto base
+  const normalizado = normalizarTextoBase(texto);
+
+  // 2. Encontrar início do conteúdo relevante
+  const regexInicio =
+    typeof marcadorInicio === "string"
+      ? new RegExp(marcadorInicio, "i")
+      : marcadorInicio;
+
+  const indiceInicio = normalizado.search(regexInicio);
+  if (indiceInicio === -1) {
+    return retornarTextoSeNaoEncontrar ? normalizado : ""; // Retorna texto completo ou vazio
+  }
+
+  // 3. Extrair a partir do início
+  const restante = normalizado.slice(indiceInicio);
+
+  // 4. Encontrar o fim (primeiro marcador encontrado)
+  let indiceFim = -1;
+  for (const marcador of marcadoresFim) {
+    const regexFim =
+      typeof marcador === "string" ? new RegExp(marcador, "i") : marcador;
+
+    const idx = restante.search(regexFim);
+    if (idx !== -1 && (indiceFim === -1 || idx < indiceFim)) {
+      indiceFim = idx;
+    }
+  }
+
+  // 5. Retornar trecho limpo
+  if (indiceFim === -1) {
+    return restante;
+  }
+
+  return restante.slice(0, indiceFim);
+}
+
+/**
+ * Remove linhas de ruído específicas do sistema (checkboxes, paginação, navegação)
+ * Útil para limpeza adicional após extrairTrechoLimpo
+ *
+ * @param texto - Texto a ser limpo
+ * @returns Texto sem linhas de ruído
+ */
+export function removerLinhasRuido(texto: string): string {
+  return texto
+    .split("\n")
+    .filter((linha) => {
+      const trimmed = linha.trim();
+
+      // Mantém linhas vazias (importante para estrutura)
+      if (!trimmed) return true;
+
+      // Remove checkboxes de impressão
+      if (
+        /^(Confirmação de Matrícula|Renovação de Matrícula|Imprimir Fichas):/i.test(
+          trimmed
+        )
+      ) {
+        return false;
+      }
+
+      // Remove paginação
+      if (/^Página \d+ de \d+/i.test(trimmed)) {
+        return false;
+      }
+
+      // Remove navegação de tabela
+      if (
+        /^\[?\d+\]?$/.test(trimmed) ||
+        /^(Anterior|Próximo)$/i.test(trimmed)
+      ) {
+        return false;
+      }
+
+      return true;
+    })
+    .join("\n");
+}

@@ -7,6 +7,7 @@ import {
   capturarMesmaLinha,
   capturarProximaLinha,
   capturarNaturalidade,
+  extrairTrechoLimpo,
   PLACEHOLDERS,
   type LinhaProcessada,
 } from "./parsingUtils";
@@ -353,17 +354,10 @@ function extrairSexo(texto: string): DadosPessoais["sexo"] {
 
 
 function extrairTrechoDadosPessoais(texto: string): string {
-  const inicio = texto.search(/Dados Pessoais/i);
-  if (inicio === -1) {
-    return texto;
-  }
-
-  const fim = texto.slice(inicio).search(/Pr[oó]ximo/iu);
-  if (fim === -1) {
-    return texto.slice(inicio);
-  }
-
-  return texto.slice(inicio, inicio + fim);
+  return extrairTrechoLimpo(texto, /Dados Pessoais/i, [
+    /Pr[oó]ximo/iu,
+    /<<\s*Anterior/i,
+  ]);
 }
 
 // Função mantida como wrapper para manter compatibilidade com código existente

@@ -5,6 +5,8 @@ import {
   valorDisponivel,
   capturarMesmaLinha,
   capturarProximaLinha,
+  extrairTrechoLimpo,
+  removerLinhasRuido,
   type LinhaProcessada,
 } from "./parsingUtils";
 
@@ -317,18 +319,20 @@ function sanitizeValorComChaves(valor: string): string | undefined {
 }
 
 function extrairTrechoDadosEscolares(texto: string): string {
-  const inicio = texto.search(/^\s*Aluno\b/im);
-  if (inicio === -1) {
-    return "";
-  }
+  const trechoBase = extrairTrechoLimpo(
+    texto,
+    /^\s*Aluno\b/im,
+    [
+      /<<\s*Anterior/i,
+      /Próximo\s*>>/i,
+      /©\s*Todos os direitos/i,
+      /Imprimir Fichas de Matrícula/i,
+    ],
+    false // Retorna string vazia se não encontrar o marcador
+  );
 
-  const restante = texto.slice(inicio);
-  const fimMatch = restante.search(/<<\s*Anterior/i);
-  if (fimMatch === -1) {
-    return restante;
-  }
-
-  return restante.slice(0, fimMatch);
+  // Limpeza adicional de linhas de ruído
+  return removerLinhasRuido(trechoBase);
 }
 
 function extrairBlocoAluno(texto: string): AlunoBlocoInfo {

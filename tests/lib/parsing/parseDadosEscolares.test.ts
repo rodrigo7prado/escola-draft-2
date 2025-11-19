@@ -83,12 +83,14 @@ describe("parseDadosEscolares", () => {
 
   it("emite aviso para tipo de vaga inesperado", () => {
     const textoAviso = TEXTO_COMPLETO.replace(
-      "Possui confirmação\tVaga de Continuidade",
+      /Possui confirmação\tVaga de Continuidade/,
       "Possui confirmação\tOutro tipo"
     );
     const resultado = parseDadosEscolares(textoAviso);
-    expect(resultado.avisos).toContain(
-      expect.stringContaining("Tipo de Vaga desconhecido")
+    expect(resultado.avisos).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("Tipo de Vaga desconhecido"),
+      ])
     );
   });
 });

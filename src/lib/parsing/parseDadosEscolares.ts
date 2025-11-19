@@ -175,7 +175,7 @@ const CAMPOS_DESCRITORES_ALUNO: CampoDescritor<AlunoBlocoInfo>[] = [
   {
     campo: "situacaoEscolar",
     label: CATALOGO_ELEMENTOS_COLAGEM.labels.situacao,
-    estrategia: "mesmaLinha",
+    estrategia: "mesmaOuProxima",
   },
   {
     campo: "causaEncerramentoEscolar",
@@ -198,13 +198,13 @@ const CAMPOS_DESCRITORES_INGRESSO: CampoDescritor<Record<string, string | undefi
   {
     campo: "anoIngresso",
     label: CATALOGO_ELEMENTOS_COLAGEM.labels.anoIngresso,
-    estrategia: "mesmaLinha",
+    estrategia: "mesmaOuProxima",
     sanitize: sanitizeValorComChaves,
   },
   {
     campo: "periodoIngresso",
     label: CATALOGO_ELEMENTOS_COLAGEM.labels.periodoIngresso,
-    estrategia: "mesmaLinha",
+    estrategia: "mesmaOuProxima",
     sanitize: sanitizeValorComChaves,
   },
   {

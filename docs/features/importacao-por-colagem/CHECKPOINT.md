@@ -63,3 +63,5 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
 [ ] CP7: Testes unitários e de integração do fluxo completo de colagem de dados escolares, garantindo que todos campos sejam processados corretamente;
   [ ] TEC7.1: Usar os modelos disponíveis em `docs/templates/DadosEscolaresColagemModelo.md` e `docs/templates/DadosPessoaisColagemModelo.md` para criar casos de teste representativos;
   [ ] TEC7.2: Garantir cobertura completa dos testes, incluindo cenários de sucesso e falha na colagem de dados escolares.
+
+  

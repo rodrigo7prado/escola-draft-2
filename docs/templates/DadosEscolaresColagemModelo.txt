@@ -1,10 +1,8 @@
-// Gerar dados aleatórios compatíveis com o que está presente originalmente
 
 Alunos
-Usuário: 01234567 (IP: 123.456.7.990)
-
-E-mail: pedrotesteadm@prof.educacao.rj.gov.br
-
+Usuário: 02493963 (IP: 179.218.8.236)
+E-mail: angelosantos@prof.educacao.rj.gov.br
+   
 Gestão Escolar
 Alunos
 Alunos
@@ -164,11 +162,13 @@ Alteração de Senha
 Configurações Gerais
 Consultas/Relatório
 Informe a matrícula ou o nome do aluno
-Aluno:\*
-202212345678901
-
-BERNARDO TESTE SILVA
+Aluno:*	
+202215211346542
+BERNARDO AMORIM SILVA
 Enviar
+
+
+
 
 EditarNovoAlunos
 Dados Pessoais
@@ -180,43 +180,43 @@ Atendimento Educacional Especializado
 Irmãos
 AEDH - Escolarização em Outros Espaços
 Aluno
-Inscrição Matrícula Fácil: 3102679
-Matrícula:_
-202212345678901
-Situação:
+Inscrição Matrícula Fácil:	3102679
+Matrícula:*	
+202215211346542
+Situação:	
 Concluido
-Causa do Encerramento:
-Motivo:
+Causa do Encerramento:	
+Motivo:	
 CONCLUINTE
 Dados de Ingresso
-Ano Ingresso:_
+Ano Ingresso:*	
 <2022>
-Período Ingresso:_
+Período Ingresso:*	
 0
-Data de Inclusão do Aluno:
+Data de Inclusão do Aluno:	
 11/01/2022 11:45:07
-Tipo Ingresso:_
+Tipo Ingresso:*	
 Outros
-Rede de Ensino Origem:_
+Rede de Ensino Origem:*	
 Estadual
 Escolaridade
-Unidade de Ensino:_
+Unidade de Ensino:*	
 33063397
 CE SENOR ABRAVANEL
-Nível/Segmento*:
+Nível/Segmento*:	
 MÉDIO
-Modalidade*:
+Modalidade*:	
 REGULAR
-Curso:_
+Curso:*	
 0023.29
 NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA
-Turno:_
+Turno:*	
 MANHÃ
-Matriz Curricular:_
+Matriz Curricular:*	
 NEM_IF_LGG+CHS_01_24
-Série/Ano Escolar:_
+Série/Ano Escolar:*	
 ENSINO MÉDIO REGULAR - 3ª SÉRIE
-Recebe Escolarização em Outro Espaço (diferente da escola)? :\*
+Recebe Escolarização em Outro Espaço (diferente da escola)? :*	
 NÃO RECEBE
 Confirmação/Renovação de Matrícula
 Renovação de Matrícula
@@ -230,12 +230,13 @@ Ensino Religioso
 Língua Estrangeira Facultativa
 Situação
 Tipo Vaga
-2024 0 CE SENOR ABRAVANEL REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA 3 M Possui confirmação Vaga de Continuidade
-2023 0 CE ANTONIO PRADO JUNIOR REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO DE LINGUAGENS E SUAS TECNOLOGIAS - MÍDIAS: LINGUAGENS EM AÇÃO 2 M Possui confirmação Vaga de Continuidade
-Página 1 de 1 (2 itens)
-Anterior
-[1]
+2024	0	CE SENOR ABRAVANEL	REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA	3	M			Possui confirmação	Vaga de Continuidade
+2023	0	CE ANTONIO PRADO JUNIOR	REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO DE LINGUAGENS E SUAS TECNOLOGIAS - MÍDIAS: LINGUAGENS EM AÇÃO	2	M			Possui confirmação	Vaga de Continuidade
+Página 1 de 1 (2 itens)	
+Anterior	
+[1]	
 Próximo
+
 
 Nota: Este quadro somente será atualizado após o fechamento do período letivo, para os campos de realização de renovação de matrícula durante o período para o processo de renovação.
 Histórico de Confirmação de Matrícula
@@ -250,22 +251,26 @@ Data Sugerida
 Ensino Religioso
 Língua Estrangeira Facultativa
 Progr. de aceleração de estudos (Proj. Autonomia)
-Situação \*
+Situação *
 Data Situação
-15472132 2024 0 33063397 - CE SENOR ABRAVANEL REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA 3 M 13/11/2023 Confirmada
-Não Confirmada 13/11/2023
-14982529 2023 0 33063397 - CE SENOR ABRAVANEL REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO CNT+CHS - SOCIEDADES EM TRANSFORMAÇÃO 2 T 11/01/2023 Confirmada
-Não Confirmada 01/02/2023
-15133468 2023 0 33063397 - CE SENOR ABRAVANEL REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA 2 M 01/02/2023 Confirmada
-Não Confirmada 01/02/2023
+15472132	2024	0	33063397 - CE SENOR ABRAVANEL	REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA	3	M	13/11/2023				Confirmada
+Não Confirmada	13/11/2023
+14982529	2023	0	33063397 - CE SENOR ABRAVANEL	REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO CNT+CHS - SOCIEDADES EM TRANSFORMAÇÃO	2	T	11/01/2023				Confirmada
+Não Confirmada	01/02/2023
+15133468	2023	0	33063397 - CE SENOR ABRAVANEL	REGULAR / MÉDIO / NEM ITINERÁRIO FORMATIVO BLOCO TEMÁTICO LGG+CHS - CIDADANIA ATIVA	2	M	01/02/2023				Confirmada
+Não Confirmada	01/02/2023
+ 
 
 Imprimir Fichas de Matrícula
-Confirmação de Matrícula:_
+Confirmação de Matrícula:*	
 v
-Renovação de Matrícula:_
+Renovação de Matrícula:*	
 v
 
 << Anterior
 Próximo >>
 
+
+
 © Todos os direitos reservados SEEDUC - RJ - 2022 | versão 1.9.13.45213P
+  

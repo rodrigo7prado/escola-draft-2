@@ -1,8 +1,8 @@
+
 Alunos
 Usuário: 02493963 (IP: 179.218.8.236)
-Usuário: 01234567 (IP: 123.456.7.890)
-E-mail: pedrotesteadm@prof.educacao.rj.gov.br
-
+E-mail: angelosantos@prof.educacao.rj.gov.br
+   
 Gestão Escolar
 Alunos
 Alunos
@@ -162,11 +162,13 @@ Alteração de Senha
 Configurações Gerais
 Consultas/Relatório
 Informe a matrícula ou o nome do aluno
-Aluno:\*
+Aluno:*	
 202215211346542
-202212345678901
-BERNARDO TESTE SILVA
+BERNARDO AMORIM SILVA
 Enviar
+
+
+
 
 EditarNovoAlunos
 Dados Pessoais
@@ -179,156 +181,152 @@ Irmãos
 AEDH - Escolarização em Outros Espaços
 Dados Pessoais
 sem foto
-Nome:_
-BERNARDO TESTE SILVA
-(Preencher sem abreviações)
-Nome Social:
-Saiba Mais
-Data Nascimento:_
-03/10/2007
+Nome:*	
+BERNARDO AMORIM SILVA
+ (Preencher sem abreviações)
+Nome Social:	
+ Saiba Mais
+Data Nascimento:*	
+10/03/2007
 v
-Sexo:_
-Masculino Feminino
-Quantidade de Filhos:
-Tipo Sanguíneo:
+Sexo:*	
+Masculino	Feminino
+Quantidade de Filhos:	
+Tipo Sanguíneo:	
 Selecione
-Cor/Raça:_
+Cor/Raça:*	
 Preta
-Estado Civil:_
+Estado Civil:*	
 Solteiro
-País de Nascimento:_
+País de Nascimento:*	
 BRASIL
-Nacionalidade:_
+Nacionalidade:*	
 BRASILEIRA
-UF de Nascimento:_
+UF de Nascimento:*	
 RJ
-Naturalidade:_
+Naturalidade:*	
 00007043
 RIO DE JANEIRO
-Credo: _
+Credo: *	
 Não declarado
 
 Necessidade Especial/Transtorno
-Necessidade Especial:\*
+Necessidade Especial:*	
 Não possui.
-Saiba Mais
+ Saiba Mais
 
 Aluno(a) com transtorno(s) que impacta(m) no desenvolvimento da aprendizagem?
-Sim Não
+Sim	Não
+
 
 Filiação
-Nome da Mãe:_
-MARIA TESTE SILVA
-Não Declarada Falecida CPF:
-234.567.890-12
-Telefone:
-Nome do Pai:_
-PAULO TESTE SILVA
-Não Declarado Falecido CPF:
-Telefone:
-Responsável Legal:_
-Mãe Pai Próprio Aluno Outros
-Nome do Responsável:_
-MARIA TESTE SILVA
-CPF:
-234.567.890-12
-Telefone:
-(21)99876-5432
+Nome da Mãe:*	
+MERCIA APARECIDA DE AMORIM
+Não Declarada	Falecida	CPF:	
+042.666.197-40
+Telefone:	
+Nome do Pai:*	
+MANOEL ANTONIO DE JESUS SILVA
+Não Declarado	Falecido	CPF:	
+Telefone:	
+Responsável Legal:*	
+Mãe	Pai	Próprio Aluno	Outros
+Nome do Responsável:*	
+MERCIA APARECIDA DE AMORIM
+CPF:	
+042.666.197-40
+Telefone:	
+(219)9850-8799
 Possui irmão matriculado na rede estadual de ensino.
 Endereço
-CEP:_
-22222222
-Município:_
+CEP:*	
+20396130
+Município:*	
 RIO DE JANEIRO
-Estado:_
+Estado:*	
 RJ
-Endereço:_
-RUA TESTE
-N.º:_
-77
-Compl.:
+Endereço:*	
+PRA MANUEL LUÍS
+N.º:*	
+79
+Compl.:	
 CASA 57
-Bairro:_
-BAIRRO TESTE
+Bairro:*	
+PAQUETÁ
 Localização/Zona
-de Residência:_
+de Residência:*	
 Urbana
-Localização Diferenciada: _
-Não se aplica
-Comunidade quilombola
-Área onde se localizam povos e comunidades tradicionais
-Área de assentamento
-Terra indígena
+Localização Diferenciada: *	
+	Não se aplica
+	Comunidade quilombola
+	Área onde se localizam povos e comunidades tradicionais
+	Área de assentamento
+	Terra indígena
 
 Localização
-Latitude:_
-Longitude:_
-The specified credentials are invalid. You can sign up for a free developer account at http://www.bingmapsportal.com
-Estrada
-2 milhas
-5 km
-Terms
+Latitude:*	
+Longitude:*	
 
 Contato
-Telefone ou Celular:
-(21)97654-3210
-Celular:
-(21)96543-2109
-E-mail:
-BERNARDOTESTE@GMAIL.COM
-Data de Atualização do E-mail:
-E-mail Google for Education:
+Telefone ou Celular:	
+(21)99850-8799
+Celular:	
+(21)97219-7767
+E-mail:	
+PAQUETABR2018@GMAIL.COM
+Data de Atualização do E-mail:	
+E-mail Google for Education:	
 Dados da operadora de cartões
-Login
-bernardoteste@gmail.com
-Operadora
+Login	
+paquetabr2018@gmail.com
+Operadora	
 Riocard
-Código do Aluno na Operadora
+Código do Aluno na Operadora	
 4995386
-Data de Atualização do Login
+Data de Atualização do Login	
 27/01/2022 00:35:15
 Outros Documentos
-CPF:
+CPF:	
 165.599.577-48
-456.789.123-00
-Tipo:
+Tipo:	
 RG
-Número*:
-456789123
-Complemento da identidade:
-Estado*:
+Número*:	
+263083917
+Complemento da identidade:	
+Estado*:	
 RJ
-Órgão Emissor*:
+Órgão Emissor*:	
 DETRAN
-Data de Expedição*:
-03/10/2015
+Data de Expedição*:	
+15/01/2015
 v
 Outras Informações
-Número de Identificação no INEP:
-Número de Identificação Social(NIS):
+Número de Identificação no INEP:	
+Número de Identificação Social(NIS):	
 Certidão Civil
-Tipo Certidão Civil:_
+Tipo Certidão Civil:*
 Nascimento
-Certidão Civil:_
+Certidão Civil:*
 Modelo Antigo
-UF do Cartório:
+UF do Cartório:	
 RJ
-Município do Cartório:
+Município do Cartório:	
 RIO DE JANEIRO
-Cartório:
+Cartório:	
 5ª CIRCUNSCRICAO DE REGISTRO CIVIL DE PESSOAS NATURAIS DA CAPITAL DO RIO DE JANEIRO
-Número do Termo:
-222222
-Data de Emissão:
-08/03/2008
+Número do Termo:	
+249931
+Data de Emissão:	
+13/03/2008
 v
-Estado:
+Estado:	
 RJ
-Folha:
-42
-Livro:
-A01234
+Folha:	
+31
+Livro:	
+A01214
 
 Próximo >>
 
 © Todos os direitos reservados SEEDUC - RJ - 2022 | versão 1.9.13.45213P
+  

@@ -72,7 +72,10 @@ describe("parseDadosEscolares", () => {
   });
 
   it("lança erro para turno desconhecido", () => {
-    const textoInvalido = TEXTO_COMPLETO.replace("\tM\t\t\t", "\tX\t\t\t");
+    const textoInvalido = TEXTO_COMPLETO.replace(
+      "\tM\t\t\tPossui",
+      "\tX\t\t\tPossui"
+    );
     expect(() => parseDadosEscolares(textoInvalido)).toThrow(
       "Turno desconhecido"
     );
@@ -80,8 +83,8 @@ describe("parseDadosEscolares", () => {
 
   it("emite aviso para tipo de vaga inesperado", () => {
     const textoAviso = TEXTO_COMPLETO.replace(
-      /Vaga de Continuidade/,
-      "Outro tipo"
+      "Possui confirmação\tVaga de Continuidade",
+      "Possui confirmação\tOutro tipo"
     );
     const resultado = parseDadosEscolares(textoAviso);
     expect(resultado.avisos).toContain(

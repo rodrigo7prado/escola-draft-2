@@ -6,7 +6,6 @@ import {
   capturarMesmaLinha,
   capturarProximaLinha,
   extrairTrechoLimpo,
-  removerLinhasRuido,
   type LinhaProcessada,
 } from "./parsingUtils";
 
@@ -87,10 +86,19 @@ interface EscolaridadeInfo {
   matrizCurricular?: string;
 }
 
+const DEBUG_PARSE_ESCOLARES =
+  process.env.DEBUG_PARSE_ESCOLARES?.toLowerCase() === "true";
+
+function logDebug(...args: unknown[]) {
+  if (DEBUG_PARSE_ESCOLARES) {
+    console.debug("[parseDadosEscolares]", ...args);
+  }
+}
+
 const CATALOGO_ELEMENTOS_COLAGEM = {
   blocos: {
     aluno: {
-      inicio: /Aluno\s*\nInscri[cç][aã]o Matr[ií]cula F[áa]cil/i,
+      inicio: /Aluno[\s\n]*Inscri[cç][aã]o Matr[ií]cula F[áa]cil\s*:\s*/i,
       fim: /Dados de Ingresso/i,
     },
     dadosIngresso: {
@@ -107,7 +115,7 @@ const CATALOGO_ELEMENTOS_COLAGEM = {
     },
   },
   labels: {
-    matricula: ["Matrícula"],
+    matricula: ["Matrícula", "Matrícula:*"],
     situacao: ["Situação"],
     causaEncerramento: ["Causa do Encerramento"],
     motivo: ["Motivo"],
@@ -294,50 +302,23 @@ function extrairConteudoPrincipal(texto: string): string {
   );
 
   if (!bloco) {
+    logDebug("Nenhum trecho principal encontrado a partir do bloco de aluno.");
     return "";
   }
 
-  const semMenus = removerElementosEstranhos(bloco);
-  return removerLinhasRuido(semMenus);
+  logDebug(
+    "Trecho bruto extraído (início):",
+    bloco
+      .split("\n")
+      .slice(0, 20)
+      .join("\n")
+  );
+
+  return bloco;
 }
 
-function removerElementosEstranhos(texto: string): string {
-  const linhas = texto.split("\n");
-  return linhas
-    .filter((linha) => manterLinha(linha))
-    .join("\n");
-}
-
-function manterLinha(linha: string): boolean {
-  const trimmed = linha.trim();
-  if (!trimmed) {
-    return true;
-  }
-
-  const normalizada = normalizarParaComparacao(trimmed);
-  if (
-    CATALOGO_ELEMENTOS_COLAGEM.ruidos.palavrasChave.some(
-      (palavra) => normalizada === normalizarParaComparacao(palavra)
-    )
-  ) {
-    return false;
-  }
-
-  if (
-    CATALOGO_ELEMENTOS_COLAGEM.ruidos.navegacao.some(
-      (palavra) => normalizada === normalizarParaComparacao(palavra)
-    )
-  ) {
-    return false;
-  }
-
-  if (
-    CATALOGO_ELEMENTOS_COLAGEM.ruidos.regex.some((regex) => regex.test(trimmed))
-  ) {
-    return false;
-  }
-
-  return true;
+function removerLinhasRuidoEspecifico(texto: string): string {
+  return texto;
 }
 
 function extrairBlocoPorNome(texto: string, nome: NomeBloco): string {

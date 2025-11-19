@@ -1,5 +1,15 @@
 import { normalizarSexo } from "./normalizarSexo";
-import { normalizarTextoBase, normalizarTextoParaComparacao } from "./parsingUtils";
+import {
+  normalizarTextoBase,
+  normalizarTextoParaComparacao,
+  prepararLinhas,
+  valorDisponivel,
+  capturarMesmaLinha,
+  capturarProximaLinha,
+  capturarNaturalidade,
+  PLACEHOLDERS,
+  type LinhaProcessada,
+} from "./parsingUtils";
 
 export interface DadosPessoais {
   // Dados Cadastrais
@@ -62,27 +72,6 @@ interface CampoDescritor {
   aliases?: string[];
 }
 
-interface LinhaProcessada {
-  raw: string;
-  normalized: string;
-  normalizedLabel: string;
-}
-
-const PLACEHOLDERS = new Set([
-  "",
-  "*",
-  "V",
-  "SELECIONE",
-  "SAIBA MAIS",
-  "NAO DECLARADO",
-  "NAO DECLARADA",
-  "NAO INFORMADO",
-  "NAO INFORMADA",
-  "NAO SE APLICA",
-  "NAO SE APLICA.",
-  "NAO DECLARADO.",
-  "MASCULINO FEMININO",
-]);
 
 const CAMPOS_DESCRITORES: CampoDescritor[] = [
   { campo: "nome", label: "NOME", estrategia: "mesmaOuProxima" },
@@ -355,78 +344,6 @@ function capturarValor(
   return { valor: valorSanitizado, nextIndex };
 }
 
-function capturarMesmaLinha(linha: LinhaProcessada): string | undefined {
-  if (!linha.raw.includes(":")) {
-    return undefined;
-  }
-
-  const [, ...resto] = linha.raw.split(":");
-  const valor = resto.join(":");
-  return valor.trim();
-}
-
-function capturarProximaLinha(
-  linhas: LinhaProcessada[],
-  indiceLabel: number
-): { valor?: string; nextIndex: number } {
-  for (let i = indiceLabel + 1; i < linhas.length; i++) {
-    const candidato = linhas[i].raw.trim();
-
-    if (!candidato) {
-      continue;
-    }
-
-    if (ehInstrucao(candidato)) {
-      continue;
-    }
-
-    if (ehLinhaLabelSemValor(linhas[i])) {
-      break;
-    }
-
-    if (PLACEHOLDERS.has(normalizarParaComparacao(candidato))) {
-      continue;
-    }
-
-    return { valor: candidato, nextIndex: i + 1 };
-  }
-
-  return { valor: undefined, nextIndex: indiceLabel + 1 };
-}
-
-function capturarNaturalidade(
-  linhas: LinhaProcessada[],
-  indiceLabel: number
-): { valor?: string; nextIndex: number } {
-  const valorMesmaLinha = capturarMesmaLinha(linhas[indiceLabel]);
-  if (valorDisponivel(valorMesmaLinha)) {
-    return { valor: valorMesmaLinha, nextIndex: indiceLabel + 1 };
-  }
-
-  for (let i = indiceLabel + 1; i < linhas.length; i++) {
-    const linha = linhas[i].raw.trim();
-    if (!linha) continue;
-
-    if (/^\d+$/.test(linha)) {
-      const possivelCidade = linhas[i + 1]?.raw.trim();
-      if (possivelCidade) {
-        return { valor: possivelCidade, nextIndex: i + 2 };
-      }
-      continue;
-    }
-
-    if (ehLinhaLabelSemValor(linhas[i])) {
-      break;
-    }
-
-    if (!PLACEHOLDERS.has(normalizarParaComparacao(linha))) {
-      return { valor: linha, nextIndex: i + 1 };
-    }
-  }
-
-  return { valor: undefined, nextIndex: indiceLabel + 1 };
-}
-
 function extrairSexo(texto: string): DadosPessoais["sexo"] {
   const match = texto.match(/SEXO:\s*([^\n]+)/i);
   if (!match) return undefined;
@@ -449,15 +366,6 @@ function extrairTrechoDadosPessoais(texto: string): string {
   return texto.slice(inicio, inicio + fim);
 }
 
-function prepararLinhas(texto: string): LinhaProcessada[] {
-  return texto.split("\n").map((linha) => {
-    const raw = linha.replace(/\t/g, " ").trimEnd();
-    const normalized = normalizarParaComparacao(raw);
-    const normalizedLabel = normalizarParaComparacao(raw.split(":")[0] || raw);
-    return { raw, normalized, normalizedLabel };
-  });
-}
-
 // Função mantida como wrapper para manter compatibilidade com código existente
 function normalizarParaComparacao(texto: string): string {
   return normalizarTextoParaComparacao(texto);
@@ -478,25 +386,4 @@ function sanitizeCPF(valor: string): string | undefined {
 
 function sanitizeNaturalidade(valor: string): string | undefined {
   return sanitizeValorBase(valor.replace(/^\d+\s*/, ""));
-}
-
-function valorDisponivel(valor?: string): boolean {
-  if (!valor) return false;
-  return !!sanitizeValorBase(valor);
-}
-
-function ehInstrucao(valor: string): boolean {
-  const trimmed = valor.trim();
-  return trimmed.startsWith("(") && trimmed.endsWith(")");
-}
-
-function ehLinhaLabelSemValor(linha: LinhaProcessada): boolean {
-  const trimmed = linha.raw.trim();
-  if (!trimmed.includes(":")) {
-    return false;
-  }
-
-  const [, ...resto] = trimmed.split(":");
-  const depois = resto.join(":").trim();
-  return depois === "" || depois === "*" || depois === "-";
 }

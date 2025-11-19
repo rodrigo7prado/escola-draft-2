@@ -1,4 +1,12 @@
-import { normalizarTextoBase, normalizarTextoParaComparacao } from "./parsingUtils";
+import {
+  normalizarTextoBase,
+  normalizarTextoParaComparacao,
+  prepararLinhas,
+  valorDisponivel,
+  capturarMesmaLinha,
+  capturarProximaLinha,
+  type LinhaProcessada,
+} from "./parsingUtils";
 
 export interface SerieCursadaDTO {
   anoLetivo: string;
@@ -38,6 +46,113 @@ export interface DadosEscolaresParseResult {
   series: SerieCursadaDTO[];
   textoLimpo: string;
 }
+
+type EstrategiaCaptura = "mesmaLinha" | "mesmaOuProxima" | "proximaLinha";
+
+type SanitizeFn = (valor: string) => string | undefined;
+
+interface CampoDescritor<T> {
+  campo: keyof T;
+  label: string;
+  estrategia: EstrategiaCaptura;
+  sanitize?: SanitizeFn;
+  ancora?: string;
+  aliases?: string[];
+}
+
+interface AlunoBlocoInfo {
+  matriculaExtraida?: string;
+  situacaoEscolar?: string;
+  causaEncerramentoEscolar?: string;
+  motivoEscolar?: string;
+  recebeOutroEspacoEscolar?: string;
+}
+
+interface IngressoInfo {
+  anoIngresso?: number;
+  periodoIngresso?: number;
+  dataInclusao?: string;
+  tipoIngresso?: string;
+  redeOrigem?: string;
+}
+
+interface EscolaridadeInfo {
+  matrizCurricular?: string;
+}
+
+const CAMPOS_DESCRITORES_ALUNO: CampoDescritor<AlunoBlocoInfo>[] = [
+  {
+    campo: "matriculaExtraida",
+    label: "MATRICULA",
+    estrategia: "mesmaOuProxima",
+    ancora: "ALUNO",
+  },
+  {
+    campo: "situacaoEscolar",
+    label: "SITUACAO",
+    estrategia: "mesmaLinha",
+  },
+  {
+    campo: "causaEncerramentoEscolar",
+    label: "CAUSA DO ENCERRAMENTO",
+    estrategia: "mesmaLinha",
+  },
+  {
+    campo: "motivoEscolar",
+    label: "MOTIVO",
+    estrategia: "mesmaOuProxima",
+  },
+  {
+    campo: "recebeOutroEspacoEscolar",
+    label: "RECEBE ESCOLARIZACAO EM OUTRO ESPACO",
+    aliases: ["RECEBE ESCOLARIZACAO EM OUTRO ESPACO (DIFERENTE DA ESCOLA)"],
+    estrategia: "mesmaOuProxima",
+  },
+];
+
+const CAMPOS_DESCRITORES_INGRESSO: CampoDescritor<Record<string, string | undefined>>[] = [
+  {
+    campo: "anoIngresso",
+    label: "ANO INGRESSO",
+    estrategia: "mesmaLinha",
+    ancora: "DADOS DE INGRESSO",
+    sanitize: sanitizeValorComChaves,
+  },
+  {
+    campo: "periodoIngresso",
+    label: "PERIODO INGRESSO",
+    estrategia: "mesmaLinha",
+    sanitize: sanitizeValorComChaves,
+  },
+  {
+    campo: "dataInclusao",
+    label: "DATA DE INCLUSAO DO ALUNO",
+    estrategia: "mesmaOuProxima",
+  },
+  {
+    campo: "tipoIngresso",
+    label: "TIPO INGRESSO",
+    estrategia: "mesmaOuProxima",
+    sanitize: sanitizeValorComChaves,
+  },
+  {
+    campo: "redeOrigem",
+    label: "REDE DE ENSINO ORIGEM",
+    estrategia: "mesmaOuProxima",
+    sanitize: sanitizeValorComChaves,
+  },
+];
+
+const CAMPOS_DESCRITORES_ESCOLARIDADE: CampoDescritor<EscolaridadeInfo>[] = [
+  {
+    campo: "matrizCurricular",
+    label: "MATRIZ CURRICULAR",
+    aliases: ["MATRIZ CURRICULAR"],
+    estrategia: "mesmaOuProxima",
+    ancora: "ESCOLARIDADE",
+    sanitize: sanitizeValorComChaves,
+  },
+];
 
 export function parseDadosEscolares(
   texto: string,
@@ -84,24 +199,121 @@ export function parseDadosEscolares(
   };
 }
 
-interface AlunoBlocoInfo {
-  matriculaExtraida?: string;
-  situacaoEscolar?: string;
-  causaEncerramentoEscolar?: string;
-  motivoEscolar?: string;
-  recebeOutroEspacoEscolar?: string;
+function encontrarIndiceLabel<T>(
+  linhas: LinhaProcessada[],
+  descritor: CampoDescritor<T>,
+  inicio: number
+): number {
+  const possiveis = [
+    normalizarParaComparacao(descritor.label),
+    ...(descritor.aliases?.map(normalizarParaComparacao) ?? []),
+  ];
+  let inicioBusca = inicio;
+
+  if (descritor.ancora) {
+    const ancoraNormalizada = normalizarParaComparacao(descritor.ancora);
+    for (let i = inicio; i < linhas.length; i++) {
+      if (linhas[i].normalizedLabel === ancoraNormalizada) {
+        inicioBusca = i;
+        break;
+      }
+    }
+  }
+
+  for (let i = inicioBusca; i < linhas.length; i++) {
+    if (!linhas[i].raw.includes(":")) {
+      continue;
+    }
+
+    const labelNormalizada = linhas[i].normalizedLabel;
+    const corresponde = possiveis.some(
+      (alvo) =>
+        labelNormalizada === alvo || labelNormalizada.endsWith(` ${alvo}`)
+    );
+
+    if (corresponde) {
+      return i;
+    }
+  }
+
+  return -1;
 }
 
-interface IngressoInfo {
-  anoIngresso?: number;
-  periodoIngresso?: number;
-  dataInclusao?: string;
-  tipoIngresso?: string;
-  redeOrigem?: string;
+function capturarValor<T>(
+  linhas: LinhaProcessada[],
+  indiceLabel: number,
+  descritor: CampoDescritor<T>
+): { valor?: string; nextIndex: number } {
+  let bruto: string | undefined;
+  let nextIndex = indiceLabel + 1;
+
+  switch (descritor.estrategia) {
+    case "mesmaLinha":
+      bruto = capturarMesmaLinha(linhas[indiceLabel]);
+      break;
+    case "proximaLinha":
+      ({ valor: bruto, nextIndex } = capturarProximaLinha(linhas, indiceLabel));
+      break;
+    case "mesmaOuProxima":
+      bruto = capturarMesmaLinha(linhas[indiceLabel]);
+      if (!valorDisponivel(bruto)) {
+        const resultadoProxima = capturarProximaLinha(linhas, indiceLabel);
+        bruto = resultadoProxima.valor;
+        nextIndex = resultadoProxima.nextIndex;
+      }
+      break;
+  }
+
+  if (!valorDisponivel(bruto)) {
+    return { valor: undefined, nextIndex };
+  }
+
+  const valorSanitizado = descritor.sanitize
+    ? descritor.sanitize(bruto!)
+    : sanitizeValorBase(bruto);
+
+  return { valor: valorSanitizado, nextIndex };
 }
 
-interface EscolaridadeInfo {
-  matrizCurricular?: string;
+function extrairCamposOrdenados<T>(
+  linhas: LinhaProcessada[],
+  descritores: CampoDescritor<T>[]
+): Partial<T> {
+  const resultado: Partial<T> = {};
+  let cursor = 0;
+
+  for (const descritor of descritores) {
+    const indiceLabel = encontrarIndiceLabel(linhas, descritor, cursor);
+    if (indiceLabel === -1) {
+      continue;
+    }
+
+    const { valor, nextIndex } = capturarValor(linhas, indiceLabel, descritor);
+
+    if (valor !== undefined) {
+      (resultado as Record<keyof T, string | undefined>)[descritor.campo] = valor;
+    }
+
+    cursor = Math.max(cursor, nextIndex);
+  }
+
+  return resultado;
+}
+
+function normalizarParaComparacao(texto: string): string {
+  return normalizarTextoParaComparacao(texto);
+}
+
+function sanitizeValorBase(valor?: string): string | undefined {
+  if (!valor) return undefined;
+  const normalizado = valor.replace(/\s+/g, " ").trim();
+  if (!normalizado) return undefined;
+  return normalizado;
+}
+
+function sanitizeValorComChaves(valor: string): string | undefined {
+  const limpo = valor.replace(/[<>*]/g, "").trim();
+  return limpo || undefined;
 }
 
 function extrairTrechoDadosEscolares(texto: string): string {
@@ -120,39 +332,8 @@ function extrairTrechoDadosEscolares(texto: string): string {
 }
 
 function extrairBlocoAluno(texto: string): AlunoBlocoInfo {
-  const linhas = texto.split("\n").map((linha) => linha.trim());
-  const info: AlunoBlocoInfo = {};
-
-  for (let i = 0; i < linhas.length; i++) {
-    const linha = linhas[i];
-    if (linha.startsWith("Matrícula")) {
-      info.matriculaExtraida =
-        capturarValorInline(linha) ?? linhas[i + 1]?.trim();
-    } else if (linha.startsWith("Situação")) {
-      info.situacaoEscolar = capturarValorInline(linha);
-    } else if (linha.startsWith("Causa do Encerramento")) {
-      info.causaEncerramentoEscolar = capturarValorInline(linha);
-    } else if (linha.startsWith("Motivo")) {
-      const valorInline = capturarValorInline(linha);
-      info.motivoEscolar = valorInline ?? linhas[i + 1]?.trim();
-    } else if (
-      linha.startsWith(
-        "Recebe Escolarização em Outro Espaço (diferente da escola)?"
-      )
-    ) {
-      info.recebeOutroEspacoEscolar =
-        capturarValorInline(linha) ?? linhas[i + 1]?.trim();
-    }
-  }
-
-  return info;
-}
-
-function capturarValorInline(linha: string): string | undefined {
-  const [, valor] = linha.split(":");
-  if (!valor) return undefined;
-  const limpo = valor.replace(/\t/g, " ").trim();
-  return limpo || undefined;
+  const linhas = prepararLinhas(texto);
+  return extrairCamposOrdenados(linhas, CAMPOS_DESCRITORES_ALUNO);
 }
 
 function validarMatricula(
@@ -189,20 +370,18 @@ function extrairBlocoIngresso(texto: string): IngressoInfo {
     throw new Error("Sessão 'Dados de Ingresso' não encontrada");
   }
 
-  const mapa = mapearCampos(bloco);
-  const ano = limparChaves(mapa.get(normalizarLabel("Ano Ingresso")));
-  const periodo = limparChaves(mapa.get(normalizarLabel("Período Ingresso")));
+  const linhas = prepararLinhas(bloco);
+  const resultado = extrairCamposOrdenados(linhas, CAMPOS_DESCRITORES_INGRESSO);
+
+  const anoStr = resultado.anoIngresso as string | undefined;
+  const periodoStr = resultado.periodoIngresso as string | undefined;
 
   return {
-    anoIngresso: ano ? parseInt(ano, 10) : undefined,
-    periodoIngresso: periodo ? parseInt(periodo, 10) : undefined,
-    dataInclusao: limparChaves(
-      mapa.get(normalizarLabel("Data de Inclusão do Aluno"))
-    ),
-    tipoIngresso: limparChaves(mapa.get(normalizarLabel("Tipo Ingresso"))),
-    redeOrigem: limparChaves(
-      mapa.get(normalizarLabel("Rede de Ensino Origem"))
-    ),
+    anoIngresso: anoStr ? parseInt(anoStr, 10) : undefined,
+    periodoIngresso: periodoStr ? parseInt(periodoStr, 10) : undefined,
+    dataInclusao: resultado.dataInclusao as string | undefined,
+    tipoIngresso: resultado.tipoIngresso as string | undefined,
+    redeOrigem: resultado.redeOrigem as string | undefined,
   };
 }
 
@@ -212,10 +391,8 @@ function extrairBlocoEscolaridade(texto: string): EscolaridadeInfo {
     throw new Error("Sessão 'Escolaridade' não encontrada");
   }
 
-  const mapa = mapearCampos(bloco);
-  return {
-    matrizCurricular: limparChaves(mapa.get("matriz curricular")),
-  };
+  const linhas = prepararLinhas(bloco);
+  return extrairCamposOrdenados(linhas, CAMPOS_DESCRITORES_ESCOLARIDADE);
 }
 
 function extrairTrechoEntre(
@@ -236,45 +413,6 @@ function extrairTrechoEntre(
   }
 
   return menorFim === null ? depois : depois.slice(0, menorFim);
-}
-
-function mapearCampos(bloco: string): Map<string, string> {
-  const linhas = bloco.split("\n");
-  const mapa = new Map<string, string>();
-
-  for (let i = 0; i < linhas.length; i++) {
-    const linha = linhas[i].trim();
-    if (!linha) continue;
-    const [label, ...resto] = linha.split(":");
-    if (!resto.length) continue;
-    const valorInline = resto.join(":").trim();
-    if (valorInline) {
-      mapa.set(normalizarLabel(label), valorInline);
-      continue;
-    }
-
-    const proxima = linhas[i + 1]?.trim();
-    if (proxima) {
-      mapa.set(normalizarLabel(label), proxima);
-      i += 1;
-    }
-  }
-
-  return mapa;
-}
-
-// Função mantida como wrapper para manter compatibilidade com código existente
-function normalizarLabel(label: string): string {
-  return normalizarTextoParaComparacao(label, {
-    uppercase: false,
-    removerCaracteres: ["*", ":", "_"],
-    normalizarEspacos: false,
-  });
-}
-
-function limparChaves(valor?: string): string | undefined {
-  if (!valor) return undefined;
-  return valor.replace(/[<>*]/g, "").trim() || undefined;
 }
 
 function extrairSeriesCursadas(
@@ -327,22 +465,22 @@ function extrairSeriesCursadas(
     );
 
     series.push({
-      anoLetivo: limparObrigatorio(anoLetivo),
-      periodoLetivo: limparObrigatorio(periodoLetivo),
+      anoLetivo: sanitizeCampoObrigatorio(anoLetivo),
+      periodoLetivo: sanitizeCampoObrigatorio(periodoLetivo),
       unidadeEnsino,
       codigoEscola,
       modalidade,
       segmento,
       curso,
-      serie: limparOpcional(serie),
-      turno: limparOpcional(turno),
-      situacao: limparOpcional(situacao),
-      tipoVaga: limparOpcional(tipoVagaCompleto),
+      serie: sanitizeCampoOpcional(serie),
+      turno: sanitizeCampoOpcional(turno),
+      situacao: sanitizeCampoOpcional(situacao),
+      tipoVaga: sanitizeCampoOpcional(tipoVagaCompleto),
       matrizCurricular: escolaridade.matrizCurricular,
       dataInclusaoAluno: ingresso.dataInclusao,
       redeEnsinoOrigem: ingresso.redeOrigem,
-      ensinoReligioso: traduzirBooleano(ensinoRel),
-      linguaEstrangeira: traduzirBooleano(linguaEstr),
+      ensinoReligioso: parseBooleano(ensinoRel),
+      linguaEstrangeira: parseBooleano(linguaEstr),
     });
   }
 
@@ -428,7 +566,7 @@ function separarModalidadeSegmentoCurso(valor?: string): {
   };
 }
 
-function traduzirBooleano(valor?: string): boolean | null {
+function parseBooleano(valor?: string): boolean | null {
   if (!valor) return null;
   const normalizado = valor
     .normalize("NFD")
@@ -441,14 +579,14 @@ function traduzirBooleano(valor?: string): boolean | null {
   return null;
 }
 
-function limparObrigatorio(valor?: string): string {
+function sanitizeCampoObrigatorio(valor?: string): string {
   if (!valor) {
     throw new Error("Campo obrigatório da tabela está vazio");
   }
   return valor.trim();
 }
 
-function limparOpcional(valor?: string): string | undefined {
+function sanitizeCampoOpcional(valor?: string): string | undefined {
   const limpo = valor?.trim();
   return limpo ? limpo : undefined;
 }

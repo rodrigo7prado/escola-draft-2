@@ -32,10 +32,6 @@ const schemaRequest = z.object({
           turno: z.string().optional(),
           situacao: z.string().optional(),
           tipoVaga: z.string().optional(),
-          tipoIngresso: z.string().optional(),
-          matrizCurricular: z.string().optional(),
-          dataInclusaoAluno: z.string().optional(),
-          redeEnsinoOrigem: z.string().optional(),
           ensinoReligioso: z.boolean().nullable().optional(),
           linguaEstrangeira: z.boolean().nullable().optional(),
         })

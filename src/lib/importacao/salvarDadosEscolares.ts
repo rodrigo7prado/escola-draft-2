@@ -77,11 +77,6 @@ export async function salvarDadosEscolares({
           turno: serie.turno,
           situacao: serie.situacao,
           tipoVaga: serie.tipoVaga,
-          matrizCurricular: serie.matrizCurricular,
-          dataInclusaoAluno: serie.dataInclusaoAluno
-            ? new Date(serie.dataInclusaoAluno)
-            : null,
-          redeEnsinoOrigem: serie.redeEnsinoOrigem,
           ensinoReligioso: serie.ensinoReligioso,
           linguaEstrangeira: serie.linguaEstrangeira,
           textoBrutoOrigemId: aluno.id,

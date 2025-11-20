@@ -64,8 +64,8 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
   [x] TEC6.1: Analisar o modal existente para dados pessoais e identificar quais componentes podem ser reaproveitados;
   [x] TEC6.2: Adaptar o modal para exibir os campos específicos de dados escolares, mantendo a consistência visual e funcional com o modal de dados pessoais;
   [x] TEC6.4: Haverá necessidade de inputs manuais adicionais para dados escolares, similar ao campo Sexo em dados pessoais? Se sim, implementar conforme necessário, com o mesmo padrão de reutilização;
-[ ] CP7: Tratamento da inconsistência dos modelos Aluno e SerieCursada quanto aos campos de dados escolares;
-  [ ] TEC7.1: Os campos de dados escolares que irão para o modelo Aluno são:
+[x] CP7: Tratamento da inconsistência dos modelos Aluno e SerieCursada quanto aos campos de dados escolares;
+  [x] TEC7.1: Os campos de dados escolares que irão para o modelo Aluno são:
     a. tipoIngresso
     b. matrizCurricular
     c. dataInclusaoAluno
@@ -73,7 +73,7 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
     e. situacao
     f. recebeOutroEspaco
     g. causaEncerramento
-  [ ] TEC7.2: Os campos de dados escolares que irão para o modelo SerieCursada são:
+  [x] TEC7.2: Os campos de dados escolares que irão para o modelo SerieCursada são:
     h. anoLetivo
     i. periodoLetivo
     j. codigoEscola

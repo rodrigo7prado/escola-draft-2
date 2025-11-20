@@ -165,10 +165,6 @@ model SerieCursada {
   turno              String?   @db.VarChar(20)
   situacao           String?   @db.VarChar(100)
   tipoVaga           String?   @db.VarChar(100)
-  matrizCurricular   String?   @db.VarChar(100)
-  dataInclusaoAluno  DateTime?
-  tipoIngresso       String?   @db.VarChar(50)
-  redeEnsinoOrigem   String?   @db.VarChar(100)
   ensinoReligioso    Boolean?
   linguaEstrangeira  Boolean?
   textoBrutoOrigemId String?

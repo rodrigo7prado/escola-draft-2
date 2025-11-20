@@ -21,9 +21,6 @@ export interface SerieCursadaDTO {
   turno?: string;
   situacao?: string;
   tipoVaga?: string;
-  matrizCurricular?: string;
-  dataInclusaoAluno?: string;
-  redeEnsinoOrigem?: string;
   ensinoReligioso?: boolean | null;
   linguaEstrangeira?: boolean | null;
   textoBrutoOrigemId?: string;
@@ -256,17 +253,9 @@ export function parseDadosEscolares(
   const blocoIngresso = extrairBlocoPorNome(trechoPrincipal, "dadosIngresso");
   const infoIngresso = extrairBlocoIngresso(blocoIngresso);
 
-  const blocoEscolaridade = extrairBlocoPorNome(trechoPrincipal, "escolaridade");
-  const infoEscolaridade = extrairBlocoEscolaridade(blocoEscolaridade);
-
   const blocoRenovacao = extrairBlocoPorNome(trechoPrincipal, "renovacao");
   const avisos: string[] = [];
-  const series = extrairSeriesRenovacao(
-    blocoRenovacao,
-    infoIngresso,
-    infoEscolaridade,
-    avisos
-  );
+  const series = extrairSeriesRenovacao(blocoRenovacao, infoIngresso, avisos);
 
   const alunoInfo: DadosEscolaresAlunoInfo = {
     situacao: infoAluno.situacaoEscolar,
@@ -278,7 +267,9 @@ export function parseDadosEscolares(
     dataInclusao: infoIngresso.dataInclusao,
     tipoIngresso: infoIngresso.tipoIngresso,
     redeOrigem: infoIngresso.redeOrigem,
-    matrizCurricular: infoEscolaridade.matrizCurricular,
+    matrizCurricular: extrairBlocoEscolaridade(
+      extrairBlocoPorNome(trechoPrincipal, "escolaridade")
+    ).matrizCurricular,
   };
 
   return {
@@ -386,7 +377,6 @@ function extrairBlocoEscolaridade(texto: string): EscolaridadeInfo {
 function extrairSeriesRenovacao(
   texto: string,
   ingresso: IngressoInfo,
-  escolaridade: EscolaridadeInfo,
   avisos: string[]
 ): SerieCursadaDTO[] {
   const linhas = texto
@@ -445,9 +435,19 @@ function extrairSeriesRenovacao(
       modalidadeColuna
     );
 
+    const anoLetivoFinal =
+      valorDisponivel(anoLetivo) || valorDisponivel(String(ingresso.anoIngresso))
+        ? sanitizeCampoObrigatorio(anoLetivo || String(ingresso.anoIngresso))
+        : sanitizeCampoObrigatorio(anoLetivo);
+
+    const periodoLetivoFinal =
+      valorDisponivel(periodoLetivo) || valorDisponivel(String(ingresso.periodoIngresso))
+        ? sanitizeCampoObrigatorio(periodoLetivo || String(ingresso.periodoIngresso))
+        : sanitizeCampoObrigatorio(periodoLetivo);
+
     series.push({
-      anoLetivo: sanitizeCampoObrigatorio(anoLetivo),
-      periodoLetivo: sanitizeCampoObrigatorio(periodoLetivo),
+      anoLetivo: anoLetivoFinal,
+      periodoLetivo: periodoLetivoFinal,
       unidadeEnsino,
       codigoEscola,
       modalidade,
@@ -457,9 +457,6 @@ function extrairSeriesRenovacao(
       turno: turnoNormalizado,
       situacao,
       tipoVaga,
-      matrizCurricular: escolaridade.matrizCurricular,
-      dataInclusaoAluno: ingresso.dataInclusao,
-      redeEnsinoOrigem: ingresso.redeOrigem,
       ensinoReligioso: parseBooleano(ensinoReligiosoColuna),
       linguaEstrangeira: parseBooleano(linguaEstrangeiraColuna),
     });

@@ -60,10 +60,10 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
   [x] CP5.1: Adaptação da ação "Ativar colagem" para suportar a colagem de dados escolares, reutilizando a lógica existente para dados pessoais conforme as orientações em [`REUSO.md`](REUSO.md);
     [x] TEC5.1: Reconhecimento automático do tipo de dados colados (pessoais ou escolares) através do parser `detectarTipoPagina`, reutilizando a lógica existente;
     [x] TEC5.2: Garantir que a validação da matrícula do aluno selecionado funcione corretamente para dados escolares, reutilizando a lógica existente; Ou seja, se a matrícula colada não corresponder à do aluno selecionado, exibir mensagem de erro apropriada (ver se já está implementado);
-[ ] CP6: Extensão do modal de confirmação de dados escolares colados;
-  [ ] TEC6.1: Analisar o modal existente para dados pessoais e identificar quais componentes podem ser reaproveitados;
-  [ ] TEC6.2: Adaptar o modal para exibir os campos específicos de dados escolares, mantendo a consistência visual e funcional com o modal de dados pessoais;
-  [ ] TEC6.4: Haverá necessidade de inputs manuais adicionais para dados escolares, similar ao campo Sexo em dados pessoais? Se sim, implementar conforme necessário, com o mesmo padrão de reutilização;
+[x] CP6: Extensão do modal de confirmação de dados escolares colados;
+  [x] TEC6.1: Analisar o modal existente para dados pessoais e identificar quais componentes podem ser reaproveitados;
+  [x] TEC6.2: Adaptar o modal para exibir os campos específicos de dados escolares, mantendo a consistência visual e funcional com o modal de dados pessoais;
+  [x] TEC6.4: Haverá necessidade de inputs manuais adicionais para dados escolares, similar ao campo Sexo em dados pessoais? Se sim, implementar conforme necessário, com o mesmo padrão de reutilização;
 [ ] CP7: Reuso e expansão da estrutura de atualização automática da interface de usuário (já implementada para dados pessoais), agora para a confirmação dos dados escolares colados;
 [ ] CP8: Testes unitários e de integração do fluxo completo de colagem de dados escolares, garantindo que todos campos sejam processados corretamente;
   [ ] TEC8.1: Usar os modelos disponíveis em `docs/templates/DadosEscolaresColagemModelo.md` e `docs/templates/DadosPessoaisColagemModelo.md` para criar casos de teste representativos;

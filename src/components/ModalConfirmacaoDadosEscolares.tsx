@@ -55,10 +55,6 @@ export function ModalConfirmacaoDadosEscolares({
             <Campo label="Situação" valor={alunoInfo.situacao} />
             <Campo label="Causa do Encerramento" valor={alunoInfo.causaEncerramento} />
             <Campo label="Motivo do Encerramento" valor={alunoInfo.motivoEncerramento} />
-            <Campo
-              label="Recebe Escolarização em Outro Espaço?"
-              valor={alunoInfo.recebeOutroEspaco}
-            />
             <Campo label="Ano de Ingresso" valor={alunoInfo.anoIngresso} />
             <Campo label="Período de Ingresso" valor={alunoInfo.periodoIngresso} />
             <Campo label="Data de Inclusão" valor={alunoInfo.dataInclusao} />
@@ -79,9 +75,13 @@ export function ModalConfirmacaoDadosEscolares({
             <table className="min-w-full text-xs">
               <thead className="bg-neutral-100 text-neutral-700">
                 <tr>
-                  <th className="px-2 py-1 text-left">Ano/Período</th>
-                  <th className="px-2 py-1 text-left">Unidade / Código</th>
-                  <th className="px-2 py-1 text-left">Modalidade / Segmento / Curso</th>
+                  <th className="px-2 py-1 text-left">Ano Letivo</th>
+                  <th className="px-2 py-1 text-left">Período Letivo</th>
+                  <th className="px-2 py-1 text-left">Unidade de Ensino</th>
+                  <th className="px-2 py-1 text-left">Código Escola</th>
+                  <th className="px-2 py-1 text-left">Modalidade</th>
+                  <th className="px-2 py-1 text-left">Segmento</th>
+                  <th className="px-2 py-1 text-left">Curso</th>
                   <th className="px-2 py-1 text-left">Série</th>
                   <th className="px-2 py-1 text-left">Turno</th>
                   <th className="px-2 py-1 text-left">Situação</th>
@@ -90,8 +90,8 @@ export function ModalConfirmacaoDadosEscolares({
                   <th className="px-2 py-1 text-left">Matriz Curricular</th>
                   <th className="px-2 py-1 text-left">Ens. Religioso</th>
                   <th className="px-2 py-1 text-left">Língua Estrangeira</th>
-                  <th className="px-2 py-1 text-left">Rede Origem</th>
-                  <th className="px-2 py-1 text-left">Data Inclusão</th>
+                  <th className="px-2 py-1 text-left">Rede Ensino Origem</th>
+                  <th className="px-2 py-1 text-left">Data Inclusão Aluno</th>
                 </tr>
               </thead>
               <tbody>
@@ -100,27 +100,13 @@ export function ModalConfirmacaoDadosEscolares({
                     key={`${serie.anoLetivo}-${serie.periodoLetivo}-${idx}`}
                     className={idx % 2 === 0 ? "bg-white" : "bg-neutral-50"}
                   >
-                    <td className="px-2 py-1">
-                      <div className="font-medium text-neutral-900">
-                        {serie.anoLetivo}
-                      </div>
-                      <div className="text-neutral-500">{serie.periodoLetivo}</div>
-                    </td>
-                    <td className="px-2 py-1">
-                      <div className="font-medium">{serie.unidadeEnsino || "-"}</div>
-                      <div className="text-neutral-500 text-[11px]">
-                        {serie.codigoEscola || "-"}
-                      </div>
-                    </td>
-                    <td className="px-2 py-1">
-                      <div>{serie.modalidade || "-"}</div>
-                      <div className="text-neutral-500 text-[11px]">
-                        {serie.segmento || "-"}
-                      </div>
-                      <div className="text-neutral-500 text-[11px]">
-                        {serie.curso || "-"}
-                      </div>
-                    </td>
+                    <td className="px-2 py-1">{serie.anoLetivo}</td>
+                    <td className="px-2 py-1">{serie.periodoLetivo}</td>
+                    <td className="px-2 py-1">{serie.unidadeEnsino || "-"}</td>
+                    <td className="px-2 py-1">{serie.codigoEscola || "-"}</td>
+                    <td className="px-2 py-1">{serie.modalidade || "-"}</td>
+                    <td className="px-2 py-1">{serie.segmento || "-"}</td>
+                    <td className="px-2 py-1">{serie.curso || "-"}</td>
                     <td className="px-2 py-1">{serie.serie || "-"}</td>
                     <td className="px-2 py-1">{serie.turno || "-"}</td>
                     <td className="px-2 py-1">{serie.situacao || "-"}</td>

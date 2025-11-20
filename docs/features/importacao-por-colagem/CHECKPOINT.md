@@ -33,7 +33,8 @@ Sessão 1 (implemetanção de Colagem de Dados Pessoais) - Feature: Importação
 
 Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importação por Colagem de Dados Escolares
 
-[ ] CP1: Implementação do parser `parseDadosEscolares` para processar os dados escolares colados, reutilizando a lógica do parser de dados pessoais conforme as orientações em [`REUSO.md`](REUSO.md);
+[x] CP1: Implementação do parser `parseDadosEscolares` para processar os dados escolares colados, reutilizando a lógica do parser de dados pessoais conforme as orientações em [`REUSO.md`](REUSO.md);
+  [x] TEC_1.1: Dada a complexidade do parse de dados escolares, foi necessário criar uma subfeature específica para o pré-processamento em um checkpoint separado, constando em [](./parse-dados-escolares/WORKFLOW.md);
 [ ] CP2: Extensão do endpoint existente para salvar os dados escolares colados no backend;
   [ ] TEC2.1: Questão: Como será a extensão do endpoint para suportar tanto dados pessoais quanto escolares? Será um endpoint único com lógica condicional ou endpoints separados?
 [ ] CP2.2: Definição dos campos escolares a serem salvos no banco de dados (cursos, disciplinas, notas, etc);

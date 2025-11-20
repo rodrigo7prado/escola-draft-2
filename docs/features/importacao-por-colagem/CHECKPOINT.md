@@ -86,10 +86,14 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
     q. ensinoReligioso
     r. linguaEstrangeira
     s. tipoVaga
-  [ ] TEC7.3: E assim será o mapeamento necessário dos campos parseados para o modelo SerieCursada:
+  [x] TEC7.3: E assim será o mapeamento necessário dos campos parseados para o modelo SerieCursada:
     a. anoIngresso será adicionado como Ano Letivo;
     b. periodoIngresso será adicionado como Período Letivo;
     c. o restante ficará mesmo em branco. Outras implementações farão a importação complementar;
+[ ] CP8: Atualização de UI dados dos alunos com dados escolares. Atualmente, a interface do usuário exibe apenas os dados pessoais do aluno. Será necessário estender essa funcionalidade para incluir os dados escolares colados;
+  [ ] TEC8.1: Criação de visualização em abas (com componente de abas reutilizável) para separar dados pessoais e escolares na interface do usuário;
+  [ ] TEC8.2: Ao atualizar os dados escolares, garantir que a interface do usuário reflita imediatamente as mudanças, reutilizando a lógica existente para atualização automática de dados pessoais, inclusive avaliando a integração com o SWR já implementado;
+  [ ] TEC8.3: Após confirmação bem sucedida dos dados escolares colados, ativar a aba de dados escolares automaticamente para o usuário visualizar as mudanças;
 [ ] CP8: Reuso e expansão da estrutura de atualização automática da interface de usuário (já implementada para dados pessoais), agora para a confirmação dos dados escolares colados;
 [ ] CP9: Testes unitários e de integração do fluxo completo de colagem de dados escolares, garantindo que todos campos sejam processados corretamente;
   [ ] TEC9.1: Usar os modelos disponíveis em `docs/templates/DadosEscolaresColagemModelo.md` e `docs/templates/DadosPessoaisColagemModelo.md` para criar casos de teste representativos;

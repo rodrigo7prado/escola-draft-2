@@ -441,7 +441,8 @@ function extrairSeriesRenovacao(
         : sanitizeCampoObrigatorio(anoLetivo);
 
     const periodoLetivoFinal =
-      valorDisponivel(periodoLetivo) || valorDisponivel(String(ingresso.periodoIngresso))
+      valorDisponivel(periodoLetivo) ||
+      (ingresso.periodoIngresso !== undefined && ingresso.periodoIngresso !== null)
         ? sanitizeCampoObrigatorio(periodoLetivo || String(ingresso.periodoIngresso))
         : sanitizeCampoObrigatorio(periodoLetivo);
 
@@ -462,11 +463,45 @@ function extrairSeriesRenovacao(
     });
   }
 
-  if (!series.length) {
-    throw new Error("Nenhuma série encontrada em 'Renovação de Matrícula'");
+  if (ingresso.anoIngresso !== undefined) {
+    const ano = sanitizeCampoObrigatorio(String(ingresso.anoIngresso));
+    const periodo =
+      ingresso.periodoIngresso !== undefined && ingresso.periodoIngresso !== null
+        ? sanitizeCampoObrigatorio(String(ingresso.periodoIngresso))
+        : "";
+
+    series.unshift({
+      anoLetivo: ano,
+      periodoLetivo: periodo,
+      unidadeEnsino: undefined,
+      codigoEscola: undefined,
+      modalidade: undefined,
+      segmento: undefined,
+      curso: undefined,
+      serie: undefined,
+      turno: undefined,
+      situacao: undefined,
+      tipoVaga: undefined,
+      ensinoReligioso: undefined,
+      linguaEstrangeira: undefined,
+    });
   }
 
-  return series;
+  return series.sort((a, b) => {
+    const anoA = parseInt(a.anoLetivo, 10);
+    const anoB = parseInt(b.anoLetivo, 10);
+    if (!Number.isNaN(anoA) && !Number.isNaN(anoB) && anoA !== anoB) {
+      return anoA - anoB;
+    }
+
+    const periodoA = a.periodoLetivo ? parseInt(a.periodoLetivo, 10) : Number.POSITIVE_INFINITY;
+    const periodoB = b.periodoLetivo ? parseInt(b.periodoLetivo, 10) : Number.POSITIVE_INFINITY;
+    if (!Number.isNaN(periodoA) && !Number.isNaN(periodoB)) {
+      return periodoA - periodoB;
+    }
+
+    return 0;
+  });
 }
 
 function dividirLinhaTabela(linha: string): string[] {

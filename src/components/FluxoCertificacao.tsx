@@ -70,6 +70,7 @@ export function FluxoCertificacao() {
     isSalvando,
     modalAberto,
     erro,
+    mensagemSucesso,
     ativarModoColagem,
     desativarModoColagem,
     handlePaste,
@@ -147,6 +148,13 @@ export function FluxoCertificacao() {
           erro={erro}
           onPaste={handlePaste}
         />
+      )}
+
+      {/* Feedback de sucesso para colagem automática (dados escolares) */}
+      {mensagemSucesso && (
+        <div className="fixed top-4 right-4 bg-green-700 text-white px-4 py-2 rounded-sm shadow-lg text-sm z-50">
+          {mensagemSucesso}
+        </div>
       )}
 
       {/* Modal de Confirmação */}

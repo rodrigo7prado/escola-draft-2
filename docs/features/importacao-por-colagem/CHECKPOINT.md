@@ -37,32 +37,36 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
   [x] TEC_1.1: Dada a complexidade do parse de dados escolares, foi necessário criar uma subfeature específica para o pré-processamento em um checkpoint separado, constando em [](./parse-dados-escolares/WORKFLOW.md);
 [x] CP2: Extensão do endpoint existente para salvar os dados escolares colados no backend;
   [x] TEC2.1: Questão: Como será a extensão do endpoint para suportar tanto dados pessoais quanto escolares? Será um endpoint único com lógica condicional ou endpoints separados?
-[ ] CP2.2: Definição dos campos escolares a serem salvos no banco de dados (cursos, disciplinas, notas, etc);
-    [ ] TEC2.1.1: Criação de objeto reutilizável para representar os campos de dados escolares colados;
-      [ ] TEC2.1.1.1: Criar o objeto de dados escolares colados, reutilizando a estrutura do objeto de dados pessoais colados;
-      [ ] TEC2.1.1.2: Definir quais campos escolares serão armazenados no sistema e quais serão ignorados;
-    [ ] TEC2.1.2: Implementação dos modelos de dados no Prisma e criação das migrações necessárias para ambos os ambientes (desenvolvimento e teste) com `migrate:all`;
-[ ] CP3: Implementação do processamento de parsers;
+  [x] CP2.2: Definição dos campos escolares a serem salvos no banco de dados;
+    [x] TEC2.1.1: Criação de objeto reutilizável para representar os campos de dados escolares colados;
+      [x] TEC2.1.1.1: Criar o objeto de dados escolares colados, reutilizando a estrutura do objeto de dados pessoais colados;
+      [x] TEC2.1.1.2: Definir quais campos escolares serão armazenados no sistema e quais serão ignorados;
+    [x] TEC2.1.2: Implementação dos modelos de dados no Prisma e criação das migrações necessárias para ambos os ambientes (desenvolvimento e teste) com `migrate:all`;
+[x] CP3: Implementação do processamento de parsers;
   [x] CP3.1: Expansão do reconhecimento de páginas de dados escolares usando o parser `detectarTipoPagina`;
-  [ ] CP3.2: Implementação do parser `parseDadosEscolares`, reutilizando a lógica do parser de dados pessoais conforme as orientações em [`REUSO.md`](REUSO.md);
+  [x] CP3.2: Implementação do parser `parseDadosEscolares`, reutilizando a lógica do parser de dados pessoais conforme as orientações em [`REUSO.md`](REUSO.md);
     [x] CP3.2.1: Reutilização do pré-processamento do parser de dados pessoais (remoção de dados não utilizados, etc), adaptando-o para dados escolares conforme necessário;
       [x] REFACT3.2.1: Criado arquivo `parsingUtils.ts` centralizando `normalizarTextoBase()` para reutilização entre parsers;
       [x] REFACT3.2.2: Expandido `parsingUtils.ts` com `normalizarTextoParaComparacao()` configurável (uppercase/lowercase, remoção de caracteres customizável);
       [x] REFACT3.2.3: Refatorados `parseDadosPessoais.ts` e `parseDadosEscolares.ts` para importar funções de `parsingUtils.ts`;
       [x] REFACT3.2.4: Testes validados e passando após refatorações;
     [x] TEC3.2.2: Analisar o pré-processamento existente para dados pessoais e identificar quais partes podem ser reaproveitadas;
-    [ ] TEC3.2.3: Adaptar as funções de remoção de cabeçalhos, rodapés e menus para considerar os formatos específicos de páginas de dados escolares;
-    [ ] TEC3.2.4: Garantir reaproveitamento da validacão de matrícula do aluno selecionado;
-[ ] CP4: Implementação dos testes do parser de dados escolares;
-  [ ] TEC4.1: Criar casos de teste unitários para o parser `parseDadosEscolares`, reutilizando a estrutura dos testes do parser de dados pessoais;
-  [ ] TEC4.2: Implementar testes de integração para o fluxo completo de colagem de dados escolares, garantindo que os dados sejam processados e salvos corretamente no backend;
-[ ] CP5: Implementação do modal de confirmação de dados escolares colados;
-  [ ] TEC5.1: Analisar o modal existente para dados pessoais e identificar quais componentes podem ser reaproveitados;
-  [ ] TEC5.2: Adaptar o modal para exibir os campos específicos de dados escolares, mantendo a consistência visual e funcional com o modal de dados pessoais;
-  [ ] TEC5.4: Haverá necessidade de inputs manuais adicionais para dados escolares, similar ao campo Sexo em dados pessoais? Se sim, implementar conforme necessário, com o mesmo padrão de reutilização;
-[ ] CP6: Reuso e expansão da estrutura de atualização automática da interface de usuário (já implementada para dados pessoais), agora para a confirmação dos dados escolares colados;
-[ ] CP7: Testes unitários e de integração do fluxo completo de colagem de dados escolares, garantindo que todos campos sejam processados corretamente;
-  [ ] TEC7.1: Usar os modelos disponíveis em `docs/templates/DadosEscolaresColagemModelo.md` e `docs/templates/DadosPessoaisColagemModelo.md` para criar casos de teste representativos;
-  [ ] TEC7.2: Garantir cobertura completa dos testes, incluindo cenários de sucesso e falha na colagem de dados escolares.
+    [x] TEC3.2.3: Adaptar as funções de remoção de cabeçalhos, rodapés e menus para considerar os formatos específicos de páginas de dados escolares;
+    [x] TEC3.2.4: Garantir reaproveitamento da validacão de matrícula do aluno selecionado;
+[x] CP4: Implementação dos testes do parser de dados escolares;
+  [x] TEC4.1: Criar casos de teste unitários para o parser `parseDadosEscolares`, reutilizando a estrutura dos testes do parser de dados pessoais;
+  [x] TEC4.2: Implementar testes de integração para o fluxo completo de colagem de dados escolares, garantindo que os dados sejam processados e salvos corretamente no backend;
+[x] CP5: Processamento da colagem de dados escolares na interface do usuário;
+  [x] CP5.1: Adaptação da ação "Ativar colagem" para suportar a colagem de dados escolares, reutilizando a lógica existente para dados pessoais conforme as orientações em [`REUSO.md`](REUSO.md);
+    [x] TEC5.1: Reconhecimento automático do tipo de dados colados (pessoais ou escolares) através do parser `detectarTipoPagina`, reutilizando a lógica existente;
+    [x] TEC5.2: Garantir que a validação da matrícula do aluno selecionado funcione corretamente para dados escolares, reutilizando a lógica existente; Ou seja, se a matrícula colada não corresponder à do aluno selecionado, exibir mensagem de erro apropriada (ver se já está implementado);
+[ ] CP6: Extensão do modal de confirmação de dados escolares colados;
+  [ ] TEC6.1: Analisar o modal existente para dados pessoais e identificar quais componentes podem ser reaproveitados;
+  [ ] TEC6.2: Adaptar o modal para exibir os campos específicos de dados escolares, mantendo a consistência visual e funcional com o modal de dados pessoais;
+  [ ] TEC6.4: Haverá necessidade de inputs manuais adicionais para dados escolares, similar ao campo Sexo em dados pessoais? Se sim, implementar conforme necessário, com o mesmo padrão de reutilização;
+[ ] CP7: Reuso e expansão da estrutura de atualização automática da interface de usuário (já implementada para dados pessoais), agora para a confirmação dos dados escolares colados;
+[ ] CP8: Testes unitários e de integração do fluxo completo de colagem de dados escolares, garantindo que todos campos sejam processados corretamente;
+  [ ] TEC8.1: Usar os modelos disponíveis em `docs/templates/DadosEscolaresColagemModelo.md` e `docs/templates/DadosPessoaisColagemModelo.md` para criar casos de teste representativos;
+  [ ] TEC8.2: Garantir cobertura completa dos testes, incluindo cenários de sucesso e falha na colagem de dados escolares.
 
   

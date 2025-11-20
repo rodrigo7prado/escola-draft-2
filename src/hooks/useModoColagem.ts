@@ -2,6 +2,8 @@
 
 import { useState, useCallback } from "react";
 import type { DadosPessoais } from "@/lib/parsing/parseDadosPessoais";
+import type { DadosEscolaresParseResult } from "@/lib/parsing/parseDadosEscolares";
+import type { TipoPagina } from "@/lib/parsing/detectarTipoPagina";
 
 /**
  * Hook para gerenciar o modo de colagem de dados estruturados
@@ -19,6 +21,8 @@ type ModoColagemState = {
 
   // Dados parseados (aguardando confirmação)
   dadosParsed: DadosPessoais | null;
+  dadosEscolaresParsed: DadosEscolaresParseResult | null;
+  tipoPaginaDetectada: TipoPagina | null;
   precisaConfirmarSexo: boolean;
 
   // Loading states
@@ -30,6 +34,9 @@ type ModoColagemState = {
 
   // Erro
   erro: string | null;
+
+  // Feedback de sucesso
+  mensagemSucesso: string | null;
 
   // Texto bruto (para salvar junto)
   textoBruto: string | null;
@@ -44,11 +51,14 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
   const [state, setState] = useState<ModoColagemState>({
     alunoIdAtivo: null,
     dadosParsed: null,
+    dadosEscolaresParsed: null,
+    tipoPaginaDetectada: null,
     precisaConfirmarSexo: false,
     isProcessando: false,
     isSalvando: false,
     modalAberto: false,
     erro: null,
+    mensagemSucesso: null,
     textoBruto: null,
   });
 
@@ -60,9 +70,12 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
       ...prev,
       alunoIdAtivo: alunoId,
       dadosParsed: null,
+      dadosEscolaresParsed: null,
+      tipoPaginaDetectada: null,
       precisaConfirmarSexo: false,
       modalAberto: false,
       erro: null,
+      mensagemSucesso: null,
       textoBruto: null,
     }));
   }, []);
@@ -75,9 +88,12 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
       ...prev,
       alunoIdAtivo: null,
       dadosParsed: null,
+      dadosEscolaresParsed: null,
+      tipoPaginaDetectada: null,
       precisaConfirmarSexo: false,
       modalAberto: false,
       erro: null,
+      mensagemSucesso: null,
       textoBruto: null,
     }));
   }, []);
@@ -138,20 +154,30 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
             ...prev,
             isProcessando: false,
             dadosParsed: data.dados,
+            dadosEscolaresParsed: null,
+            tipoPaginaDetectada: "dadosPessoais",
             precisaConfirmarSexo: data.precisaConfirmarSexo,
             modalAberto: true,
+            mensagemSucesso: null,
             textoBruto: texto,
           }));
         } else if (data.tipoPagina === "dadosEscolares") {
-          // Dados escolares salvos automaticamente
+          // Dados escolares são salvos imediatamente no backend
           setState((prev) => ({
             ...prev,
             isProcessando: false,
+            tipoPaginaDetectada: "dadosEscolares",
+            dadosParsed: null,
+            dadosEscolaresParsed: data.dados,
+            mensagemSucesso:
+              data.mensagem ||
+              "Dados escolares processados e salvos com sucesso.",
             alunoIdAtivo: null, // Desativa modo colagem
           }));
 
-          // TODO: Mostrar notificação de sucesso
-          alert(data.mensagem);
+          if (alunoId && onDadosConfirmados) {
+            await onDadosConfirmados(alunoId);
+          }
         }
       } catch (error) {
         console.error("Erro ao processar colagem:", error);
@@ -162,7 +188,7 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
         }));
       }
     },
-    []
+    [onDadosConfirmados]
   );
 
   /**
@@ -173,7 +199,10 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
       ...prev,
       modalAberto: false,
       dadosParsed: null,
+      dadosEscolaresParsed: null,
+      tipoPaginaDetectada: null,
       precisaConfirmarSexo: false,
+      mensagemSucesso: null,
       textoBruto: null,
     }));
   }, []);
@@ -223,11 +252,14 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
         setState({
           alunoIdAtivo: null,
           dadosParsed: null,
+          dadosEscolaresParsed: null,
+          tipoPaginaDetectada: null,
           precisaConfirmarSexo: false,
           isProcessando: false,
           isSalvando: false,
           modalAberto: false,
           erro: null,
+          mensagemSucesso: null,
           textoBruto: null,
         });
 
@@ -261,11 +293,14 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
     // Estado
     alunoIdAtivo: state.alunoIdAtivo,
     dadosParsed: state.dadosParsed,
+    dadosEscolaresParsed: state.dadosEscolaresParsed,
+    tipoPaginaDetectada: state.tipoPaginaDetectada,
     precisaConfirmarSexo: state.precisaConfirmarSexo,
     isProcessando: state.isProcessando,
     isSalvando: state.isSalvando,
     modalAberto: state.modalAberto,
     erro: state.erro,
+    mensagemSucesso: state.mensagemSucesso,
 
     // Ações
     ativarModoColagem,

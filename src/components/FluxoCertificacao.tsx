@@ -180,6 +180,8 @@ export function FluxoCertificacao() {
           isSalvando={isSalvando}
           onConfirmar={confirmarDadosEscolares}
           onCancelar={fecharModal}
+          alunoNome={alunoSelecionado?.nome}
+          alunoMatricula={alunoSelecionado?.matricula}
         />
       )}
     </>

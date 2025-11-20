@@ -4,7 +4,6 @@ import { prisma } from '@/lib/prisma';
 import { detectarTipoPagina } from '@/lib/parsing/detectarTipoPagina';
 import { parseDadosPessoais } from '@/lib/parsing/parseDadosPessoais';
 import { parseDadosEscolares } from '@/lib/parsing/parseDadosEscolares';
-import { salvarDadosEscolares } from '@/lib/importacao/salvarDadosEscolares';
 
 /**
  * Schema de validação do request
@@ -83,20 +82,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (tipoPagina === 'dadosEscolares') {
-      // Parsear dados escolares
+      // Parsear dados escolares (salvar apenas após confirmação do usuário)
       const dadosParsed = parseDadosEscolares(texto, matricula);
-
-      await salvarDadosEscolares({
-        alunoId: aluno.id,
-        textoBruto: texto,
-        dados: dadosParsed,
-      });
 
       return NextResponse.json({
         sucesso: true,
         tipoPagina: 'dadosEscolares',
         dados: dadosParsed,
-        mensagem: `Dados escolares salvos com sucesso. ${dadosParsed.series.length} série(s) cadastrada(s).`,
       });
     }
 

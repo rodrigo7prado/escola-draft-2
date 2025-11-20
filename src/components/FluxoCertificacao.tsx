@@ -10,6 +10,7 @@ import { ListaAlunosCertificacao } from "./ListaAlunosCertificacao";
 import { DadosAlunoEditavel } from "./DadosAlunoEditavel";
 import { AreaColagemDados } from "./AreaColagemDados";
 import { ModalConfirmacaoDados } from "./ModalConfirmacaoDados";
+import { ModalConfirmacaoDadosEscolares } from "./ModalConfirmacaoDadosEscolares";
 import type { AlunoCertificacao } from "@/hooks/useAlunosCertificacao";
 
 export function FluxoCertificacao() {
@@ -65,6 +66,8 @@ export function FluxoCertificacao() {
   const {
     alunoIdAtivo,
     dadosParsed,
+    dadosEscolaresParsed,
+    tipoPaginaDetectada,
     precisaConfirmarSexo,
     isProcessando,
     isSalvando,
@@ -76,6 +79,7 @@ export function FluxoCertificacao() {
     handlePaste,
     fecharModal,
     confirmarDados,
+    confirmarDadosEscolares,
     // isModoColagemAtivo,
   } = useModoColagem({
     onDadosConfirmados: handleDadosConfirmados,
@@ -151,21 +155,33 @@ export function FluxoCertificacao() {
       )}
 
       {/* Feedback de sucesso para colagem automática (dados escolares) */}
-      {mensagemSucesso && (
+      {mensagemSucesso && !modalAberto && (
         <div className="fixed top-4 right-4 bg-green-700 text-white px-4 py-2 rounded-sm shadow-lg text-sm z-50">
           {mensagemSucesso}
         </div>
       )}
 
       {/* Modal de Confirmação */}
-      <ModalConfirmacaoDados
-        open={modalAberto}
-        dados={dadosParsed}
-        precisaConfirmarSexo={precisaConfirmarSexo}
-        isSalvando={isSalvando}
-        onConfirmar={confirmarDados}
-        onCancelar={fecharModal}
-      />
+      {tipoPaginaDetectada === "dadosPessoais" && (
+        <ModalConfirmacaoDados
+          open={modalAberto}
+          dados={dadosParsed}
+          precisaConfirmarSexo={precisaConfirmarSexo}
+          isSalvando={isSalvando}
+          onConfirmar={confirmarDados}
+          onCancelar={fecharModal}
+        />
+      )}
+
+      {tipoPaginaDetectada === "dadosEscolares" && (
+        <ModalConfirmacaoDadosEscolares
+          open={modalAberto}
+          dados={dadosEscolaresParsed}
+          isSalvando={isSalvando}
+          onConfirmar={confirmarDadosEscolares}
+          onCancelar={fecharModal}
+        />
+      )}
     </>
   );
 }

@@ -162,22 +162,17 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
             textoBruto: texto,
           }));
         } else if (data.tipoPagina === "dadosEscolares") {
-          // Dados escolares são salvos imediatamente no backend
           setState((prev) => ({
             ...prev,
             isProcessando: false,
             tipoPaginaDetectada: "dadosEscolares",
             dadosParsed: null,
             dadosEscolaresParsed: data.dados,
-            mensagemSucesso:
-              data.mensagem ||
-              "Dados escolares processados e salvos com sucesso.",
-            alunoIdAtivo: null, // Desativa modo colagem
+            mensagemSucesso: null,
+            modalAberto: true,
+            textoBruto: texto,
+            alunoIdAtivo: alunoId,
           }));
-
-          if (alunoId && onDadosConfirmados) {
-            await onDadosConfirmados(alunoId);
-          }
         }
       } catch (error) {
         console.error("Erro ao processar colagem:", error);
@@ -259,7 +254,7 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
           isSalvando: false,
           modalAberto: false,
           erro: null,
-          mensagemSucesso: null,
+          mensagemSucesso: result.mensagem || "Dados pessoais salvos com sucesso!",
           textoBruto: null,
         });
 
@@ -274,15 +269,88 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
           }
         }
 
-        // TODO: Mostrar notificação de sucesso
-        // TODO: Recarregar dados do aluno na UI
-        alert("Dados salvos com sucesso!");
       } catch (error) {
         console.error("Erro ao salvar dados:", error);
         setState((prev) => ({
           ...prev,
           isSalvando: false,
           erro: "Erro de conexão ao salvar dados",
+        }));
+      }
+    },
+    [state.alunoIdAtivo, state.textoBruto, onDadosConfirmados]
+  );
+
+  /**
+   * Confirma e salva dados escolares no banco
+   */
+  const confirmarDadosEscolares = useCallback(
+    async (dados: DadosEscolaresParseResult) => {
+      if (!state.alunoIdAtivo || !state.textoBruto) {
+        console.error("Estado inválido para confirmação de dados escolares");
+        return;
+      }
+
+      setState((prev) => ({ ...prev, isSalvando: true, erro: null }));
+
+      try {
+        const response = await fetch(
+          "/api/importacao-estruturada/salvar-dados-escolares",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              alunoId: state.alunoIdAtivo,
+              textoBruto: state.textoBruto,
+              dados,
+            }),
+          }
+        );
+
+        const result = await response.json();
+
+        if (!result.sucesso) {
+          setState((prev) => ({
+            ...prev,
+            isSalvando: false,
+            erro: result.erro || "Erro ao salvar dados escolares",
+          }));
+          return;
+        }
+
+        const alunoConfirmadoId = state.alunoIdAtivo;
+
+        setState({
+          alunoIdAtivo: null,
+          dadosParsed: null,
+          dadosEscolaresParsed: null,
+          tipoPaginaDetectada: null,
+          precisaConfirmarSexo: false,
+          isProcessando: false,
+          isSalvando: false,
+          modalAberto: false,
+          erro: null,
+          mensagemSucesso:
+            result.mensagem || "Dados escolares salvos com sucesso!",
+          textoBruto: null,
+        });
+
+        if (alunoConfirmadoId && onDadosConfirmados) {
+          try {
+            await onDadosConfirmados(alunoConfirmadoId);
+          } catch (callbackError) {
+            console.error(
+              "Erro ao executar ação pós-confirmação (escolares):",
+              callbackError
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao salvar dados escolares:", error);
+        setState((prev) => ({
+          ...prev,
+          isSalvando: false,
+          erro: "Erro de conexão ao salvar dados escolares",
         }));
       }
     },
@@ -308,6 +376,7 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
     handlePaste,
     fecharModal,
     confirmarDados,
+    confirmarDadosEscolares,
 
     // Helpers
     isModoColagemAtivo: (alunoId: string) => state.alunoIdAtivo === alunoId,

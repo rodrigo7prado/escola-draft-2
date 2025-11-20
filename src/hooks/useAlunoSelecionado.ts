@@ -12,11 +12,39 @@ export type AlunoDetalhado = {
   matricula: string;
   nome: string | null;
   fonteAusente: boolean;
+  // Dados escolares (leitura)
+  situacaoEscolar?: string | null;
+  causaEncerramentoEscolar?: string | null;
+  motivoEncerramento?: string | null;
+  recebeOutroEspacoEscolar?: string | null;
+  anoIngressoEscolar?: number | null;
+  periodoIngressoEscolar?: number | null;
+  dataInclusaoIngressoEscolar?: string | null;
+  tipoIngressoEscolar?: string | null;
+  redeOrigemIngressoEscolar?: string | null;
+  matrizCurricularEscolar?: string | null;
 } & {
   [K in CampoDadosPessoais]?: string | null;
 };
 
 export type DadosOriginaisAluno = Record<string, unknown> | null;
+
+export type SerieCursadaResumo = {
+  id: string;
+  anoLetivo: string;
+  periodoLetivo: string;
+  unidadeEnsino?: string | null;
+  codigoEscola?: string | null;
+  modalidade?: string | null;
+  segmento?: string | null;
+  curso?: string | null;
+  serie?: string | null;
+  turno?: string | null;
+  situacao?: string | null;
+  tipoVaga?: string | null;
+  ensinoReligioso?: boolean | null;
+  linguaEstrangeira?: boolean | null;
+};
 
 export function useAlunoSelecionado() {
   const [alunoSelecionado, setAlunoSelecionado] =
@@ -68,6 +96,7 @@ export function useAlunoSelecionado() {
     limparSelecao,
     temAlunoSelecionado,
     alunoDetalhes: data?.detalhes ?? null,
+    seriesCursadas: data?.seriesCursadas ?? [],
     dadosOriginais: data?.dadosOriginais ?? null,
     isLoadingDetalhes: Boolean(chaveDetalhes && isLoading && !data),
     erroDetalhes: error
@@ -88,6 +117,16 @@ function mapearAlunoDetalhado(raw: Record<string, any> | null): AlunoDetalhado |
     matricula: raw.matricula,
     nome: raw.nome ?? null,
     fonteAusente: Boolean(raw.fonteAusente),
+    situacaoEscolar: raw.situacaoEscolar ?? null,
+    causaEncerramentoEscolar: raw.causaEncerramentoEscolar ?? null,
+    motivoEncerramento: raw.motivoEncerramento ?? null,
+    recebeOutroEspacoEscolar: raw.recebeOutroEspacoEscolar ?? null,
+    anoIngressoEscolar: raw.anoIngressoEscolar ?? null,
+    periodoIngressoEscolar: raw.periodoIngressoEscolar ?? null,
+    dataInclusaoIngressoEscolar: serializarValor(raw.dataInclusaoIngressoEscolar),
+    tipoIngressoEscolar: raw.tipoIngressoEscolar ?? null,
+    redeOrigemIngressoEscolar: raw.redeOrigemIngressoEscolar ?? null,
+    matrizCurricularEscolar: raw.matrizCurricularEscolar ?? null,
   };
 
   for (const campo of CAMPOS_DADOS_PESSOAIS) {
@@ -139,5 +178,6 @@ async function obterAlunoDetalhadoPorMatricula(matricula: string) {
   return {
     detalhes: mapearAlunoDetalhado(aluno),
     dadosOriginais: original,
+    seriesCursadas: (aluno?.seriesCursadas as SerieCursadaResumo[] | undefined) ?? [],
   };
 }

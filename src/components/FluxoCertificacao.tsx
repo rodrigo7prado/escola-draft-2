@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useFiltrosCertificacao } from "@/hooks/useFiltrosCertificacao";
 import { useAlunoSelecionado } from "@/hooks/useAlunoSelecionado";
 import { useModoColagem } from "@/hooks/useModoColagem";
@@ -8,9 +8,11 @@ import { useAlunosCertificacao } from "@/hooks/useAlunosCertificacao";
 import { FiltrosCertificacao } from "./FiltrosCertificacao";
 import { ListaAlunosCertificacao } from "./ListaAlunosCertificacao";
 import { DadosAlunoEditavel } from "./DadosAlunoEditavel";
+import { DadosAlunoEscolares } from "./DadosAlunoEscolares";
 import { AreaColagemDados } from "./AreaColagemDados";
 import { ModalConfirmacaoDados } from "./ModalConfirmacaoDados";
 import { ModalConfirmacaoDadosEscolares } from "./ModalConfirmacaoDadosEscolares";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/Tabs";
 import type { AlunoCertificacao } from "@/hooks/useAlunosCertificacao";
 
 export function FluxoCertificacao() {
@@ -42,6 +44,7 @@ export function FluxoCertificacao() {
     alunoSelecionado,
     selecionarAluno,
     alunoDetalhes,
+    seriesCursadas,
     dadosOriginais,
     isLoadingDetalhes,
     erroDetalhes,
@@ -84,6 +87,10 @@ export function FluxoCertificacao() {
   } = useModoColagem({
     onDadosConfirmados: handleDadosConfirmados,
   });
+
+  const [abaAtiva, setAbaAtiva] = useState<"pessoais" | "escolares">(
+    "pessoais"
+  );
 
   return (
     <>
@@ -129,14 +136,38 @@ export function FluxoCertificacao() {
           </div>
 
           <div className="flex-1 min-h-0">
-            <div className="border rounded-sm overflow-y-auto h-full">
-              <DadosAlunoEditavel
-                aluno={alunoDetalhes}
-                dadosOriginais={dadosOriginais}
-                isLoading={isLoadingDetalhes}
-                isAtualizando={isAtualizandoDetalhes}
-                erro={erroDetalhes}
-              />
+            <div className="border rounded-sm overflow-hidden h-full flex flex-col">
+              <Tabs
+                defaultValue={abaAtiva}
+                variant="secondary"
+                key={abaAtiva}
+              >
+                <TabsList className="px-2 bg-neutral-50" variant="secondary">
+                  <TabsTrigger value="pessoais" onClick={() => setAbaAtiva("pessoais")} variant="secondary">
+                    Dados pessoais
+                  </TabsTrigger>
+                  <TabsTrigger value="escolares" onClick={() => setAbaAtiva("escolares")} variant="secondary">
+                    Dados escolares
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="pessoais" className="flex-1 min-h-0">
+                  <DadosAlunoEditavel
+                    aluno={alunoDetalhes}
+                    dadosOriginais={dadosOriginais}
+                    isLoading={isLoadingDetalhes}
+                    isAtualizando={isAtualizandoDetalhes}
+                    erro={erroDetalhes}
+                  />
+                </TabsContent>
+                <TabsContent value="escolares" className="flex-1 min-h-0">
+                  <DadosAlunoEscolares
+                    aluno={alunoDetalhes}
+                    series={seriesCursadas}
+                    isLoading={isLoadingDetalhes}
+                    erro={erroDetalhes}
+                  />
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>
@@ -178,7 +209,10 @@ export function FluxoCertificacao() {
           open={modalAberto}
           dados={dadosEscolaresParsed}
           isSalvando={isSalvando}
-          onConfirmar={confirmarDadosEscolares}
+          onConfirmar={(dados) => {
+            setAbaAtiva("escolares");
+            return confirmarDadosEscolares(dados);
+          }}
           onCancelar={fecharModal}
           alunoNome={alunoSelecionado?.nome}
           alunoMatricula={alunoSelecionado?.matricula}

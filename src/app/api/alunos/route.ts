@@ -24,6 +24,12 @@ export async function GET(request: NextRequest) {
               arquivo: true
             }
           },
+          seriesCursadas: {
+            orderBy: [
+              { anoLetivo: 'asc' },
+              { periodoLetivo: 'asc' }
+            ]
+          },
           enturmacoes: {
             orderBy: { anoLetivo: 'desc' }
           }

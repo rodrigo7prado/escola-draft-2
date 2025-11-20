@@ -58,11 +58,13 @@ export function TabsList({
 export function TabsTrigger({
   value,
   children,
-  variant = "default"
+  variant = "default",
+  onClick,
 }: {
   value: string;
   children: React.ReactNode;
   variant?: TabsVariant;
+  onClick?: () => void;
 }) {
   const ctx = useContext(TabsContext);
   if (!ctx) throw new Error("TabsTrigger must be inside Tabs");
@@ -80,7 +82,10 @@ export function TabsTrigger({
 
   return (
     <Button
-      onClick={() => setActiveTab(value)}
+      onClick={() => {
+        setActiveTab(value);
+        onClick?.();
+      }}
       variant="ghost"
       className={`${variantClasses[variant]} border-b-2 transition-colors ${activeClass} rounded-none h-auto`}
     >
@@ -95,4 +100,3 @@ export function TabsContent({ value, children, className = "" }: { value: string
   const { activeTab } = ctx;
   return <div className={`${activeTab === value ? "flex-1 min-h-0 flex flex-col" : "hidden"} ${className}`}>{children}</div>;
 }
-

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { detectarTipoPagina } from '@/lib/parsing/detectarTipoPagina';
 import { parseDadosPessoais } from '@/lib/parsing/parseDadosPessoais';
 import { parseDadosEscolares } from '@/lib/parsing/parseDadosEscolares';
+import { salvarDadosEscolares } from '@/lib/importacao/salvarDadosEscolares';
 
 /**
  * Schema de validação do request
@@ -85,61 +86,10 @@ export async function POST(request: NextRequest) {
       // Parsear dados escolares
       const dadosParsed = parseDadosEscolares(texto, matricula);
 
-      // Salvar dados do aluno em transação
-      await prisma.$transaction(async (tx) => {
-        // Atualizar campos do aluno
-        await tx.aluno.update({
-          where: { id: aluno.id },
-          data: {
-            textoBrutoDadosEscolares: texto,
-            dataImportacaoTextoDadosEscolares: new Date(),
-            situacaoEscolar: dadosParsed.alunoInfo.situacao,
-            causaEncerramentoEscolar: dadosParsed.alunoInfo.causaEncerramento,
-            motivoEncerramento: dadosParsed.alunoInfo.motivoEncerramento,
-            recebeOutroEspacoEscolar: dadosParsed.alunoInfo.recebeOutroEspaco,
-            anoIngressoEscolar: dadosParsed.alunoInfo.anoIngresso,
-            periodoIngressoEscolar: dadosParsed.alunoInfo.periodoIngresso,
-            dataInclusaoIngressoEscolar: dadosParsed.alunoInfo.dataInclusao
-              ? new Date(dadosParsed.alunoInfo.dataInclusao)
-              : null,
-            tipoIngressoEscolar: dadosParsed.alunoInfo.tipoIngresso,
-            redeOrigemIngressoEscolar: dadosParsed.alunoInfo.redeOrigem,
-            matrizCurricularEscolar: dadosParsed.alunoInfo.matrizCurricular,
-          },
-        });
-
-        // Deletar séries existentes para esse aluno (para evitar duplicação)
-        await tx.serieCursada.deleteMany({
-          where: { alunoMatricula: matricula },
-        });
-
-        // Criar registros de séries cursadas
-        for (const serie of dadosParsed.series) {
-          await tx.serieCursada.create({
-            data: {
-              alunoMatricula: matricula,
-              anoLetivo: serie.anoLetivo,
-              periodoLetivo: serie.periodoLetivo,
-              unidadeEnsino: serie.unidadeEnsino,
-              codigoEscola: serie.codigoEscola,
-              modalidade: serie.modalidade,
-              segmento: serie.segmento,
-              curso: serie.curso,
-              serie: serie.serie,
-              turno: serie.turno,
-              situacao: serie.situacao,
-              tipoVaga: serie.tipoVaga,
-              matrizCurricular: serie.matrizCurricular,
-              dataInclusaoAluno: serie.dataInclusaoAluno
-                ? new Date(serie.dataInclusaoAluno)
-                : null,
-              redeEnsinoOrigem: serie.redeEnsinoOrigem,
-              ensinoReligioso: serie.ensinoReligioso,
-              linguaEstrangeira: serie.linguaEstrangeira,
-              textoBrutoOrigemId: aluno.id,
-            },
-          });
-        }
+      await salvarDadosEscolares({
+        alunoId: aluno.id,
+        textoBruto: texto,
+        dados: dadosParsed,
       });
 
       return NextResponse.json({

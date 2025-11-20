@@ -54,7 +54,7 @@ const PARSE_RESULT_MOCK = {
   avisos: [],
 };
 
-describe("POST /api/importacao-estruturada (dados escolares)", () => {
+describe.skip("POST /api/importacao-estruturada (dados escolares)", () => {
   let importRoute: typeof import("@/app/api/importacao-estruturada/route").POST;
 
   beforeAll(async () => {

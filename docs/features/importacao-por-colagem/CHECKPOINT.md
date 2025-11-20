@@ -64,14 +64,35 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
   [x] TEC6.1: Analisar o modal existente para dados pessoais e identificar quais componentes podem ser reaproveitados;
   [x] TEC6.2: Adaptar o modal para exibir os campos específicos de dados escolares, mantendo a consistência visual e funcional com o modal de dados pessoais;
   [x] TEC6.4: Haverá necessidade de inputs manuais adicionais para dados escolares, similar ao campo Sexo em dados pessoais? Se sim, implementar conforme necessário, com o mesmo padrão de reutilização;
-[ ] CP7: Reuso e expansão da estrutura de atualização automática da interface de usuário (já implementada para dados pessoais), agora para a confirmação dos dados escolares colados;
-[ ] Consistência dos modelos de dados escolares do Prisma;
-  [ ] CP8.1: Parece que alguns campos originalmente concebidos para estarem no modelo (do Prisma) Aluno estão presentes no modelo SerieCursada (ex: matriz curricular, ano de ingresso, etc). Avaliar se essa estrutura está correta. Releer a esta documentação para entender melhor.
-  [ ] CP8.2: Parece também que a passagem do parser de dados escolares para o endpoint de salvamento no backend está incorreta, sendo necessária a seguinte condição:
-    [ ] TEC8.2.1: Alguns dados de ingresso do aluno são incluídos como primeira série cursada do aluno. Para isso será feito um mapeamento dos dados parseados para o modelo SerieCursada;
-    [ ] TEC8.2.2: Isto não afetará o fato de que os dados que vão para o modelo Aluno continuarão sendo salvos no modelo Aluno;
-[ ] CP8: Testes unitários e de integração do fluxo completo de colagem de dados escolares, garantindo que todos campos sejam processados corretamente;
-  [ ] TEC8.1: Usar os modelos disponíveis em `docs/templates/DadosEscolaresColagemModelo.md` e `docs/templates/DadosPessoaisColagemModelo.md` para criar casos de teste representativos;
-  [ ] TEC8.2: Garantir cobertura completa dos testes, incluindo cenários de sucesso e falha na colagem de dados escolares.
+[ ] CP7: Tratamento da inconsistência dos modelos Aluno e SerieCursada quanto aos campos de dados escolares;
+  [ ] TEC7.1: Os campos de dados escolares que irão para o modelo Aluno são:
+    a. tipoIngresso
+    b. matrizCurricular
+    c. dataInclusaoAluno
+    d. redeEnsinoOrigem
+    e. situacao
+    f. recebeOutroEspaco
+    g. causaEncerramento
+  [ ] TEC7.2: Os campos de dados escolares que irão para o modelo SerieCursada são:
+    h. anoLetivo
+    i. periodoLetivo
+    j. codigoEscola
+    k. unidadeEnsino
+    l. modalidade
+    m. segmento
+    n. curso
+    o. serie
+    p. turno
+    q. ensinoReligioso
+    r. linguaEstrangeira
+    s. tipoVaga
+  [ ] TEC7.3: E assim será o mapeamento necessário dos campos parseados para o modelo SerieCursada:
+    a. anoIngresso será adicionado como Ano Letivo;
+    b. periodoIngresso será adicionado como Período Letivo;
+    c. o restante ficará mesmo em branco. Outras implementações farão a importação complementar;
+[ ] CP8: Reuso e expansão da estrutura de atualização automática da interface de usuário (já implementada para dados pessoais), agora para a confirmação dos dados escolares colados;
+[ ] CP9: Testes unitários e de integração do fluxo completo de colagem de dados escolares, garantindo que todos campos sejam processados corretamente;
+  [ ] TEC9.1: Usar os modelos disponíveis em `docs/templates/DadosEscolaresColagemModelo.md` e `docs/templates/DadosPessoaisColagemModelo.md` para criar casos de teste representativos;
+  [ ] TEC9.2: Garantir cobertura completa dos testes, incluindo cenários de sucesso e falha na colagem de dados escolares.
 
   

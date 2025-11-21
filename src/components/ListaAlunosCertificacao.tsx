@@ -2,11 +2,13 @@
 
 import type {
   AlunoCertificacao,
+  ResumoDadosEscolares,
   ResumoDadosPessoaisTurma,
 } from "@/hooks/useAlunosCertificacao";
 import type { FiltrosCertificacaoState } from "@/hooks/useFiltrosCertificacao";
 import { Button } from "@/components/ui/Button";
 import { BotaoColagemAluno } from "./BotaoColagemAluno";
+import { GraduationCap, UserCheck } from "lucide-react";
 
 type ListaAlunosCertificacaoProps = {
   filtros: FiltrosCertificacaoState;
@@ -106,16 +108,22 @@ export function ListaAlunosCertificacao({
                       <div className="text-xs font-medium truncate">
                         {aluno.nome || "Sem nome"}
                       </div>
-                      <IndicadorDadosPessoais
-                        resumo={aluno.progressoDadosPessoais}
-                      />
                     </div>
                     <div className="text-[10px] text-neutral-500 font-mono">
                       {aluno.matricula}
                     </div>
-                    <BarraProgressoDadosPessoais
-                      resumo={aluno.progressoDadosPessoais}
-                    />
+                    <div className="flex items-center gap-2 w-full mt-1">
+                      <div className="flex-1">
+                        <BarraProgressoDadosPessoais
+                          resumoPessoais={aluno.progressoDadosPessoais}
+                          resumoEscolares={aluno.progressoDadosEscolares}
+                        />
+                      </div>
+                      <IndicadoresDadosAluno
+                        resumoPessoais={aluno.progressoDadosPessoais}
+                        resumoEscolares={aluno.progressoDadosEscolares}
+                      />
+                    </div>
                     {aluno.fonteAusente && (
                       <div className="text-[9px] text-yellow-600 mt-0.5">
                         ⚠️ Fonte ausente
@@ -126,7 +134,7 @@ export function ListaAlunosCertificacao({
 
                 {/* Botões de Colagem */}
                 {isSelected && (
-                  <div className="px-3 pb-2">
+                  <div className="px-3 py-0 bg-gray-600 text-white text-sm">
                     <BotaoColagemAluno
                       matricula={aluno.matricula}
                       alunoId={aluno.id}
@@ -178,40 +186,23 @@ function PainelResumoTurma({ resumo }: { resumo: ResumoDadosPessoaisTurma }) {
   );
 }
 
-function IndicadorDadosPessoais({
-  resumo,
-}: {
-  resumo: AlunoCertificacao["progressoDadosPessoais"];
-}) {
-  const completo = resumo.completo;
-  const corBase = completo
-    ? "bg-green-600 text-white border-transparent"
-    : "bg-red-100 text-red-800 border border-red-300";
-
-  const label = completo ? "✓" : `${resumo.percentual}%`;
-  const title = `Dados pessoais: ${resumo.camposPreenchidos}/${resumo.totalCampos}`;
-
-  return (
-    <div
-      title={title}
-      className={`h-6 w-6 rounded-full text-[10px] font-semibold flex items-center justify-center leading-none ${corBase}`}
-    >
-      {label}
-    </div>
-  );
-}
-
 function BarraProgressoDadosPessoais({
-  resumo,
+  resumoPessoais,
+  resumoEscolares,
 }: {
-  resumo: AlunoCertificacao["progressoDadosPessoais"];
+  resumoPessoais: AlunoCertificacao["progressoDadosPessoais"];
+  resumoEscolares: ResumoDadosEscolares;
 }) {
-  const largura = `${resumo.percentual}%`;
-  const preenchidoClass = resumo.completo ? "bg-green-600" : "bg-blue-500";
-  const title = `Progresso de dados pessoais: ${resumo.percentual}% (${resumo.camposPreenchidos}/${resumo.totalCampos})`;
+  const percentualMedio = Math.round(
+    (resumoPessoais.percentual + resumoEscolares.percentual) / 2
+  );
+  const largura = `${percentualMedio}%`;
+  const completo = resumoPessoais.completo && resumoEscolares.completo;
+  const preenchidoClass = completo ? "bg-green-600" : "bg-blue-500";
+  const title = `Progresso médio (pessoais + escolares): ${percentualMedio}%`;
 
   return (
-    <div className="w-full mt-1" title={title}>
+    <div className="w-full" title={title}>
       <div className="h-1.5 w-full rounded-full bg-neutral-200 overflow-hidden">
         <div
           className={`h-full ${preenchidoClass} transition-all`}
@@ -220,4 +211,65 @@ function BarraProgressoDadosPessoais({
       </div>
     </div>
   );
+}
+
+function IndicadoresDadosAluno({
+  resumoPessoais,
+  resumoEscolares,
+}: {
+  resumoPessoais: AlunoCertificacao["progressoDadosPessoais"];
+  resumoEscolares: ResumoDadosEscolares;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <StatusIcone
+        icon={UserCheck}
+        status={mapearStatusPessoais(resumoPessoais)}
+        label={`${resumoPessoais.camposPreenchidos}/${resumoPessoais.totalCampos}`}
+        title={`Dados pessoais: ${resumoPessoais.camposPreenchidos}/${resumoPessoais.totalCampos}`}
+      />
+      <StatusIcone
+        icon={GraduationCap}
+        status={resumoEscolares.status}
+        label={`${resumoEscolares.percentual}%`}
+        title={`Dados escolares: ${resumoEscolares.percentual}% (${resumoEscolares.slotsPreenchidos}/${resumoEscolares.totalSlots})`}
+      />
+    </div>
+  );
+}
+
+type Status = "completo" | "incompleto" | "ausente";
+
+function mapearStatusPessoais(
+  resumo: AlunoCertificacao["progressoDadosPessoais"]
+): Status {
+  if (resumo.completo) return "completo";
+  if (resumo.camposPreenchidos === 0) return "ausente";
+  return "incompleto";
+}
+
+function StatusIcone({
+  icon: Icon,
+  status,
+  label,
+  title,
+}: {
+  icon: typeof UserCheck;
+  status: Status;
+  label: string;
+  title: string;
+}) {
+  const cor = corPorStatus(status);
+  return (
+    <div className="flex flex-col items-center text-[10px] font-semibold leading-tight min-w-[42px]">
+      <Icon className={`h-4 w-4 ${cor}`} title={title} />
+      <span className={`${cor}`}>{label}</span>
+    </div>
+  );
+}
+
+function corPorStatus(status: Status): string {
+  if (status === "completo") return "text-green-700";
+  if (status === "ausente") return "text-red-600";
+  return "text-yellow-600";
 }

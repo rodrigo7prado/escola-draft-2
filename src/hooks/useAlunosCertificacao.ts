@@ -22,10 +22,14 @@ type AlunoApiResponse = ValoresDadosPessoais & {
   origemTipo: string;
   fonteAusente: boolean;
   enturmacoes?: EnturmacaoResumo[];
+  situacaoEscolar?: string | null;
+  motivoEncerramento?: string | null;
+  seriesCursadas?: { segmento?: string | null; anoLetivo?: string | null }[];
 };
 
 export type AlunoCertificacao = AlunoApiResponse & {
   progressoDadosPessoais: ResumoDadosPessoais;
+  progressoDadosEscolares: ResumoDadosEscolares;
 };
 
 type FiltrosParams = {
@@ -38,6 +42,14 @@ export type ResumoDadosPessoaisTurma = {
   completos: number;
   pendentes: number;
   percentualGeral: number;
+};
+
+export type ResumoDadosEscolares = {
+  totalSlots: number;
+  slotsPreenchidos: number;
+  percentual: number;
+  completo: boolean;
+  status: "completo" | "incompleto" | "ausente";
 };
 
 export function useAlunosCertificacao(filtros: FiltrosParams) {
@@ -123,5 +135,69 @@ async function obterAlunosCertificacao(filtros: FiltrosParams) {
   return alunosResposta.map<AlunoCertificacao>((aluno) => ({
     ...aluno,
     progressoDadosPessoais: calcularResumoDadosPessoais(aluno),
+    progressoDadosEscolares: calcularResumoDadosEscolares(aluno),
   }));
+}
+
+function calcularResumoDadosEscolares(aluno: AlunoApiResponse): ResumoDadosEscolares {
+  const totalSlots = 3;
+  const slotsPreenchidos = [
+    Boolean(aluno.situacaoEscolar?.trim()),
+    Boolean(aluno.motivoEncerramento?.trim()),
+    possuiTriplaSerieMedio(aluno.seriesCursadas),
+  ].filter(Boolean).length;
+
+  let status: ResumoDadosEscolares["status"] = "incompleto";
+  if (slotsPreenchidos === 0) {
+    status = "ausente";
+  } else if (slotsPreenchidos === totalSlots) {
+    status = "completo";
+  }
+
+  const percentual = Math.round((slotsPreenchidos / totalSlots) * 100);
+
+  return {
+    totalSlots,
+    slotsPreenchidos,
+    percentual,
+    completo: status === "completo",
+    status,
+  };
+}
+
+function possuiTriplaSerieMedio(
+  series?: { segmento?: string | null; anoLetivo?: string | null }[]
+): boolean {
+  if (!series || series.length < 3) return false;
+
+  const seriesOrdenadas = [...series].sort((a, b) =>
+    compararAnoLetivoAsc(a.anoLetivo, b.anoLetivo)
+  );
+
+  const [maisAntiga, ...restantes] = seriesOrdenadas;
+  const segmentoAntiga = normalizarSegmento(maisAntiga.segmento) || "-";
+  if (segmentoAntiga !== "-") return false;
+
+  const medioRestantes = restantes.filter(
+    (serie) => normalizarSegmento(serie.segmento) === "MÉDIO"
+  ).length;
+
+  return medioRestantes >= 2;
+}
+
+function normalizarSegmento(seg?: string | null): string {
+  return (seg ?? "").trim().toUpperCase();
+}
+
+function compararAnoLetivoAsc(a?: string | null, b?: string | null): number {
+  const anoA = Number.parseInt((a ?? "").trim(), 10);
+  const anoB = Number.parseInt((b ?? "").trim(), 10);
+
+  const validoA = Number.isFinite(anoA);
+  const validoB = Number.isFinite(anoB);
+
+  if (validoA && validoB) return anoA - anoB;
+  if (validoA) return -1;
+  if (validoB) return 1;
+  return (a ?? "").localeCompare(b ?? "");
 }

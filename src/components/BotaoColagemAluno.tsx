@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { Clipboard, ScanText } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type BotaoColagemAlunoProps = {
   matricula: string;
@@ -24,12 +26,16 @@ export function BotaoColagemAluno({
   onToggleModoColagem,
   disabled = false,
 }: BotaoColagemAlunoProps) {
+  const [copiado, setCopiado] = useState(false);
+
   /**
    * Copia matrícula para clipboard
    */
   const handleCopiarMatricula = async () => {
     try {
       await navigator.clipboard.writeText(matricula);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 1000);
       // TODO: Mostrar toast de sucesso
     } catch (error) {
       console.error("Erro ao copiar matrícula:", error);
@@ -38,37 +44,43 @@ export function BotaoColagemAluno({
   };
 
   return (
-    <div className="flex gap-1 mt-1">
+    <div className="flex gap-1 items-center">
       {/* Botão Copiar Matrícula */}
       <Button
         variant="ghost"
         size="sm"
         onClick={handleCopiarMatricula}
+        onMouseDown={(e) => e.preventDefault()}
         disabled={disabled}
         title="Copiar matrícula para área de transferência"
-        className="text-[9px] px-1.5 py-0.5 h-5"
+        className={`text-[10px] px-2 py-1 h-7 text-white transition-colors ${
+          copiado ? "bg-white/20 hover:bg-white/20" : "hover:bg-white/10"
+        } border-0 outline-none ring-0 shadow-none focus:border-0 active:border-0 focus:ring-0 focus:ring-offset-0 focus:outline-none active:ring-0 active:ring-offset-0 focus:shadow-none active:shadow-none [&:focus-visible]:outline-none [&:focus-visible]:ring-0 [&:focus-visible]:ring-offset-0`}
       >
-        📋
+        <Clipboard className="h-3 w-3" />
+        <span className="sr-only">Copiar matrícula</span>
       </Button>
 
       {/* Botão Toggle Modo Colagem */}
       <Button
-        variant={isModoColagemAtivo ? "primary" : "ghost"}
+        variant="ghost"
         size="sm"
         onClick={onToggleModoColagem}
+        onMouseDown={(e) => e.preventDefault()}
         disabled={disabled}
         title={
           isModoColagemAtivo
             ? "Modo colagem ATIVO - Clique para desativar"
             : "Habilitar modo colagem"
         }
-        className={`text-[9px] px-1.5 py-0.5 h-5 transition-all ${
+        className={`text-[10px] px-2 py-1 h-7 text-white gap-1 transition-all ${
           isModoColagemAtivo
-            ? "bg-green-600 hover:bg-green-700"
-            : "hover:bg-neutral-200"
-        }`}
+            ? "bg-white/20 hover:bg-white/25"
+            : "hover:bg-white/10"
+        } border-0 outline-none ring-0 shadow-none focus:border-0 active:border-0 focus:ring-0 focus:ring-offset-0 focus:outline-none active:ring-0 active:ring-offset-0 focus:shadow-none active:shadow-none [&:focus-visible]:outline-none [&:focus-visible]:ring-0 [&:focus-visible]:ring-offset-0`}
       >
-        {isModoColagemAtivo ? "✓ Colagem ativada" : "🔓 Ativar Colagem"}
+        <ScanText className="h-3 w-3" />
+        {isModoColagemAtivo ? "Colagem ativa" : "Ativar colagem"}
       </Button>
     </div>
   );

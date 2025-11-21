@@ -103,6 +103,13 @@ export async function GET(request: NextRequest) {
         enturmacoes: {
           where: Object.keys(filtroEnturmacao).length > 0 ? filtroEnturmacao : undefined,
           orderBy: { anoLetivo: 'desc' }
+        },
+        // Usamos apenas segmento para calcular completude escolar na listagem
+        seriesCursadas: {
+          select: {
+            segmento: true,
+            anoLetivo: true
+          }
         }
       }
     });

@@ -90,13 +90,29 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
     a. anoIngresso será adicionado como Ano Letivo;
     b. periodoIngresso será adicionado como Período Letivo;
     c. o restante ficará mesmo em branco. Outras implementações farão a importação complementar;
-[ ] CP8: Atualização de UI dados dos alunos com dados escolares. Atualmente, a interface do usuário exibe apenas os dados pessoais do aluno. Será necessário estender essa funcionalidade para incluir os dados escolares colados;
-  [ ] TEC8.1: Criação de visualização em abas (com componente de abas reutilizável) para separar dados pessoais e escolares na interface do usuário;
-  [ ] TEC8.2: Ao atualizar os dados escolares, garantir que a interface do usuário reflita imediatamente as mudanças, reutilizando a lógica existente para atualização automática de dados pessoais, inclusive avaliando a integração com o SWR já implementado;
-  [ ] TEC8.3: Após confirmação bem sucedida dos dados escolares colados, ativar a aba de dados escolares automaticamente para o usuário visualizar as mudanças;
-[ ] CP8: Reuso e expansão da estrutura de atualização automática da interface de usuário (já implementada para dados pessoais), agora para a confirmação dos dados escolares colados;
-[ ] CP9: Testes unitários e de integração do fluxo completo de colagem de dados escolares, garantindo que todos campos sejam processados corretamente;
-  [ ] TEC9.1: Usar os modelos disponíveis em `docs/templates/DadosEscolaresColagemModelo.md` e `docs/templates/DadosPessoaisColagemModelo.md` para criar casos de teste representativos;
-  [ ] TEC9.2: Garantir cobertura completa dos testes, incluindo cenários de sucesso e falha na colagem de dados escolares.
+[x] CP8: Atualização de UI dados dos alunos com dados escolares. Atualmente, a interface do usuário exibe apenas os dados pessoais do aluno. Será necessário estender essa funcionalidade para incluir os dados escolares;
+  [x] TEC8.1: Criação de visualização em abas (com componente de abas reutilizável) para separar dados pessoais e escolares na interface do usuário;
+  [x] TEC8.2: Ao atualizar os dados escolares, garantir que a interface do usuário reflita imediatamente as mudanças, reutilizando a lógica existente para atualização automática de dados pessoais, inclusive avaliando a integração com o SWR já implementado;
+  [x] TEC8.3: Após confirmação bem sucedida dos dados escolares colados, ativar a aba de dados escolares automaticamente para o usuário visualizar as mudanças;
+[ ] CP9: Atualização do item de lista e alunos na tela de listagem de alunos para refletir o status dos dados escolares (ex: "Dados escolares completos", "Dados escolares incompletos", etc);
+  [ ] UX9.1: Refatorações:
+    [ ] UX9.1.1: Atualmente, além de uma barra de progresso, a única informação de status é o percentual de dados pessoais preenchidos. E essa informação fica ao lado do nome/matrícula do aluno na listagem. MUDANÇA:
+      [ ] UX9.1.1.1: Envolver a informação com um wrapper que permita exibir tanto o status dos dados pessoais quanto o status dos dados escolares;
+      [ ] UX9.1.1.2: Mover esse wrapper para o lado da barra de progresso, para melhorar a organização visual;
+      [ ] UX9.1.1.3: Ícone de dados pessoais: o percentual de dados dará lugar a ícone próprio de dados pessoais (ajudar a escolher qual).
+      [ ] UX9.1.1.4: Ícone de dados escolares: também haverá um ícone próprio de dados escolares (ajudar a escolher qual). 
+      [ ] UX9.1.1.5: Os ícones ficarão verdes se os dados estiverem completos, laranja se incompletos e vermelhos se completamente ausentes;
+      [ ] UX9.1.1.5: Abaixo de cada ícone, haverá a informação em forma ultracompacta:
+        - na forma x/y campos de dados pessoais preenchidos;
+        - na forma de percentual de dados escolares preenchidos.
+    [ ] UX9.1.2: O componente visual do status dos dados escolares deve ser consistente com o estilo já utilizado para dados pessoais;
+    [ ] TEC9.1.3 Os dados que importarão para dados escolares são: 
+      - (1) situacaoEscolar; 
+      - (2) motivoEncerrament;o e 
+      - (3) se o segmento for "MÉDIO", a quantidade de séries concluídas for TRÊS, contará como dado completo; se não, não contará para a completude da informação;
+  [ ] TEC9.2: Implementar lógica para calcular e exibir o status dos dados escolares na listagem de alunos, reutilizando componentes visuais existentes para consistência;
+[ ] CP10: Testes unitários e de integração do fluxo completo de colagem de dados escolares, garantindo que todos campos sejam processados corretamente;
+  [ ] TEC10.1: Usar os modelos disponíveis em `docs/templates/DadosEscolaresColagemModelo.md` e `docs/templates/DadosPessoaisColagemModelo.md` para criar casos de teste representativos;
+  [ ] TEC10.2: Garantir cobertura completa dos testes, incluindo cenários de sucesso e falha na colagem de dados escolares.
 
   

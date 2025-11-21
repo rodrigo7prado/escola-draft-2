@@ -54,8 +54,9 @@ const PARSE_RESULT_MOCK = {
   avisos: [],
 };
 
-describe.skip("POST /api/importacao-estruturada (dados escolares)", () => {
+describe("POST /api/importacao-estruturada (dados escolares)", () => {
   let importRoute: typeof import("@/app/api/importacao-estruturada/route").POST;
+  let salvarEscolaresRoute: typeof import("@/app/api/importacao-estruturada/salvar-dados-escolares/route").POST;
 
   beforeAll(async () => {
     await setupTestDatabase();
@@ -73,6 +74,9 @@ describe.skip("POST /api/importacao-estruturada (dados escolares)", () => {
     }));
 
     ({ POST: importRoute } = await import("@/app/api/importacao-estruturada/route"));
+    ({ POST: salvarEscolaresRoute } = await import(
+      "@/app/api/importacao-estruturada/salvar-dados-escolares/route"
+    ));
   });
 
   afterAll(async () => {
@@ -114,6 +118,24 @@ describe.skip("POST /api/importacao-estruturada (dados escolares)", () => {
     expect(json.sucesso).toBe(true);
     expect(json.tipoPagina).toBe("dadosEscolares");
     expect(json.dados.series?.length).toBe(1);
+
+    // Persistir dados escolares (passo de confirmação)
+    const salvarRequest = new NextRequest(
+      new Request("http://localhost/api/importacao-estruturada/salvar-dados-escolares", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          alunoId,
+          textoBruto: payload.texto,
+          dados: json.dados,
+        }),
+      })
+    );
+
+    const salvarResponse = await salvarEscolaresRoute(salvarRequest);
+    expect(salvarResponse.status).toBe(200);
+    const salvarJson = await salvarResponse.json();
+    expect(salvarJson.sucesso).toBe(true);
 
     const alunoAtualizado = await prisma.aluno.findUnique({
       where: { id: alunoId },

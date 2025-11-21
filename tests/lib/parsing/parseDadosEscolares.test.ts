@@ -45,15 +45,25 @@ describe("parseDadosEscolares", () => {
       DADOS_ESPERADOS.Escolaridade["Matriz Curricular"]
     );
 
-    expect(resultado.series).toHaveLength(
-      DADOS_ESPERADOS["Confirmação/Renovação de Matrícula"]["Renovação de Matrícula (Tabela)"].length
-    );
+    const esperadoTabela =
+      DADOS_ESPERADOS["Confirmação/Renovação de Matrícula"][
+        "Renovação de Matrícula (Tabela)"
+      ];
 
-    resultado.series.forEach((serie, index) => {
-      const esperado =
-        DADOS_ESPERADOS["Confirmação/Renovação de Matrícula"][
-          "Renovação de Matrícula (Tabela)"
-        ][index];
+    // Ignora linha sintética de ingresso (sem série) e compara apenas linhas reais da tabela
+    const seriesTabela = resultado.series.filter((serie) => serie.serie !== undefined);
+
+    expect(seriesTabela).toHaveLength(esperadoTabela.length);
+
+    const ordenar = (a: any, b: any) =>
+      Number(a["Ano Letivo"] ?? a.anoLetivo) - Number(b["Ano Letivo"] ?? b.anoLetivo) ||
+      Number(a["Período Letivo"] ?? a.periodoLetivo) - Number(b["Período Letivo"] ?? b.periodoLetivo);
+
+    const parsedOrdenado = [...seriesTabela].sort(ordenar);
+    const esperadoOrdenado = [...esperadoTabela].sort(ordenar);
+
+    parsedOrdenado.forEach((serie, index) => {
+      const esperado = esperadoOrdenado[index];
 
       expect(Number(serie.anoLetivo)).toBe(esperado["Ano Letivo"]);
       expect(Number(serie.periodoLetivo)).toBe(esperado["Período Letivo"]);

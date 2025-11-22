@@ -15,9 +15,10 @@ Cada sessão de trabalho terá como foco a implementação de uma feature espec�
 - Ao final da sessão, pode haver a necessidade da escrita do arquivo docs/[NOME_DA_FEATURE]/ABSTRACAO.md, contendo a implementação resumida do que será abstraído para componentes genéricos.
 
 # Sumário de features
-- [Importação por colagem](features/importacao-por-colagem/FLUXO.md)
+- [Importação por colagem](features/importacao-por-colagem/FLUXO.md);
+- [Importação de Ficha Individual - Histórico](features/importacao-ficha-individual-historico/FLUXO.md);  <---
 
-**FEATURE ATUAL**: `Importação por colagem` (modo: dados escolares)
+**FEATURE ATUAL**: `Importação de Ficha Individual - Histórico`
 
 # Workflow geral para uso do Claude AI / ChatGPT Codex
 - Identificar a feature a ser implementada em FEATURE ATUAL acima;

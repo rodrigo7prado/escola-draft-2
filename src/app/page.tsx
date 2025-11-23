@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import MigrateUploads from "@/components/MigrateUploads";
+import MigrateUploadWrapper from "@/components/MigrateUploadWrapper";
 import { FluxoCertificacao } from "@/components/FluxoCertificacao";
 import { Accordion } from "@/components/ui/Accordion";
 
@@ -22,7 +22,7 @@ export default function Home() {
           contentClassName="border border-t-0 rounded-b-sm px-4 pb-4 text-sm text-neutral-700 space-y-4"
         >
           <div>Importe arquivos CSV/XML do Conexão Educação.</div>
-          <MigrateUploads />
+          <MigrateUploadWrapper />
         </Accordion>
       </section>
 

@@ -47,7 +47,7 @@ const ATA_HEADERS = [
   "SITUACAO_FINAL",
 ];
 
-export default function MigrateUploads() {
+export default function MigrateAtaResultsUpload() {
   const [periodos, setPeriodos] = useState<PeriodoData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -139,6 +139,7 @@ export default function MigrateUploads() {
         onParsed={handleNewFiles}
         showPreview={false}
         multiple={true}
+        enableDrop={false}
       />
 
       {/* Estado de loading */}

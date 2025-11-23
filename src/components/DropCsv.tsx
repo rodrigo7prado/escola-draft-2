@@ -15,6 +15,7 @@ type DropCsvProps = {
   onParsed?: (data: ParsedCsv, fileName: string) => void;
   showPreview?: boolean; // controls preview/stats rendering
   multiple?: boolean; // allow multiple file upload
+  enableDrop?: boolean; // allow drag-and-drop; when false, only the button is available
 };
 
 function splitCsvLine(line: string): string[] {
@@ -76,7 +77,15 @@ function parseCsvLoose(text: string, requiredHeaders: string[]): ParsedCsv {
   return { headers, rows };
 }
 
-export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed, showPreview = true, multiple = false }: DropCsvProps) {
+export default function DropCsv({
+  title,
+  requiredHeaders,
+  duplicateKey,
+  onParsed,
+  showPreview = true,
+  multiple = false,
+  enableDrop = true,
+}: DropCsvProps) {
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<ParsedCsv | null>(null);
@@ -126,10 +135,11 @@ export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed
   }, [onParsed, requiredHeaders, multiple]);
 
   const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    if (!enableDrop) return;
     e.preventDefault();
     setDragOver(false);
     void handleFiles(e.dataTransfer.files);
-  }, [handleFiles]);
+  }, [enableDrop, handleFiles]);
 
   const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     void handleFiles(e.target.files);
@@ -196,16 +206,18 @@ export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed
   return (
     <div>
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={onDrop}
-        className={`border rounded-sm p-4 text-sm ${dragOver ? "bg-neutral-50" : ""}`}
+        onDragOver={enableDrop ? (e) => { e.preventDefault(); setDragOver(true); } : undefined}
+        onDragLeave={enableDrop ? () => setDragOver(false) : undefined}
+        onDrop={enableDrop ? onDrop : undefined}
+        className={`border rounded-sm p-4 text-sm ${enableDrop && dragOver ? "bg-neutral-50" : ""}`}
       >
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="font-medium">{title}</div>
             <div className="text-neutral-600 text-xs">
-              Arraste e solte {multiple ? 'arquivos .csv' : 'um .csv'} aqui ou selecione {multiple ? 'arquivos' : 'um arquivo'}
+              {enableDrop
+                ? `Arraste e solte ${multiple ? 'arquivos .csv' : 'um .csv'} aqui ou selecione ${multiple ? 'arquivos' : 'um arquivo'}`
+                : `Selecione ${multiple ? 'arquivos .csv' : 'um arquivo .csv'} para enviar`}
             </div>
           </div>
           <Button
@@ -252,5 +264,4 @@ export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed
     </div>
   );
 }
-
 

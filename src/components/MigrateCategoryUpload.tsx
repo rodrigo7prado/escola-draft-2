@@ -25,21 +25,23 @@ export default function MigrateCategoryUpload({ category }: { category: Categori
   const config = CATEGORY_CONFIG[category];
 
   return (
-    <div className="border rounded-sm p-4 space-y-3 bg-white">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="font-medium">{config.title}</div>
+    <div className="border rounded-sm p-3 space-y-2 bg-white text-sm h-full flex flex-col">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="font-medium leading-tight truncate">{config.title}</div>
           {config.description ? (
-            <div className="text-xs text-neutral-600">{config.description}</div>
+            <div className="text-[11px] text-neutral-600 leading-snug">{config.description}</div>
           ) : null}
         </div>
       </div>
 
-      {category === "ata-resultados-finais" ? (
-        <MigrateAtaResultsUpload />
-      ) : (
-        <MigrateFichaHistoricoUpload />
-      )}
+      <div className="min-h-0 flex-1">
+        {category === "ata-resultados-finais" ? (
+          <MigrateAtaResultsUpload />
+        ) : (
+          <MigrateFichaHistoricoUpload />
+        )}
+      </div>
     </div>
   );
 }

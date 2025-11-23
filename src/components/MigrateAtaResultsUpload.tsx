@@ -130,7 +130,7 @@ export default function MigrateAtaResultsUpload() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 text-sm">
       {/* Upload de arquivo */}
       <DropCsv
         title="Ata de Resultados Finais"

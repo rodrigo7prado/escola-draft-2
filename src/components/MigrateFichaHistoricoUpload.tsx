@@ -24,7 +24,7 @@ export default function MigrateFichaHistoricoUpload() {
   }, [arquivos]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="flex items-center justify-between gap-3">
         <div className="text-xs text-neutral-600">
           Upload mockado até o CP2. A visualização detalhada ficará no painel de Gestão de Alunos.

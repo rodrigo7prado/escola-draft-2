@@ -152,29 +152,50 @@ model Enturmacao {
 }
 
 model SerieCursada {
-  id                 String    @id @default(uuid())
-  alunoMatricula     String    @db.VarChar(15)
-  anoLetivo          String    @db.VarChar(4)
-  periodoLetivo      String    @db.VarChar(2)
-  unidadeEnsino      String?   @db.VarChar(200)
-  codigoEscola       String?   @db.VarChar(20)
-  modalidade         String?   @db.VarChar(100)
-  segmento           String?   @db.VarChar(100)
-  curso              String?   @db.VarChar(200)
-  serie              String?   @db.VarChar(100)
-  turno              String?   @db.VarChar(20)
-  situacao           String?   @db.VarChar(100)
-  tipoVaga           String?   @db.VarChar(100)
+  id                 String              @id @default(uuid())
+  alunoMatricula     String              @db.VarChar(15)
+  anoLetivo          String              @db.VarChar(4)
+  periodoLetivo      String              @db.VarChar(2)
+  unidadeEnsino      String?             @db.VarChar(200)
+  codigoEscola       String?             @db.VarChar(20)
+  modalidade         String?             @db.VarChar(100)
+  segmento           String?             @db.VarChar(100)
+  curso              String?             @db.VarChar(200)
+  serie              String?             @db.VarChar(100)
+  turno              String?             @db.VarChar(20)
+  situacao           String?             @db.VarChar(100)
+  tipoVaga           String?             @db.VarChar(100)
   ensinoReligioso    Boolean?
   linguaEstrangeira  Boolean?
   textoBrutoOrigemId String?
-  criadoEm           DateTime  @default(now())
-  atualizadoEm       DateTime  @updatedAt
-  aluno              Aluno     @relation(fields: [alunoMatricula], references: [matricula], onDelete: Cascade)
+  cargaHorariaTotal  Int?
+  frequenciaGlobal   Float?
+  totalPontos        Float?
+  situacaoFinal      String?             @db.VarChar(100)
+  criadoEm           DateTime            @default(now())
+  atualizadoEm       DateTime            @updatedAt
+  aluno              Aluno               @relation(fields: [alunoMatricula], references: [matricula], onDelete: Cascade)
+  historicos         HistoricoEscolar[]
 
-  @@unique([alunoMatricula, modalidade, segmento, curso, serie])
+  @@unique([alunoMatricula, anoLetivo, periodoLetivo, curso, serie])
   @@index([alunoMatricula])
   @@map("series_cursadas")
+}
+
+model HistoricoEscolar {
+  id                 String   @id @default(uuid())
+  serieCursadaId     String
+  componenteCurricular String  @db.VarChar(200)
+  cargaHoraria       Int?
+  frequencia         Float?
+  totalPontos        Float?
+  faltasTotais       Int?
+  criadoEm           DateTime @default(now())
+  atualizadoEm       DateTime @updatedAt
+  serieCursada       SerieCursada @relation(fields: [serieCursadaId], references: [id], onDelete: Cascade)
+
+  @@index([serieCursadaId])
+  @@map("historicos_escolares")
 }
 
 model Auditoria {

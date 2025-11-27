@@ -46,3 +46,6 @@ nul
 # IDEs and editors
 .vscode/
 docs/templates/FichasIndividuaisExemplos/*
+
+# Backup files
+backups/*

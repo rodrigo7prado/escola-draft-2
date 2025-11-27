@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { limparValor, limparCamposEnturmacao } from '@/lib/csv';
+import { limparValor, limparCamposContexto } from '@/lib/csv';
 
 describe('limparValor', () => {
   describe('Casos básicos (V3.1: Remover prefixos conhecidos)', () => {
@@ -136,8 +136,8 @@ describe('limparValor', () => {
   });
 });
 
-describe('limparCamposEnturmacao', () => {
-  describe('Casos básicos (V3.6: Transformar todos campos de enturmação)', () => {
+describe('limparCamposContexto', () => {
+  describe('Casos básicos (V3.6: Transformar campos de contexto escolar)', () => {
     it('deve limpar todos os campos corretamente com prefixos completos', () => {
       const dados = {
         Ano: 'Ano Letivo: 2024',
@@ -147,7 +147,7 @@ describe('limparCamposEnturmacao', () => {
         TURNO: 'Turno: MANHÃ',
       };
 
-      const resultado = limparCamposEnturmacao(dados);
+      const resultado = limparCamposContexto(dados);
 
       expect(resultado).toEqual({
         anoLetivo: '2024',
@@ -167,7 +167,7 @@ describe('limparCamposEnturmacao', () => {
         TURNO: 'MANHÃ',
       };
 
-      const resultado = limparCamposEnturmacao(dados);
+      const resultado = limparCamposContexto(dados);
 
       expect(resultado).toEqual({
         anoLetivo: '2024',
@@ -189,7 +189,7 @@ describe('limparCamposEnturmacao', () => {
         TURNO: 'Turno: MANHÃ',
       };
 
-      const resultado = limparCamposEnturmacao(dados);
+      const resultado = limparCamposContexto(dados);
 
       expect(resultado.anoLetivo).toBe('2024');
     });
@@ -203,7 +203,7 @@ describe('limparCamposEnturmacao', () => {
         TURNO: 'TURNO',
       };
 
-      const resultado = limparCamposEnturmacao(dados);
+      const resultado = limparCamposContexto(dados);
 
       expect(resultado.anoLetivo).toBe('2024');
     });
@@ -213,7 +213,7 @@ describe('limparCamposEnturmacao', () => {
     it('deve retornar strings vazias para campos undefined', () => {
       const dados = {} as Record<string, string>;
 
-      const resultado = limparCamposEnturmacao(dados);
+      const resultado = limparCamposContexto(dados);
 
       expect(resultado).toEqual({
         anoLetivo: '',
@@ -233,7 +233,7 @@ describe('limparCamposEnturmacao', () => {
         TURNO: '',
       };
 
-      const resultado = limparCamposEnturmacao(dados);
+      const resultado = limparCamposContexto(dados);
 
       expect(resultado.turno).toBe(null);
     });
@@ -247,7 +247,7 @@ describe('limparCamposEnturmacao', () => {
         TURNO: '',
       };
 
-      const resultado = limparCamposEnturmacao(dados);
+      const resultado = limparCamposContexto(dados);
 
       expect(resultado.anoLetivo).toBe('2024');
       expect(resultado.turma).toBe('3001');
@@ -268,10 +268,10 @@ describe('limparCamposEnturmacao', () => {
         TURNO: 'Turno: MANHÃ',
         MATRICULA: '123456789012345',
         NOME: 'João da Silva',
-        // ... outros campos não relevantes para enturmação
+        // ... outros campos não relevantes para o contexto
       };
 
-      const resultado = limparCamposEnturmacao(linhaCsv);
+      const resultado = limparCamposContexto(linhaCsv);
 
       expect(resultado).toMatchObject({
         anoLetivo: '2024',

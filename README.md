@@ -81,7 +81,7 @@ src/
     useAlunosCertificacao.ts    # Busca de alunos
   lib/
     prisma.ts                   # Cliente Prisma
-    csv.ts                      # Utilidades CSV (limparValor, limparCamposEnturmacao)
+    csv.ts                      # Utilidades CSV (limparValor, limparCamposContexto)
   tests/
     unit/                       # 54 testes unitários
     integration/                # 88 testes de integração

@@ -14,7 +14,7 @@ Após refatorar `src/lib/csv.ts`, próximo passo natural foi configurar ambiente
 
 **Motivação:**
 
-1. **Funções críticas sem testes:** `limparValor()` e `limparCamposEnturmacao()` são essenciais mas sem validação automatizada
+1. **Funções críticas sem testes:** `limparValor()` e `limparCamposContexto()` são essenciais mas sem validação automatizada
 2. **Bugs silenciosos:** Edge case #9 e V5.3.3 mostram que bugs passam despercebidos sem testes
 3. **Pre-commit hook:** Garantir que código quebrado nunca entre no repositório
 4. **Metodologia CIF:** Testes são pilar da metodologia (V3.1 a V3.7 precisam cobertura)
@@ -53,7 +53,7 @@ Após refatorar `src/lib/csv.ts`, próximo passo natural foi configurar ambiente
    - ✅ Edge cases - valores especiais: 4 testes (numéricos, alfanuméricos, acentuação)
    - ✅ Casos de regressão: 3 testes (evitar "value too long")
 
-   **Cobertura de `limparCamposEnturmacao()` (8 testes):**
+   **Cobertura de `limparCamposContexto()` (8 testes):**
    - ✅ Casos básicos: 2 testes (com/sem prefixos)
    - ✅ Edge cases - variações: 2 testes (prefixo alternativo "Ano:" vs "Ano Letivo:")
    - ✅ Edge cases - campos vazios: 3 testes (undefined, null para turno)
@@ -152,7 +152,7 @@ Duration   10.62s (transform 799ms, setup 4.23s, collect 644ms, tests 452ms)
 - **V2.2.1 (Hash SHA-256):** 100% coberta (1/1 validação)
 - **V3 (Transformação de Dados):** 100% coberta (7/7 validações)
 - **Total de validações testadas:** 8/80 (10%)
-- **Funções críticas testadas:** 3/3 (`limparValor`, `limparCamposEnturmacao`, `hashData`)
+- **Funções críticas testadas:** 3/3 (`limparValor`, `limparCamposContexto`, `hashData`)
 
 **Antes → Depois:**
 

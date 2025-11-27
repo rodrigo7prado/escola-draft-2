@@ -22,6 +22,7 @@ export const alunosCsvProfile: CsvProfile = {
   duplicateKey: {
     column: "ALUNO",
   },
+  existingKeysSource: "enturmacoes",
   displayName: [
     { column: "NOME_COMPL" },
     { column: "NOME" },

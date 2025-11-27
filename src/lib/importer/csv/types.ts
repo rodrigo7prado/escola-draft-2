@@ -12,6 +12,8 @@ export type CsvProfile = {
   requiredHeaders: string[];
   duplicateKey: CsvField;
   displayName: CsvField[];
+  existingKeysSource?: "enturmacoes" | "none";
+  cleanupStrategy?: "markFonteAusenteAluno" | "none";
   context: {
     periodo: CsvField;
     grupo: CsvField;

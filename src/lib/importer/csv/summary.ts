@@ -97,3 +97,6 @@ export function mapearAlunosBanco(
 
   return mapa;
 }
+
+// Re-export utilitário de chaves existentes para facilitar importações genéricas
+export { loadExistingKeys } from "@/lib/importer/csv/existing";

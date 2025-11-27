@@ -2,11 +2,8 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-
-type ParsedCsv = {
-  headers: string[];
-  rows: Record<string, string>[];
-};
+import type { ParsedCsv } from "@/lib/hash";
+import { parseCsvLoose } from "@/lib/importer/csv/parse";
 
 type DropCsvProps = {
   title: string;
@@ -17,65 +14,6 @@ type DropCsvProps = {
   multiple?: boolean; // allow multiple file upload
   enableDrop?: boolean; // allow drag-and-drop; when false, only the button is available
 };
-
-function splitCsvLine(line: string): string[] {
-  const result: string[] = [];
-  let current = "";
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i += 1) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        current += '"';
-        i += 1; // escape ""
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (ch === "," && !inQuotes) {
-      result.push(current.trim());
-      current = "";
-    } else {
-      current += ch;
-    }
-  }
-  result.push(current.trim());
-  return result;
-}
-
-function parseCsvLoose(text: string, requiredHeaders: string[]): ParsedCsv {
-  const rawLines = text.split(/\r?\n/);
-  const lines = rawLines.map((l) => l.replace(/\uFEFF/g, "")).filter((l) => l.trim().length > 0);
-  if (lines.length === 0) return { headers: [], rows: [] };
-
-  // localizar a primeira linha cujo conjunto contenha todos os requiredHeaders
-  let headerIndex = -1;
-  let headers: string[] = [];
-  for (let i = 0; i < lines.length; i += 1) {
-    const cols = splitCsvLine(lines[i]);
-    const set = new Set(cols);
-    const allPresent = requiredHeaders.every((h) => set.has(h));
-    if (allPresent) {
-      headerIndex = i;
-      headers = cols;
-      break;
-    }
-  }
-  if (headerIndex === -1) {
-    return { headers: [], rows: [] };
-  }
-
-  const rows: Record<string, string>[] = [];
-  for (let i = headerIndex + 1; i < lines.length; i += 1) {
-    const parts = splitCsvLine(lines[i]);
-    if (parts.every((p) => p.trim() === "")) continue; // pular linhas vazias
-    const row: Record<string, string> = {};
-    for (let j = 0; j < headers.length; j += 1) {
-      row[headers[j]] = (parts[j] ?? "").trim();
-    }
-    rows.push(row);
-  }
-  return { headers, rows };
-}
 
 export default function DropCsv({
   title,
@@ -264,4 +202,3 @@ export default function DropCsv({
     </div>
   );
 }
-

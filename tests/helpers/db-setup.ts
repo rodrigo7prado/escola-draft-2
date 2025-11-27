@@ -60,9 +60,16 @@ export async function setupTestDatabase() {
     // Reduz overhead de abrir/fechar conexões
   });
 
-  // OTIMIZAÇÃO: Configurar pool de conexões via connection_limit na URL
-  // ou usar $executeRaw para configurar session
-  await prismaTest.$connect();
+  try {
+    // OTIMIZAÇÃO: Configurar pool de conexões via connection_limit na URL
+    // ou usar $executeRaw para configurar session
+    await prismaTest.$connect();
+  } catch (err) {
+    const hint = `Falha ao conectar no banco de teste (${process.env.DATABASE_URL_TEST ?? 'DATABASE_URL_TEST não definido'}). ` +
+      'Verifique se o Postgres está acessível desse host/WSL e se as migrations foram aplicadas.';
+    console.error('[db-setup] Erro ao conectar:', err);
+    throw new Error(hint);
+  }
 }
 
 /**

@@ -1,5 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
-import { limparValor } from "@/lib/csv";
+import type { CsvProfile } from "@/lib/importer/csv/types";
+import { extractContext } from "@/lib/importer/csv/extract";
 
 export async function deleteArquivoPorId(prisma: PrismaClient, id: string) {
   const linhas = await prisma.linhaImportada.findMany({
@@ -24,9 +25,13 @@ export async function deleteArquivoPorId(prisma: PrismaClient, id: string) {
   return { alunosMarcados: linhasIds.length };
 }
 
-export async function deleteArquivosPorPeriodo(prisma: PrismaClient, periodo: string) {
+export async function deleteArquivosPorPeriodo(
+  prisma: PrismaClient,
+  periodo: string,
+  profile: CsvProfile
+) {
   const linhas = await prisma.linhaImportada.findMany({
-    where: { tipoEntidade: "aluno", arquivo: { status: "ativo" } },
+    where: { tipoEntidade: profile.tipoEntidade, arquivo: { status: "ativo" } },
     select: { id: true, arquivoId: true, dadosOriginais: true },
   });
 
@@ -34,10 +39,9 @@ export async function deleteArquivosPorPeriodo(prisma: PrismaClient, periodo: st
   const linhasIdsDoPeriodo: string[] = [];
 
   for (const linha of linhas) {
-    const dados = linha.dadosOriginais as any;
-    const anoLetivo =
-      limparValor(dados.Ano, "Ano Letivo:") || limparValor(dados.Ano, "Ano:");
-    if (anoLetivo === periodo) {
+    const dados = linha.dadosOriginais as Record<string, string>;
+    const ctx = extractContext(dados, profile);
+    if (ctx.periodo === periodo) {
       arquivoIds.add(linha.arquivoId);
       linhasIdsDoPeriodo.push(linha.id);
     }
@@ -58,12 +62,12 @@ export async function deleteArquivosPorPeriodo(prisma: PrismaClient, periodo: st
     }),
   ]);
 
-  const arquivosDeletados = await prisma.arquivoImportado.deleteMany({
+  const result = await prisma.arquivoImportado.deleteMany({
     where: { id: { in: Array.from(arquivoIds) } },
   });
 
   return {
-    arquivosDeletados: arquivosDeletados.count,
+    arquivosDeletados: result.count,
     linhasDeletadas: linhasIdsDoPeriodo.length,
   };
 }

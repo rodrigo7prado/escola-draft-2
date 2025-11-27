@@ -1,21 +1,28 @@
 import type { LinhaImportada } from "@prisma/client";
-import type { CsvResumoGrupo, CsvResumoPeriodo, CsvSummaryGrouping } from "@/lib/importer/csv/types";
+import type {
+  CsvProfile,
+  CsvResumoGrupo,
+  CsvResumoPeriodo,
+} from "@/lib/importer/csv/types";
+import { extractContext, extractField, extractName } from "@/lib/importer/csv/extract";
 
 type AlunosNoBanco = Map<string, Map<string, Set<string>>>;
 
 export function buildPeriodoResumo(
   linhas: LinhaImportada[],
-  grouping: CsvSummaryGrouping,
-  alunosBanco: AlunosNoBanco
+  alunosBanco: AlunosNoBanco,
+  profile: CsvProfile
 ): CsvResumoPeriodo[] {
   const periodos = new Map<string, Map<string, CsvResumoGrupo>>();
 
   for (const linha of linhas) {
     const dados = linha.dadosOriginais as Record<string, string>;
-    const periodo = grouping.periodo(dados) || "(sem período)";
-    const grupo = grouping.grupo(dados) || "(sem grupo)";
-    const chave = grouping.chave(dados);
+    const ctx = extractContext(dados, profile);
+    const chave = extractField(dados, profile.duplicateKey);
     if (!chave) continue;
+    const nome = extractName(dados, profile.displayName);
+    const periodo = ctx.periodo || "(sem período)";
+    const grupo = ctx.grupo || "(sem grupo)";
 
     if (!periodos.has(periodo)) periodos.set(periodo, new Map());
     const grupos = periodos.get(periodo)!;
@@ -35,10 +42,9 @@ export function buildPeriodoResumo(
     grupoData.totalCsv += 1;
 
     const alunosDoGrupo = alunosBanco.get(periodo)?.get(grupo) ?? new Set();
-    const estaNoBanco = alunosDoGrupo.has(chave);
-    if (!estaNoBanco) {
+    if (!alunosDoGrupo.has(chave)) {
       grupoData.pendentes += 1;
-      grupoData.pendentesDetalhe?.push({ chave, nome: grouping.nome(dados) });
+      grupoData.pendentesDetalhe?.push({ chave, nome });
     }
   }
 
@@ -46,9 +52,7 @@ export function buildPeriodoResumo(
     for (const grupo of grupos.values()) {
       grupo.totalBanco = alunosBanco.get(periodo)?.get(grupo.nome)?.size ?? 0;
       grupo.status = grupo.pendentes > 0 ? "pendente" : "ok";
-      if (grupo.pendentes === 0) {
-        grupo.pendentesDetalhe = undefined;
-      }
+      if (grupo.pendentes === 0) grupo.pendentesDetalhe = undefined;
     }
   }
 
@@ -74,5 +78,22 @@ export function buildPeriodoResumo(
         },
       };
     })
-    .sort((a, b) => b.periodo.localeCompare(a.periodo, undefined, { numeric: true }));
+    .sort((a, b) =>
+      b.periodo.localeCompare(a.periodo, undefined, { numeric: true })
+    );
+}
+
+export function mapearAlunosBanco(
+  enturmacoes: { anoLetivo: string; turma: string; aluno: { matricula: string } }[]
+): AlunosNoBanco {
+  const mapa = new Map<string, Map<string, Set<string>>>();
+
+  for (const ent of enturmacoes) {
+    if (!mapa.has(ent.anoLetivo)) mapa.set(ent.anoLetivo, new Map());
+    const turmas = mapa.get(ent.anoLetivo)!;
+    if (!turmas.has(ent.turma)) turmas.set(ent.turma, new Set());
+    turmas.get(ent.turma)!.add(ent.aluno.matricula);
+  }
+
+  return mapa;
 }

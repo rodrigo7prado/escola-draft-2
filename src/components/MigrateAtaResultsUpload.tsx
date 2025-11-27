@@ -4,7 +4,7 @@ import DropCsv from "@/components/DropCsv";
 import { PeriodoCard } from "@/components/PeriodoCard";
 import { useEffect, useState } from "react";
 import type { ParsedCsv } from "@/lib/hash";
-import { ALUNO_CSV_HEADERS } from "@/lib/importer/adapters/alunoCsvAdapter";
+import { alunosCsvProfile } from "@/lib/importer/profiles/alunosCsvProfile";
 
 type TurmaData = {
   nome: string;
@@ -114,8 +114,8 @@ export default function MigrateAtaResultsUpload() {
       {/* Upload de arquivo */}
       <DropCsv
         title="Ata de Resultados Finais"
-        requiredHeaders={ALUNO_CSV_HEADERS}
-        duplicateKey="ALUNO"
+        requiredHeaders={alunosCsvProfile.requiredHeaders}
+        duplicateKey={alunosCsvProfile.duplicateKey.column}
         onParsed={handleNewFiles}
         showPreview={false}
         multiple={true}

@@ -1,27 +1,24 @@
-import type { ArquivoImportado, LinhaImportada, Prisma } from "@prisma/client";
+import type { ArquivoImportado, LinhaImportada } from "@prisma/client";
 import type { ParsedCsv } from "@/lib/hash";
 
-export type CsvPersistContext<Row extends Record<string, string>> = {
-  rows: Row[];
-  linhas: LinhaImportada[];
-  arquivo: ArquivoImportado;
-  dataHash: string;
-  fileName: string;
+export type CsvField = {
+  column: string;
+  prefixes?: string[];
 };
 
-export type CsvImportAdapter<Row extends Record<string, string>, DomainResult> = {
+export type CsvProfile = {
   tipoArquivo: string;
-  tipoEntidade: string;
-  duplicateKey: (row: Row) => string;
-  buildLinha: (
-    row: Row,
-    numeroLinha: number,
-    arquivoId: string
-  ) => Prisma.LinhaImportadaCreateManyInput;
-  persistDomain: (
-    tx: Prisma.TransactionClient,
-    ctx: CsvPersistContext<Row>
-  ) => Promise<DomainResult>;
+  tipoEntidade: "aluno";
+  requiredHeaders: string[];
+  duplicateKey: CsvField;
+  displayName: CsvField[];
+  context: {
+    periodo: CsvField;
+    grupo: CsvField;
+    modalidade?: CsvField;
+    serie?: CsvField;
+    turno?: CsvField;
+  };
 };
 
 export type ImportOutcome<DomainResult> = {
@@ -40,13 +37,6 @@ export class DuplicateFileError extends Error {
     this.fileId = fileId;
   }
 }
-
-export type CsvSummaryGrouping = {
-  periodo: (dados: Record<string, string>) => string;
-  grupo: (dados: Record<string, string>) => string;
-  chave: (dados: Record<string, string>) => string;
-  nome: (dados: Record<string, string>) => string;
-};
 
 export type CsvResumoGrupo = {
   nome: string;

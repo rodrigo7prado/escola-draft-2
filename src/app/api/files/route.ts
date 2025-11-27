@@ -3,9 +3,9 @@ import type { ParsedCsv } from "@/lib/hash";
 import { prisma } from "@/lib/prisma";
 import { runCsvImport } from "@/lib/importer/csv/pipeline";
 import { DuplicateFileError, type CsvResumoPeriodo } from "@/lib/importer/csv/types";
-import { alunoCsvAdapter } from "@/lib/importer/adapters/alunoCsvAdapter";
-import { deleteArquivoPorId, deleteArquivosPorPeriodo } from "@/lib/importer/alunoDelete";
-import { mapearAlunosBanco, resumirAlunosPorPeriodo } from "@/lib/importer/alunoResumo";
+import { alunosCsvProfile } from "@/lib/importer/profiles/alunosCsvProfile";
+import { deleteArquivoPorId, deleteArquivosPorPeriodo } from "@/lib/importer/csv/delete";
+import { buildPeriodoResumo, mapearAlunosBanco } from "@/lib/importer/csv/summary";
 
 const TRANSACTION_OPTIONS = {
   maxWait: 10000,
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       prisma,
       data,
       fileName,
-      adapter: alunoCsvAdapter,
+      profile: alunosCsvProfile,
       transactionOptions: TRANSACTION_OPTIONS,
     });
 
@@ -78,24 +78,23 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const linhas = await prisma.linhaImportada.findMany({
-      where: { tipoEntidade: "aluno", arquivo: { status: "ativo" } },
-    });
-
-    const enturmacoes = await prisma.enturmacao.findMany({
-      select: {
-        anoLetivo: true,
-        turma: true,
-        aluno: { select: { matricula: true } },
-      },
-    });
+    const [linhas, enturmacoes] = await Promise.all([
+      prisma.linhaImportada.findMany({
+        where: { tipoEntidade: alunosCsvProfile.tipoEntidade, arquivo: { status: "ativo" } },
+      }),
+      prisma.enturmacao.findMany({
+        select: {
+          anoLetivo: true,
+          turma: true,
+          aluno: { select: { matricula: true } },
+        },
+      }),
+    ]);
 
     const alunosBanco = mapearAlunosBanco(enturmacoes);
-    const periodosResumo = resumirAlunosPorPeriodo(linhas, alunosBanco);
+    const periodosResumo = buildPeriodoResumo(linhas, alunosBanco, alunosCsvProfile);
 
-    return NextResponse.json({
-      periodos: periodosResumo.map(mapResumoParaUi),
-    });
+    return NextResponse.json({ periodos: periodosResumo.map(mapResumoParaUi) });
   } catch (error) {
     console.error("Erro ao listar arquivos:", error);
     return NextResponse.json(
@@ -126,7 +125,7 @@ export async function DELETE(request: NextRequest) {
       });
     }
 
-    const resultado = await deleteArquivosPorPeriodo(prisma, periodo!);
+    const resultado = await deleteArquivosPorPeriodo(prisma, periodo!, alunosCsvProfile);
     if (resultado.arquivosDeletados === 0) {
       return NextResponse.json({
         message: `Nenhum arquivo do período ${periodo} encontrado`,

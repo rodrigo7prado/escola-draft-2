@@ -27,7 +27,7 @@ Abstração genérica que transforma um `CsvProfile` em endpoints de importaçã
 - Limites: novas fontes de chaves existentes exigem extensão de `loadExistingKeys`; assume que `context` está preenchido corretamente no profile.
 
 ### 3. Perfis declarativos (valores)
-- Localização: `src/lib/importer/profiles/*` (ex.: `alunosCsvProfile`).
+- Localização: `src/lib/importer/profiles/*` (ex.: `ataResultadosFinaisProfile`).
 - Papel: definir, via valores, como extrair chave, nome e contexto; qual fonte de chaves existentes usar; qual tipo de domínio persistir; quais headers o frontend deve exigir.
 - Campos em uso no fluxo: `duplicateKey`, `displayName`, `context` (periodo/grupo/modalidade/serie/turno), `existingKeysSource` (opcional; ex.: enturmações), `tipoArquivo`/`tipoEntidade`, `requiredHeaders`; `cleanupStrategy` ainda não aplicada.
 - Handlers: `createCsvRouteHandlers` injeta apenas o profile e opções (transação, deleteScopes, summaryBuilder/serializer); não há lógica específica de categoria nos handlers.

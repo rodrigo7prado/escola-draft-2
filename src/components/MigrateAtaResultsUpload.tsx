@@ -4,7 +4,7 @@ import DropCsv from "@/components/DropCsv";
 import { PeriodoCard } from "@/components/PeriodoCard";
 import { useEffect, useState } from "react";
 import type { ParsedCsv } from "@/lib/hash";
-import { alunosCsvProfile } from "@/lib/importer/profiles/alunosCsvProfile";
+import { ataResultadosFinaisProfile } from "@/lib/importer/profiles";
 
 type TurmaData = {
   nome: string;
@@ -36,7 +36,7 @@ export default function MigrateAtaResultsUpload() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/files');
+      const response = await fetch('/api/importacoes/ata-resultados-finais');
       if (!response.ok) throw new Error('Erro ao carregar dados');
       const { periodos } = await response.json();
       setPeriodos(periodos || []);
@@ -55,7 +55,7 @@ export default function MigrateAtaResultsUpload() {
   const handleNewFiles = async (data: ParsedCsv, fileName: string) => {
     try {
       setIsUploading(true);
-      const response = await fetch('/api/files', {
+      const response = await fetch('/api/importacoes/ata-resultados-finais', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data, fileName })
@@ -89,7 +89,7 @@ export default function MigrateAtaResultsUpload() {
   // Handler para resetar período
   const handleResetPeriodo = async (anoLetivo: string) => {
     try {
-      const response = await fetch(`/api/files?periodo=${encodeURIComponent(anoLetivo)}`, {
+      const response = await fetch(`/api/importacoes/ata-resultados-finais?periodo=${encodeURIComponent(anoLetivo)}`, {
         method: 'DELETE'
       });
 
@@ -114,8 +114,8 @@ export default function MigrateAtaResultsUpload() {
       {/* Upload de arquivo */}
       <DropCsv
         title="Ata de Resultados Finais"
-        requiredHeaders={alunosCsvProfile.requiredHeaders}
-        duplicateKey={alunosCsvProfile.duplicateKey.column}
+        requiredHeaders={ataResultadosFinaisProfile.requiredHeaders}
+        duplicateKey={ataResultadosFinaisProfile.duplicateKey.column}
         onParsed={handleNewFiles}
         showPreview={false}
         multiple={true}

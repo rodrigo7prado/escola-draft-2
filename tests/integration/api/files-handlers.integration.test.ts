@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { createCsvRouteHandlers } from "@/lib/importer/csv/handlers";
-import { alunosCsvProfile } from "@/lib/importer/profiles/alunosCsvProfile";
+import { ataResultadosFinaisProfile } from "@/lib/importer/profiles";
 import { CSV_VALIDO_3_ALUNOS, parseCsvLoose } from "../../helpers/csv-fixtures";
 import {
   setupTestDatabase,
@@ -18,7 +18,7 @@ import {
 
 function makePostRequest(body: unknown) {
   return {
-    url: "http://localhost/api/files",
+    url: "http://localhost/api/importacoes/ata-resultados-finais",
     async json() {
       return body;
     },
@@ -27,7 +27,7 @@ function makePostRequest(body: unknown) {
 
 function makeDeleteRequest(query: string) {
   return {
-    url: `http://localhost/api/files${query}`,
+    url: `http://localhost/api/importacoes/ata-resultados-finais${query}`,
   } as any;
 }
 
@@ -38,7 +38,7 @@ describe("API handlers via createCsvRouteHandlers", () => {
     await setupTestDatabase();
     handlers = createCsvRouteHandlers({
       prisma: getTestPrisma(),
-      profile: alunosCsvProfile,
+      profile: ataResultadosFinaisProfile,
       deleteScopes: { byId: true, byPeriod: true },
     });
   });

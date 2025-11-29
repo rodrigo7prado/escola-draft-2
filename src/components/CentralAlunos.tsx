@@ -71,7 +71,7 @@ function CentralAlunosOLD() {
   useEffect(() => {
     const fetchAlunos = async () => {
       try {
-        const response = await fetch('/api/files');
+        const response = await fetch('/api/importacoes/ata-resultados-finais');
         if (!response.ok) throw new Error('Erro ao carregar dados');
 
         const { arquivos } = await response.json();

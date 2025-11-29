@@ -1,4 +1,5 @@
 ## DRY.BE: Importação CSV Declarativa (handlers + pipeline + resumo)
+Alias global: [DRY.BE:IMPORTACAO_CSV]
 
 ### Visão geral e partes orquestradas
 Abstração genérica que transforma um `CsvProfile` em endpoints de importação CSV plug-and-play. A orquestração fixa combina: 

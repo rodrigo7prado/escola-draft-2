@@ -37,7 +37,12 @@
           [ ] TEC3.2.6.2.3.2: Ao confirmar vínculo, [confirmar por digitação da matrícula][DRY.UI.1.2];
 
 # PARTE 2: BACKEND - API DE IMPORTAÇÃO DE FICHA INDIVIDUAL E TESTES
-[ ] A parte da persistência deverá estar de acordo com 
+  Aplicar: [DRY.BE:IMPORTACAO_CSV]
+  Checkpoint:
+  TEC1: [DRY.BE:IMPORTACAO_CSV] será lido para orientação e a implementação real também será consultada, e com base nisso:  
+    [ ] CP1.1: Serão criadas e implementadas todas as partes orquestradas necessárias para o parser de Ficha Individual - Histórico, seguindo o modelo do DRY.
+    [ ] CP1.2: Os endpoints, se necessário, serão criados em `src/pages/api/importacao-ficha-individual-historico.ts`.
+        
 
 # PARTE 4: FRONTEND - PAINEL DE MIGRAÇÃO DE FICHA INDIVIDUAL E TESTES
 [ ] CP7: Atualizar MigrateFichaHistoricoUpload para aceitar .xlsx, enviar FormData para /api/importacao-ficha-individual-historico, mostrar estados (upload, sucesso, erro de duplicata hash, erro de vínculo).

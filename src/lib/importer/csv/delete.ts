@@ -9,18 +9,19 @@ export async function deleteArquivoPorId(prisma: PrismaClient, id: string, profi
   });
   const linhasIds = linhas.map((l) => l.id);
 
-  await prisma.$transaction([
-    prisma.aluno.updateMany({
+  await prisma.$transaction(async (tx) => {
+    // Remover enturmações e alunos originados destas linhas
+    await tx.enturmacao.deleteMany({
       where: { linhaOrigemId: { in: linhasIds }, origemTipo: "csv" },
-      data: { fonteAusente: true },
-    }),
-    prisma.enturmacao.updateMany({
+    });
+    await tx.aluno.deleteMany({
       where: { linhaOrigemId: { in: linhasIds }, origemTipo: "csv" },
-      data: { fonteAusente: true },
-    }),
-  ]);
+    });
 
-  await prisma.arquivoImportado.delete({ where: { id } });
+    // Remover linhas e arquivo
+    await tx.linhaImportada.deleteMany({ where: { id: { in: linhasIds } } });
+    await tx.arquivoImportado.delete({ where: { id } });
+  });
 
   return { alunosMarcados: linhasIds.length };
 }
@@ -51,19 +52,20 @@ export async function deleteArquivosPorPeriodo(
     return { arquivosDeletados: 0, linhasDeletadas: 0 };
   }
 
-  await prisma.$transaction([
-    prisma.aluno.updateMany({
+  const result = await prisma.$transaction(async (tx) => {
+    await tx.enturmacao.deleteMany({
       where: { linhaOrigemId: { in: linhasIdsDoPeriodo }, origemTipo: "csv" },
-      data: { fonteAusente: true },
-    }),
-    prisma.enturmacao.updateMany({
+    });
+    await tx.aluno.deleteMany({
       where: { linhaOrigemId: { in: linhasIdsDoPeriodo }, origemTipo: "csv" },
-      data: { fonteAusente: true },
-    }),
-  ]);
-
-  const result = await prisma.arquivoImportado.deleteMany({
-    where: { id: { in: Array.from(arquivoIds) } },
+    });
+    await tx.linhaImportada.deleteMany({
+      where: { id: { in: linhasIdsDoPeriodo } },
+    });
+    const deleted = await tx.arquivoImportado.deleteMany({
+      where: { id: { in: Array.from(arquivoIds) } },
+    });
+    return deleted;
   });
 
   return {

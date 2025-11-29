@@ -14,10 +14,14 @@
     "test:watch": "vitest watch",
     "prepare": "husky",
     "migrate:all": "bash scripts/migrate-all.sh deploy",
-    "migrate:dev": "bash scripts/migrate-all.sh dev"
+    "migrate:dev": "bash scripts/migrate-all.sh dev",
+    "backup-db": "bash scripts/backup-db.sh",
+    "restore-db": "bash scripts/restore-db.sh"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",
+    "fast-xml-parser": "^4.5.1",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.552.0",
     "next": "16.0.0",
     "react": "19.2.0",

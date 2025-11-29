@@ -13,6 +13,8 @@ const TEMPLATE_PATH = join(
   "..",
   "docs",
   "templates",
+  "arquivosDeExemplo",
+  "importacaoPorColagem",
   "DadosEscolaresColagemModelo.txt"
 );
 const ESPERADO_PATH = join(
@@ -22,6 +24,8 @@ const ESPERADO_PATH = join(
   "..",
   "docs",
   "templates",
+  "arquivosDeExemplo",
+  "importacaoPorColagem",
   "DadosEscolaresEsperados.json"
 );
 

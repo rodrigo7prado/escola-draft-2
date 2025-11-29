@@ -1454,7 +1454,7 @@ export function limparValor(
   return str;
 }
 
-export function limparCamposEnturmacao(dados: Record<string, string>) {
+export function limparCamposContexto(dados: Record<string, string>) {
   return {
     anoLetivo:
       limparValor(dados.Ano, "Ano Letivo:") || limparValor(dados.Ano, "Ano:"),

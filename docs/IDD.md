@@ -12,33 +12,39 @@ Cada sessão de trabalho terá como foco a implementação de uma feature espec�
 
 ## OPCIONALIDADES
 - A sessão pode ser dividida em múltiplas etapas, cada qual com seus próprios checkpoints.
-- Ao final da sessão, pode haver a necessidade da escrita do arquivo docs/[NOME_DA_FEATURE]/ABSTRACAO.md, contendo a implementação resumida do que será abstraído para componentes genéricos.
 
-# Sumário de features
+# SUMÁRIO DE FEATURES
 - [Importação por colagem](features/importacao-por-colagem/FLUXO.md);
 - [Importação de Ficha Individual - Histórico](features/importacao-ficha-individual-historico/FLUXO.md);  <---
 
 **FEATURE ATUAL**: `Importação de Ficha Individual - Histórico`
 
-# Workflow geral para uso do Claude AI / ChatGPT Codex
-- Identificar a feature a ser implementada em FEATURE ATUAL acima;
-- Verificar arquivo de Fluxo
-  - a regra para a localização do arquivo é: docs/[NOME_DA_FEATURE]/FLUXO.md
-- Verificar arquivo de CHECKPOINTS
-  - a regra para a localização do arquivo é: docs/[NOME_DA_FEATURE]/CHECKPOINT.md
+# WORKFLOW GERAL PARA IMPLEMENTAÇÃO DE FEATURES
+- IDENTIFICAR a feature a ser implementada em FEATURE ATUAL acima;
+- VERIFICAR arquivo de FLUXO
+  - A regra para a localização do arquivo é: docs/[NOME_DA_FEATURE]/FLUXO.md
+- Verificar arquivo de MAPEAMENTO
+  - Em docs/templates/MAPEAMENTO.md há a referência do template a ser seguido.
+  - A regra para a localização do arquivo é: src/lib/mapeamentos/[NOME_DA_FEATURE].ts
+- VERIFICAR arquivo de CHECKPOINTS
+  - A regra para a localização do arquivo é: docs/[NOME_DA_FEATURE]/CHECKPOINT.md
+- INICIAR a sessão de trabalho a partir do primeiro checkpoint não concluído no arquivo de CHECKPOINTS
 
 # OBJETIVO
-Arquivo de especificação de CHECKPOINT e TÉCNICO para todas as features
+Arquivo de especificação de MAPEAMENTO, CHECKPOINT e TÉCNICO para todas as features
 
-# Regras gerais
-- Todo o trabalho de implementação de features terá as camadas de (1) FLUXO, (2) CHECKPOINT e (3) TÉCNICA;
+# REGRAS GERAIS
+- Todo o trabalho de implementação de features se dará em QUATRO arquivos: de (1) FLUXO, (2) MAPEAMENTO, (3) CHECKPOINT e, eventualmente, (4) TÉCNICA;
+- Esses arquivos serão localizados em `docs/[NOME_DA_FEATURE]/[NOME_DO_ARQUIVO].md`, exceto o arquivo de MAPEAMENTO, que estará em `src/lib/mapeamentos/[NOME_DA_FEATURE].ts`;
+- Cada arquivo terá um formato específico, conforme descrito abaixo:
+  - FLUXO.md - descreve o fluxo da feature do ponto de vista do usuário final e também do mecanismos internos;
+  - MAPEAMENTO.ts - contém a especificação dos mapeamentos de dados necessários para a feature. 
+    - Este arquivo seguirá o template de mapeamento disponível em `docs/templates/MAPEAMENTO.md`;
+    - Este arquivo terá o papel fundamental de documentar estruturas para uso em refatorações, testes, futuras implementações, viabilizando DRY (Don't Repeat Yourself) robusta;
+  - CHECKPOINT.md - descreve o workflow incremental de implementação da feature, absorvendo também a camada de TÉCNICA (que conterá bifurcações para soluções mais concretas do checkpoint em questão).
+  - TECNICO.md - Usado ocasionalmente para descrever um resumo breve das decisões técnicas tomadas durante a implementação da feature, com fins de documentação resumida.
 
-Estas camadas se distribuirão em três arquivos distintos, localizados em `docs/[NOME_DA_FEATURE]/`:
-- FLUXO.md - descreve o fluxo da feature do ponto de vista do usuário final e também do mecanismos internos;
-- CHECKPOINT.md - descreve o workflow incremental de implementação da feature, absorvendo também a camada de TÉCNICA (que conterá bifurcações para soluções mais concretas do checkpoint em questão).
-- TECNICO.md - descreve um resumo breve das decisões técnicas tomadas durante a implementação da feature, com fins de documentação resumida.
-
-## Relações entre camadas
+## Relações entre camadas (arquivos)
 - Todo checkpoint terá origem na camada de fluxo, devendo ser observado se não houver correspondência direta ou indireta.
 - Todo checkpoint terá bifurcações técnicas, que serão organizadas de forma resumida no arquivo TECNICO.md.
 
@@ -105,4 +111,15 @@ Ao final de cada sessão de trabalho:
   # DECISÕES TÉCNICAS
 
   [Conteúdo conforme o formato do arquivo de TECNICO acima]
+  ```
+## Template de arquivo de MAPEAMENTO
+  ```
+  <!-- Arquivo segue o template de /docs/templates/MAPEAMENTO.md -->
+  **ARQUIVO DE MAPEAMENTO NA APLICAÇÃO**: [`[NOME_DA_FEATURE]`](/src/lib/mapeamentos/[NOME_DA_FEATURE].ts)
+  # MAPEAMENTO DE [NOME_DA_FEATURE]
+  [Descrição geral do mapeamento da feature]
+  ## Estrutura dos Dados
+  [Descrição da estrutura dos dados da feature]
+  
+  -> tipos de dados e o mapeamento em si, etc.
   ```

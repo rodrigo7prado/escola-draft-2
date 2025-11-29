@@ -73,7 +73,7 @@ Após completar a documentação CIF, duas necessidades prioritárias foram iden
 1. **Criado `src/lib/csv.ts` (85 linhas):**
 
    - Função `limparValor(valor, prefixo)` - Remove prefixos de valores CSV
-   - Função `limparCamposEnturmacao(dados)` - Helper para limpar múltiplos campos de uma vez
+   - Função `limparCamposContexto(dados)` - Helper para limpar múltiplos campos de uma vez
    - JSDoc completo com 5+ exemplos práticos
    - Comentários explicando problema que resolve ("value too long for column")
 
@@ -197,7 +197,7 @@ import { limparValor } from "@/lib/csv";
 **Notas Adicionais:**
 
 - **IDE pode mostrar erro temporário:** Após refatoração, VSCode/IDE pode cachear referências antigas. Solução: Restart dev server ou reload window.
-- **Função `limparCamposEnturmacao()` não usada ainda:** Criada para facilitar uso futuro, mas pode ser aplicada em `route.ts` para reduzir ainda mais código repetitivo.
+- **Função `limparCamposContexto()` não usada ainda:** Criada para facilitar uso futuro, mas pode ser aplicada em `route.ts` para reduzir ainda mais código repetitivo.
 
 ---
 

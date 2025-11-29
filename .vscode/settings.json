@@ -4,5 +4,11 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always"
   },
-  "chatgpt.openOnStartup": true
+  "chatgpt.openOnStartup": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
 }

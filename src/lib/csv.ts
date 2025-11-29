@@ -45,13 +45,13 @@ export function limparValor(
 }
 
 /**
- * Helper para limpar todos os campos de enturmação de uma vez
+ * Helper para limpar campos de contexto escolar de uma vez
  *
- * Aplica limparValor() em todos os campos necessários para criar uma Enturmacao,
- * economizando código repetitivo e garantindo consistência.
+ * Aplica limparValor() em campos recorrentes (ano/modalidade/turma/série/turno)
+ * vindos dos arquivos do Conexão, evitando repetição e garantindo consistência.
  *
  * @param dados - Objeto com dados de uma linha do CSV (Record<string, string>)
- * @returns Objeto com campos limpos prontos para criar Enturmacao
+ * @returns Objeto com campos limpos prontos para vínculo/persistência
  *
  * @example
  * ```typescript
@@ -63,7 +63,7 @@ export function limparValor(
  *   "TURNO": "Turno: MANHÃ"
  * };
  *
- * const campos = limparCamposEnturmacao(row);
+ * const campos = limparCamposContexto(row);
  * // {
  * //   anoLetivo: "2024",
  * //   modalidade: "REGULAR",
@@ -73,7 +73,7 @@ export function limparValor(
  * // }
  * ```
  */
-export function limparCamposEnturmacao(dados: Record<string, string>) {
+export function limparCamposContexto(dados: Record<string, string>) {
   // Tentar primeiro "Ano Letivo:", depois "Ano:" como fallback
   let anoLetivo = limparValor(dados.Ano, 'Ano Letivo:');
   if (!anoLetivo || anoLetivo === dados.Ano?.trim()) {

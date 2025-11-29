@@ -3,11 +3,8 @@
 import DropCsv from "@/components/DropCsv";
 import { PeriodoCard } from "@/components/PeriodoCard";
 import { useEffect, useState } from "react";
-
-type ParsedCsv = {
-  headers: string[];
-  rows: Record<string, string>[];
-};
+import type { ParsedCsv } from "@/lib/hash";
+import { alunosCsvProfile } from "@/lib/importer/profiles/alunosCsvProfile";
 
 type TurmaData = {
   nome: string;
@@ -30,24 +27,7 @@ type PeriodoData = {
   turmas: TurmaData[];
 };
 
-const ATA_HEADERS = [
-  "Ano",
-  "CENSO",
-  "MODALIDADE",
-  "CURSO",
-  "SERIE",
-  "TURNO",
-  "TURMA",
-  "ALUNO",
-  "NOME_COMPL",
-  "DISCIPLINA1",
-  "TOTAL_PONTOS",
-  "FALTAS",
-  "Textbox148",
-  "SITUACAO_FINAL",
-];
-
-export default function MigrateUploads() {
+export default function MigrateAtaResultsUpload() {
   const [periodos, setPeriodos] = useState<PeriodoData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -130,15 +110,16 @@ export default function MigrateUploads() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 text-sm">
       {/* Upload de arquivo */}
       <DropCsv
         title="Ata de Resultados Finais"
-        requiredHeaders={ATA_HEADERS}
-        duplicateKey="ALUNO"
+        requiredHeaders={alunosCsvProfile.requiredHeaders}
+        duplicateKey={alunosCsvProfile.duplicateKey.column}
         onParsed={handleNewFiles}
         showPreview={false}
         multiple={true}
+        enableDrop={false}
       />
 
       {/* Estado de loading */}

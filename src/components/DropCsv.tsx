@@ -2,11 +2,8 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-
-type ParsedCsv = {
-  headers: string[];
-  rows: Record<string, string>[];
-};
+import type { ParsedCsv } from "@/lib/hash";
+import { parseCsvLoose } from "@/lib/importer/csv/parse";
 
 type DropCsvProps = {
   title: string;
@@ -15,68 +12,18 @@ type DropCsvProps = {
   onParsed?: (data: ParsedCsv, fileName: string) => void;
   showPreview?: boolean; // controls preview/stats rendering
   multiple?: boolean; // allow multiple file upload
+  enableDrop?: boolean; // allow drag-and-drop; when false, only the button is available
 };
 
-function splitCsvLine(line: string): string[] {
-  const result: string[] = [];
-  let current = "";
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i += 1) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        current += '"';
-        i += 1; // escape ""
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (ch === "," && !inQuotes) {
-      result.push(current.trim());
-      current = "";
-    } else {
-      current += ch;
-    }
-  }
-  result.push(current.trim());
-  return result;
-}
-
-function parseCsvLoose(text: string, requiredHeaders: string[]): ParsedCsv {
-  const rawLines = text.split(/\r?\n/);
-  const lines = rawLines.map((l) => l.replace(/\uFEFF/g, "")).filter((l) => l.trim().length > 0);
-  if (lines.length === 0) return { headers: [], rows: [] };
-
-  // localizar a primeira linha cujo conjunto contenha todos os requiredHeaders
-  let headerIndex = -1;
-  let headers: string[] = [];
-  for (let i = 0; i < lines.length; i += 1) {
-    const cols = splitCsvLine(lines[i]);
-    const set = new Set(cols);
-    const allPresent = requiredHeaders.every((h) => set.has(h));
-    if (allPresent) {
-      headerIndex = i;
-      headers = cols;
-      break;
-    }
-  }
-  if (headerIndex === -1) {
-    return { headers: [], rows: [] };
-  }
-
-  const rows: Record<string, string>[] = [];
-  for (let i = headerIndex + 1; i < lines.length; i += 1) {
-    const parts = splitCsvLine(lines[i]);
-    if (parts.every((p) => p.trim() === "")) continue; // pular linhas vazias
-    const row: Record<string, string> = {};
-    for (let j = 0; j < headers.length; j += 1) {
-      row[headers[j]] = (parts[j] ?? "").trim();
-    }
-    rows.push(row);
-  }
-  return { headers, rows };
-}
-
-export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed, showPreview = true, multiple = false }: DropCsvProps) {
+export default function DropCsv({
+  title,
+  requiredHeaders,
+  duplicateKey,
+  onParsed,
+  showPreview = true,
+  multiple = false,
+  enableDrop = true,
+}: DropCsvProps) {
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<ParsedCsv | null>(null);
@@ -126,10 +73,11 @@ export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed
   }, [onParsed, requiredHeaders, multiple]);
 
   const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    if (!enableDrop) return;
     e.preventDefault();
     setDragOver(false);
     void handleFiles(e.dataTransfer.files);
-  }, [handleFiles]);
+  }, [enableDrop, handleFiles]);
 
   const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     void handleFiles(e.target.files);
@@ -196,16 +144,18 @@ export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed
   return (
     <div>
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={onDrop}
-        className={`border rounded-sm p-4 text-sm ${dragOver ? "bg-neutral-50" : ""}`}
+        onDragOver={enableDrop ? (e) => { e.preventDefault(); setDragOver(true); } : undefined}
+        onDragLeave={enableDrop ? () => setDragOver(false) : undefined}
+        onDrop={enableDrop ? onDrop : undefined}
+        className={`border rounded-sm p-4 text-sm ${enableDrop && dragOver ? "bg-neutral-50" : ""}`}
       >
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="font-medium">{title}</div>
             <div className="text-neutral-600 text-xs">
-              Arraste e solte {multiple ? 'arquivos .csv' : 'um .csv'} aqui ou selecione {multiple ? 'arquivos' : 'um arquivo'}
+              {enableDrop
+                ? `Arraste e solte ${multiple ? 'arquivos .csv' : 'um .csv'} aqui ou selecione ${multiple ? 'arquivos' : 'um arquivo'}`
+                : `Selecione ${multiple ? 'arquivos .csv' : 'um arquivo .csv'} para enviar`}
             </div>
           </div>
           <Button
@@ -252,5 +202,3 @@ export default function DropCsv({ title, requiredHeaders, duplicateKey, onParsed
     </div>
   );
 }
-
-

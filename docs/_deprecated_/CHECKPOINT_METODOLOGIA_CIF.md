@@ -131,7 +131,7 @@ Duration   40.59s
 - ✅ `docs/ciclos/MIGRACAO_CICLO.md` - Registro de ciclo de vida (3 entradas)
 
 ### 5. Refatoração de Código (Quick Win)
-- ✅ `src/lib/csv.ts` - Funções utilitárias centralizadas (limparValor, limparCamposEnturmacao)
+- ✅ `src/lib/csv.ts` - Funções utilitárias centralizadas (limparValor, limparCamposContexto)
 - ✅ `src/app/api/files/route.ts` - Atualizado para usar imports centralizados (eliminadas 2 duplicações)
 
 ---
@@ -510,7 +510,7 @@ SELECT COUNT(*) FROM "Enturmacao";
 
 **Tarefas:**
 1. ✅ Criar `src/lib/csv.ts` com função `limparValor()`
-2. ✅ Criar `limparCamposEnturmacao()` helper
+2. ✅ Criar `limparCamposContexto()` helper
 3. ✅ Atualizar imports em:
    - `src/app/api/files/route.ts` (2 duplicações removidas)
 4. ✅ Código validado e funcionando
@@ -582,14 +582,14 @@ SELECT COUNT(*) FROM "Enturmacao";
 
 5. ✅ ~~Extrair funções utilitárias para `src/lib/csv.ts`~~ **CONCLUÍDO**
    - Eliminada duplicação de `limparValor()` (2 ocorrências removidas)
-   - Helper `limparCamposEnturmacao()` criado
+   - Helper `limparCamposContexto()` criado
    - JSDoc completo com exemplos
 
 6. ✅ ~~Configurar ambiente de testes (Vitest + Husky)~~ **CONCLUÍDO**
    - Vitest configurado com pool forks (compatível com crypto do Node.js)
    - Pre-commit hook instalado (Husky v9)
    - 54 testes unitários implementados (100% passando)
-   - Funções críticas testadas: limparValor, limparCamposEnturmacao, hashData
+   - Funções críticas testadas: limparValor, limparCamposContexto, hashData
 
 7. 🚧 ~~Implementar testes de integração (API + banco)~~ **BLOQUEADO** (Sessão 5-6)
    - ✅ Helpers de banco implementados (PostgreSQL real + limpeza entre testes)

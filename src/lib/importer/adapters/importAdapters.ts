@@ -16,6 +16,14 @@ type ImportAdapterContext = {
 
 type ImportAdapter = (ctx: ImportAdapterContext) => Promise<NextResponse>;
 
+function isMultipartRequest(request: NextRequest) {
+  const contentType =
+    typeof (request as any).headers?.get === "function"
+      ? request.headers.get("content-type") ?? ""
+      : "";
+  return contentType.includes("multipart/form-data") || contentType.includes("application/x-www-form-urlencoded");
+}
+
 async function readMultipart(request: NextRequest) {
   const form = await request.formData();
   const file = form.get("file");
@@ -32,6 +40,9 @@ async function readMultipart(request: NextRequest) {
 
 const declarativeMultipart: ImportAdapter = async ({ prisma, profile, request, transactionOptions }) => {
   try {
+    if (!isMultipartRequest(request)) {
+      return NextResponse.json({ error: "Content-Type inválido, esperado multipart/form-data" }, { status: 400 });
+    }
     const entrada = await readMultipart(request);
 
     const resultado = await runGenericImport({
@@ -67,9 +78,10 @@ const declarativeMultipart: ImportAdapter = async ({ prisma, profile, request, t
 
 const csvMultipart: ImportAdapter = async ({ prisma, profile, request, transactionOptions }) => {
   try {
+    const isMultipart = isMultipartRequest(request);
     const hasFormData = typeof (request as any).formData === "function";
 
-    if (hasFormData) {
+    if (isMultipart && hasFormData) {
       const entrada = await readMultipart(request);
       const texto = entrada.buffer.toString("utf8");
       const parsed = parseCsvLoose(texto, profile.requiredHeaders);
@@ -92,7 +104,7 @@ const csvMultipart: ImportAdapter = async ({ prisma, profile, request, transacti
       );
     }
 
-    // Fallback para JSON (compat com testes legados)
+    // Fallback para JSON (compat com testes)
     const body = await request.json();
     const { data, fileName } = body as { data?: any; fileName?: string };
     if (!data || !fileName) {

@@ -26,31 +26,34 @@ const csvEnturmacoes: SummaryAdapter = async ({ prisma, profile, summaryBuilder 
 
   const summary = builder(linhas, existingKeys, profile);
 
-  if (!Array.isArray(summary)) return summary;
-  return (summary as CsvResumoPeriodo[]).map((resumo) => ({
-    anoLetivo: resumo.periodo,
-    resumo: {
-      totalTurmas: resumo.resumo.totalGrupos,
-      totalAlunosCSV: resumo.resumo.totalCsv,
-      totalAlunosBanco: resumo.resumo.totalBanco,
-      pendentes: resumo.resumo.pendentes,
-      status: resumo.resumo.status,
-    },
-    turmas: resumo.grupos.map((grupo) => ({
-      nome: grupo.nome,
-      totalAlunosCSV: grupo.totalCsv,
-      totalAlunosBanco: grupo.totalBanco,
-      pendentes: grupo.pendentes,
-      status: grupo.status,
-      alunosPendentes: grupo.pendentesDetalhe?.map((aluno) => ({
-        matricula: aluno.chave,
-        nome: aluno.nome,
+  if (!Array.isArray(summary)) return { periodos: summary };
+  return {
+    periodos: (summary as CsvResumoPeriodo[]).map((resumo) => ({
+      anoLetivo: resumo.periodo,
+      resumo: {
+        totalTurmas: resumo.resumo.totalGrupos,
+        totalAlunosCSV: resumo.resumo.totalCsv,
+        totalAlunosBanco: resumo.resumo.totalBanco,
+        pendentes: resumo.resumo.pendentes,
+        status: resumo.resumo.status,
+      },
+      turmas: resumo.grupos.map((grupo) => ({
+        nome: grupo.nome,
+        totalAlunosCSV: grupo.totalCsv,
+        totalAlunosBanco: grupo.totalBanco,
+        pendentes: grupo.pendentes,
+        status: grupo.status,
+        alunosPendentes: grupo.pendentesDetalhe?.map((aluno) => ({
+          matricula: aluno.chave,
+          nome: aluno.nome,
+        })),
       })),
     })),
-  }));
+  };
 };
 
 const chavesDefault: SummaryAdapter = async ({ profile }) => ({
+  periodos: [],
   chavesDisponiveis: profile.chavesDisponiveis ?? [],
   pendencias: [],
 });

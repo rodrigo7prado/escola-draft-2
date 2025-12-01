@@ -1,7 +1,7 @@
 import type { ImportProfile } from "@/lib/importer/csv/types";
 
 export const ataResultadosFinaisProfile: ImportProfile = {
-  formato: "csv",
+  formato: "CSV",
   tipoArquivo: "ata-resultados-finais",
   tipoEntidade: "aluno",
   requiredHeaders: [
@@ -35,4 +35,12 @@ export const ataResultadosFinaisProfile: ImportProfile = {
     serie: { column: "SERIE", prefixes: ["Série:"] },
     turno: { column: "TURNO", prefixes: ["Turno:"] },
   },
+  extratorId: "csvDeclarativo",
+  serializadorId: "csvLinhaSimples",
+  hashPolicyId: "default",
+  inputAdapterId: "declarative-multipart",
+  importAdapterId: "csv-multipart",
+  summaryAdapterId: "csv-enturmacoes",
+  deleteAdapterId: "csv-delete",
+  chavesDisponiveis: ["nomeDataNascimento", "nome"],
 };

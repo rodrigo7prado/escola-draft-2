@@ -32,6 +32,10 @@ function buildLinhasPayload(
 export async function runGenericImport(params: ImportRunParams): Promise<ImportRunResult> {
   const { prisma, buffer, fileName, profile, selectedKeyId, alunoId, transactionOptions } = params;
 
+  if (!profile.serializadorId || !profile.extratorId) {
+    throw new Error("Profile declarativo inválido: extratorId ou serializadorId ausente");
+  }
+
   const parsed = await executarExtrator(profile, buffer);
   const serializer = lineSerializers[profile.serializadorId as keyof typeof lineSerializers];
   if (!serializer) {

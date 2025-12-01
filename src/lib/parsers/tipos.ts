@@ -69,17 +69,3 @@ export type ParseResult = {
 };
 
 export type KeyBuilderId = "nomeDataNascimento" | "nome";
-
-export type ParserProfile = {
-  nome: string;
-  formato: Formato;
-  tipoArquivo: string;
-  tipoEntidade: string;
-  hashPolicyId: string;
-  extratorId: string;
-  serializadorId: string;
-  persistorId?: string;
-  chavesDisponiveis?: KeyBuilderId[];
-  campos: Record<string, CampoConfig>;
-  requiredHeaders?: string[];
-};

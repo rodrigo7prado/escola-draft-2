@@ -1,5 +1,6 @@
 import type { ArquivoImportado, LinhaImportada } from "@prisma/client";
 import type { ParsedCsv } from "@/lib/hash";
+import type { CampoConfig, KeyBuilderId } from "@/lib/parsers/tipos";
 
 export type ImportField = {
   column: string;
@@ -9,7 +10,7 @@ export type ImportField = {
 export type ImportProfile = {
   formato: "csv" | "xlsx" | "txt" | string;
   tipoArquivo: string;
-  tipoEntidade: "aluno";
+  tipoEntidade: string;
   requiredHeaders: string[];
   duplicateKey: ImportField;
   displayName: ImportField[];
@@ -22,6 +23,17 @@ export type ImportProfile = {
     serie?: ImportField;
     turno?: ImportField;
   };
+  // Campos opcionais para perfis declarativos de parser
+  extratorId?: string;
+  serializadorId?: string;
+  persistorId?: string;
+  hashPolicyId?: string;
+  chavesDisponiveis?: KeyBuilderId[];
+  campos?: Record<string, CampoConfig>;
+  importAdapterId?: string;
+  inputAdapterId?: string;
+  summaryAdapterId?: string;
+  deleteAdapterId?: string;
 };
 
 export type ImportOutcome<DomainResult> = {

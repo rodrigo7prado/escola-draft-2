@@ -2,7 +2,7 @@ import type { PrismaClient, Prisma } from "@prisma/client";
 import { hashData, type ParsedCsv } from "@/lib/hash";
 import {
   DuplicateFileError,
-  type CsvProfile,
+  type ImportProfile,
   type ImportOutcome,
 } from "@/lib/importer/csv/types";
 import { extractContext, extractField, extractName } from "@/lib/importer/csv/extract";
@@ -14,7 +14,7 @@ type RunCsvImportParams = {
   prisma: PrismaClient;
   data: ParsedCsv;
   fileName: string;
-  profile: CsvProfile;
+  profile: ImportProfile;
   transactionOptions?: TransactionOptions;
 };
 
@@ -29,7 +29,7 @@ async function ensureHashUnique(prisma: PrismaClient, dataHash: string) {
 
 async function createArquivoELinhas(
   tx: Prisma.TransactionClient,
-  params: { data: ParsedCsv; fileName: string; profile: CsvProfile; dataHash: string }
+  params: { data: ParsedCsv; fileName: string; profile: ImportProfile; dataHash: string }
 ) {
   const { data, fileName, profile, dataHash } = params;
   const arquivo = await tx.arquivoImportado.create({
@@ -59,7 +59,7 @@ async function createArquivoELinhas(
   return { arquivo, linhas };
 }
 
-function resolveDomain(profile: CsvProfile) {
+function resolveDomain(profile: ImportProfile) {
   if (profile.tipoEntidade === "aluno") {
     return persistAlunosDomain;
   }
@@ -108,3 +108,6 @@ export async function runCsvImport({
     domain: resultado.domain,
   };
 }
+
+// Compat: alias genérico
+export const runImport = runCsvImport;

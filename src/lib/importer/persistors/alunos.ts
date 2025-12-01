@@ -1,5 +1,5 @@
 import type { Prisma, LinhaImportada } from "@prisma/client";
-import type { CsvProfile } from "@/lib/importer/csv/types";
+import type { ImportProfile } from "@/lib/importer/csv/types";
 
 type PersistDeps = {
   rows: Record<string, string>[];
@@ -7,10 +7,10 @@ type PersistDeps = {
   arquivo: { id: string };
   dataHash: string;
   fileName: string;
-  profile: CsvProfile;
+  profile: ImportProfile;
   extractField: (row: Record<string, string>, field: { column: string; prefixes?: string[] }) => string;
   extractName: (row: Record<string, string>, fields: { column: string; prefixes?: string[] }[]) => string;
-  extractContext: (row: Record<string, string>, profile: CsvProfile) => {
+  extractContext: (row: Record<string, string>, profile: ImportProfile) => {
     periodo: string;
     grupo: string;
     modalidade: string;

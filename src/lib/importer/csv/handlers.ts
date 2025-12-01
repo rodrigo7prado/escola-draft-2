@@ -5,11 +5,11 @@ import { runCsvImport } from "@/lib/importer/csv/pipeline";
 import { buildPeriodoResumo } from "@/lib/importer/csv/summary";
 import { loadExistingKeys } from "@/lib/importer/csv/existing";
 import { deleteArquivoPorId, deleteArquivosPorPeriodo } from "@/lib/importer/csv/delete";
-import { DuplicateFileError, type CsvProfile, type CsvResumoPeriodo } from "@/lib/importer/csv/types";
+import { DuplicateFileError, type ImportProfile, type CsvResumoPeriodo } from "@/lib/importer/csv/types";
 
 type ImportCsvConfig = {
   prisma: PrismaClient;
-  profile: CsvProfile;
+  profile: ImportProfile;
   transactionOptions?: Parameters<PrismaClient["$transaction"]>[1];
   deleteScopes?: {
     byId?: boolean;
@@ -19,7 +19,7 @@ type ImportCsvConfig = {
   summaryBuilder?: (
     linhas: Awaited<ReturnType<PrismaClient["linhaImportada"]["findMany"]>>,
     existingKeys: Map<string, Map<string, Set<string>>>,
-    profile: CsvProfile
+    profile: ImportProfile
   ) => unknown;
   summarySerializer?: (summary: unknown) => unknown;
 };
@@ -48,7 +48,7 @@ function mapResumoParaUi(resumo: CsvResumoPeriodo) {
   };
 }
 
-export function createCsvRouteHandlers(config: ImportCsvConfig) {
+export function createImportRouteHandlers(config: ImportCsvConfig) {
   const { prisma, profile, transactionOptions } = config;
   const deleteById = config.deleteScopes?.byId ?? true;
   const deleteByPeriod = config.deleteScopes?.byPeriod ?? false;
@@ -173,3 +173,6 @@ export function createCsvRouteHandlers(config: ImportCsvConfig) {
     },
   };
 }
+
+// Compat: manter nome antigo para usos legados
+export const createCsvRouteHandlers = createImportRouteHandlers;

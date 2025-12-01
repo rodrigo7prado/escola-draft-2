@@ -1,6 +1,6 @@
 import type { LinhaImportada } from "@prisma/client";
 import type {
-  CsvProfile,
+  ImportProfile,
   CsvResumoGrupo,
   CsvResumoPeriodo,
 } from "@/lib/importer/csv/types";
@@ -11,7 +11,7 @@ type AlunosNoBanco = Map<string, Map<string, Set<string>>>;
 export function buildPeriodoResumo(
   linhas: LinhaImportada[],
   alunosBanco: AlunosNoBanco,
-  profile: CsvProfile
+  profile: ImportProfile
 ): CsvResumoPeriodo[] {
   const periodos = new Map<string, Map<string, CsvResumoGrupo>>();
 

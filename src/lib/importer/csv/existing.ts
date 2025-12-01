@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import type { CsvProfile } from "@/lib/importer/csv/types";
+import type { ImportProfile } from "@/lib/importer/csv/types";
 
 type ExistingKeys = Map<string, Map<string, Set<string>>>;
 
@@ -24,7 +24,7 @@ async function loadFromEnturmacoes(prisma: PrismaClient): Promise<ExistingKeys> 
 
 export async function loadExistingKeys(
   prisma: PrismaClient,
-  profile: CsvProfile
+  profile: ImportProfile
 ): Promise<ExistingKeys> {
   if (profile.existingKeysSource === "enturmacoes") {
     return loadFromEnturmacoes(prisma);

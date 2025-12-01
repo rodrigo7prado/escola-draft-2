@@ -1,6 +1,7 @@
-import type { CsvProfile } from "@/lib/importer/csv/types";
+import type { ImportProfile } from "@/lib/importer/csv/types";
 
-export const ataResultadosFinaisProfile: CsvProfile = {
+export const ataResultadosFinaisProfile: ImportProfile = {
+  formato: "csv",
   tipoArquivo: "ata-resultados-finais",
   tipoEntidade: "aluno",
   requiredHeaders: [

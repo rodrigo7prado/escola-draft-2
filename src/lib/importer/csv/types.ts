@@ -1,25 +1,26 @@
 import type { ArquivoImportado, LinhaImportada } from "@prisma/client";
 import type { ParsedCsv } from "@/lib/hash";
 
-export type CsvField = {
+export type ImportField = {
   column: string;
   prefixes?: string[];
 };
 
-export type CsvProfile = {
+export type ImportProfile = {
+  formato: "csv" | "xlsx" | "txt" | string;
   tipoArquivo: string;
   tipoEntidade: "aluno";
   requiredHeaders: string[];
-  duplicateKey: CsvField;
-  displayName: CsvField[];
+  duplicateKey: ImportField;
+  displayName: ImportField[];
   existingKeysSource?: "enturmacoes" | "none";
   cleanupStrategy?: "markFonteAusenteAluno" | "none";
   context: {
-    periodo: CsvField;
-    grupo: CsvField;
-    modalidade?: CsvField;
-    serie?: CsvField;
-    turno?: CsvField;
+    periodo: ImportField;
+    grupo: ImportField;
+    modalidade?: ImportField;
+    serie?: ImportField;
+    turno?: ImportField;
   };
 };
 

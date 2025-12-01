@@ -60,7 +60,6 @@ async function persistirSeries(alunoMatricula: string, parsed: Awaited<ReturnTyp
           periodoLetivo: resumo.periodoLetivo ?? "0",
           curso: resumo.curso,
           serie: resumo.serie,
-          turma: resumo.turma,
           turno: resumo.turno,
           cargaHorariaTotal: resumo.cargaHorariaTotal,
           frequenciaGlobal: resumo.frequenciaGlobal,
@@ -70,7 +69,6 @@ async function persistirSeries(alunoMatricula: string, parsed: Awaited<ReturnTyp
           unidadeEnsino: toStringSafe(serie.contexto["ESCOLA"]),
         },
         update: {
-          turma: resumo.turma ?? undefined,
           turno: resumo.turno ?? undefined,
           curso: resumo.curso ?? undefined,
           serie: resumo.serie ?? undefined,

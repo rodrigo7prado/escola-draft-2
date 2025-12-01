@@ -47,7 +47,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { alunoId, textoBruto, dados } = schemaRequest.parse(body);
 
-    const resultado = await salvarDadosEscolares({ alunoId, textoBruto, dados });
+    const resultado = await salvarDadosEscolares({
+      alunoId,
+      textoBruto,
+      dados: { ...dados, avisos: dados.avisos ?? [] },
+    });
 
     return NextResponse.json({
       sucesso: true,

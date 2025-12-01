@@ -83,7 +83,7 @@ function extrairPorRotulo(
   cfg: CampoConfig
 ): unknown {
   const estrategia = cfg.extracao.XLSX;
-  if (estrategia.estrategia !== "BLOCO_ROTULO") return undefined;
+  if (!estrategia || estrategia.estrategia !== "BLOCO_ROTULO") return undefined;
   const alvo = rotulos.find((r) => estrategia.rotuloRegex.test(r.rotulo));
   if (!alvo) return undefined;
   return aplicarNormalizacao(alvo.valor, cfg.normalizacao);

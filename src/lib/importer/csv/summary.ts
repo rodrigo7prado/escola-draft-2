@@ -64,7 +64,8 @@ export function buildPeriodoResumo(
       const totalCsv = lista.reduce((sum, g) => sum + g.totalCsv, 0);
       const totalBanco = lista.reduce((sum, g) => sum + g.totalBanco, 0);
       const pendentes = lista.reduce((sum, g) => sum + g.pendentes, 0);
-      const status = pendentes > 0 ? "pendente" : "ok";
+      const status: CsvResumoPeriodo["resumo"]["status"] =
+        pendentes > 0 ? "pendente" : "ok";
 
       return {
         periodo,

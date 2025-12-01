@@ -262,7 +262,7 @@ function StatusIcone({
   const cor = corPorStatus(status);
   return (
     <div className="flex flex-col items-center text-[10px] font-semibold leading-tight min-w-[42px]">
-      <Icon className={`h-4 w-4 ${cor}`} title={title} />
+      <Icon className={`h-4 w-4 ${cor}`} />
       <span className={`${cor}`}>{label}</span>
     </div>
   );

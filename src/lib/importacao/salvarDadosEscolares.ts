@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   type DadosEscolaresParseResult,
@@ -32,6 +33,13 @@ export async function salvarDadosEscolares({
   }
 
   await prisma.$transaction(async (tx) => {
+    const snapshotDados = {
+      ...dados,
+      avisos: dados.avisos ?? [],
+      importadoEm: new Date().toISOString(),
+      tipoImportacao: "dadosEscolares",
+    } as unknown as Prisma.InputJsonValue;
+
     await tx.aluno.update({
       where: { id: aluno.id },
       data: {
@@ -49,11 +57,7 @@ export async function salvarDadosEscolares({
         tipoIngressoEscolar: dados.alunoInfo.tipoIngresso,
         redeOrigemIngressoEscolar: dados.alunoInfo.redeOrigem,
         matrizCurricularEscolar: dados.alunoInfo.matrizCurricular,
-        dadosOriginais: {
-          ...dados,
-          importadoEm: new Date().toISOString(),
-          tipoImportacao: "dadosEscolares",
-        },
+        dadosOriginais: snapshotDados,
       },
     });
 

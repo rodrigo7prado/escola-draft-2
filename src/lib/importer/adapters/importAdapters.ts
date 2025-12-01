@@ -67,14 +67,47 @@ const declarativeMultipart: ImportAdapter = async ({ prisma, profile, request, t
 
 const csvMultipart: ImportAdapter = async ({ prisma, profile, request, transactionOptions }) => {
   try {
-    const entrada = await readMultipart(request);
-    const texto = entrada.buffer.toString("utf8");
-    const parsed = parseCsvLoose(texto, profile.requiredHeaders);
+    const hasFormData = typeof (request as any).formData === "function";
+
+    if (hasFormData) {
+      const entrada = await readMultipart(request);
+      const texto = entrada.buffer.toString("utf8");
+      const parsed = parseCsvLoose(texto, profile.requiredHeaders);
+
+      const resultado = await runCsvImport({
+        prisma,
+        data: parsed,
+        fileName: entrada.fileName,
+        profile,
+        transactionOptions,
+      });
+
+      return NextResponse.json(
+        {
+          arquivo: resultado.arquivo,
+          linhasImportadas: resultado.linhasImportadas,
+          ...resultado.domain,
+        },
+        { status: 201 }
+      );
+    }
+
+    // Fallback para JSON (compat com testes legados)
+    const body = await request.json();
+    const { data, fileName } = body as { data?: any; fileName?: string };
+    if (!data || !fileName) {
+      return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+    }
+
+    const parsed =
+      typeof data === "object" && Array.isArray((data as any).rows) && Array.isArray((data as any).headers)
+        ? (data as any)
+        : parseCsvLoose(JSON.stringify(data), profile.requiredHeaders);
 
     const resultado = await runCsvImport({
       prisma,
       data: parsed,
-      fileName: entrada.fileName,
+      fileName,
       profile,
       transactionOptions,
     });

@@ -1,0 +1,76 @@
+import type { Prisma, PrismaClient } from "@prisma/client";
+import { DuplicateFileError } from "@/lib/importer/csv/types";
+import { executarExtrator } from "@/lib/parsers/engine/executors";
+import { lineSerializers } from "@/lib/parsers/engine/serializers";
+import { computeHash } from "@/lib/importer/generic/hashPolicies";
+import { persistors } from "@/lib/importer/generic/persistors";
+import type { ImportRunParams, ImportRunResult, LogicalLine } from "@/lib/importer/generic/types";
+
+async function ensureHashUnique(prisma: PrismaClient, hash: string, tipoArquivo: string) {
+  const existing = await prisma.arquivoImportado.findFirst({
+    where: { hashArquivo: hash, status: "ativo", tipo: tipoArquivo },
+  });
+  if (existing) {
+    throw new DuplicateFileError("Arquivo com conteúdo idêntico já existe", existing.id);
+  }
+}
+
+function buildLinhasPayload(
+  arquivoId: string,
+  lines: LogicalLine[],
+  tipoEntidade: string
+): Prisma.LinhaImportadaCreateManyInput[] {
+  return lines.map((line, idx) => ({
+    arquivoId,
+    numeroLinha: idx,
+    dadosOriginais: JSON.parse(JSON.stringify(line.dadosOriginais)) as Prisma.InputJsonValue,
+    identificadorChave: line.identificadorChave,
+    tipoEntidade,
+  }));
+}
+
+export async function runGenericImport(params: ImportRunParams): Promise<ImportRunResult> {
+  const { prisma, buffer, fileName, profile, selectedKeyId, alunoId, transactionOptions } = params;
+
+  const parsed = await executarExtrator(profile, buffer);
+  const serializer = lineSerializers[profile.serializadorId as keyof typeof lineSerializers];
+  if (!serializer) {
+    throw new Error(`Serializador não encontrado: ${profile.serializadorId}`);
+  }
+
+  const lines = serializer(parsed as any, { selectedKeyId });
+  const dataHash = await computeHash(profile.hashPolicyId, lines);
+
+  await ensureHashUnique(prisma, dataHash, profile.tipoArquivo);
+
+  const resultado = await prisma.$transaction(async (tx) => {
+    const arquivo = await tx.arquivoImportado.create({
+      data: {
+        nomeArquivo: fileName,
+        hashArquivo: dataHash,
+        tipo: profile.tipoArquivo,
+        status: "ativo",
+      },
+    });
+
+    const linhasPayload = buildLinhasPayload(arquivo.id, lines, profile.tipoEntidade);
+    if (linhasPayload.length) {
+      await tx.linhaImportada.createMany({ data: linhasPayload });
+    }
+
+    let domain: unknown;
+    const persistor = persistors[profile.persistorId ?? ""];
+    if (persistor) {
+      domain = await persistor(tx, { parsed, lines, profile, alunoId });
+    }
+
+    return { arquivo, domain };
+  }, transactionOptions);
+
+  return {
+    arquivo: resultado.arquivo,
+    linhasImportadas: lines.length,
+    dataHash,
+    domain: resultado.domain,
+  };
+}

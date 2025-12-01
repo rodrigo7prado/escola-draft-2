@@ -1,5 +1,11 @@
 export type Formato = "CSV" | "XML" | "TXT" | "XLSX";
 
+export type EstrategiaCSV =
+  | { estrategia: "LABEL"; label: string }
+  | { estrategia: "HEADER_REGEX"; regexCabecalho: RegExp }
+  | { estrategia: "ORDEM_FIXA"; indice: number }
+  | { estrategia: "RESOLVER"; resolverNome: string };
+
 export type EstrategiaXLSX =
   | { estrategia: "BLOCO_ROTULO"; rotuloRegex: RegExp }
   | { estrategia: "TABELA_DISCIPLINAS"; colunaHeader: RegExp }
@@ -16,8 +22,15 @@ export type Persistencia =
   | { tipoVinculo: "nenhum" }
   | { tipoVinculo: "gravação" | "vinculação" | "validação" | "composição"; modelo?: string; campo?: string };
 
+export type CampoExtracao = {
+  CSV?: EstrategiaCSV;
+  XLSX?: EstrategiaXLSX;
+  XML?: unknown;
+  TXT?: unknown;
+};
+
 export type CampoConfig = {
-  extracao: { XLSX: EstrategiaXLSX };
+  extracao: CampoExtracao;
   normalizacao?: Normalizacao;
   persistencia?: Persistencia;
 };
@@ -53,4 +66,20 @@ export type SerieExtraida = {
 export type ParseResult = {
   aluno: Record<string, unknown>;
   series: SerieExtraida[];
+};
+
+export type KeyBuilderId = "nomeDataNascimento" | "nome";
+
+export type ParserProfile = {
+  nome: string;
+  formato: Formato;
+  tipoArquivo: string;
+  tipoEntidade: string;
+  hashPolicyId: string;
+  extratorId: string;
+  serializadorId: string;
+  persistorId?: string;
+  chavesDisponiveis?: KeyBuilderId[];
+  campos: Record<string, CampoConfig>;
+  requiredHeaders?: string[];
 };

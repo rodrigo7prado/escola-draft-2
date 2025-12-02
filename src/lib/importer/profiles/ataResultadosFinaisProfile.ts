@@ -1,4 +1,4 @@
-import type { ImportProfile } from "@/lib/importer/csv/types";
+import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 
 export const ataResultadosFinaisProfile: ImportProfile = {
   formato: "CSV",
@@ -38,7 +38,6 @@ export const ataResultadosFinaisProfile: ImportProfile = {
   extratorId: "csvDeclarativo",
   serializadorId: "csvLinhaSimples",
   hashPolicyId: "default",
-  inputAdapterId: "declarative-multipart",
   importAdapterId: "csv-multipart",
   summaryAdapterId: "csv-enturmacoes",
   deleteAdapterId: "csv-delete",

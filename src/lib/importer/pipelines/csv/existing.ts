@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import type { ImportProfile } from "@/lib/importer/csv/types";
+import { ImportProfile } from "./types";
 
 type ExistingKeys = Map<string, Map<string, Set<string>>>;
 

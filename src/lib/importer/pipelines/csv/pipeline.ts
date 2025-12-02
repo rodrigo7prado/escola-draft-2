@@ -1,12 +1,9 @@
 import type { PrismaClient, Prisma } from "@prisma/client";
 import { hashData, type ParsedCsv } from "@/lib/hash";
-import {
-  DuplicateFileError,
-  type ImportProfile,
-  type ImportOutcome,
-} from "@/lib/importer/csv/types";
-import { extractContext, extractField, extractName } from "@/lib/importer/csv/extract";
+
 import { persistAlunosDomain } from "@/lib/importer/persistors/alunos";
+import { DuplicateFileError, ImportOutcome, ImportProfile } from "./types";
+import { extractField, extractName, extractContext } from "./extract";
 
 type TransactionOptions = Parameters<PrismaClient["$transaction"]>[1];
 

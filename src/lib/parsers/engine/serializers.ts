@@ -1,5 +1,5 @@
 import type { ParsedCsv } from "@/lib/hash";
-import type { LogicalLine } from "@/lib/importer/generic/types";
+import type { LogicalLine } from "@/lib/importer/pipelines/generic/types";
 import type { KeyBuilderId, ParseResult } from "@/lib/parsers/tipos";
 
 function toStringSafe(v: unknown) {

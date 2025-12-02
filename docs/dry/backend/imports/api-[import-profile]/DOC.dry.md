@@ -17,8 +17,8 @@ Nenhum handler contém semântica de domínio; tudo é resolvido pelos adapters 
 - O handler (`createImportRouteHandlers`) apenas despacha para os adapters definidos pelo profile; nenhuma string de domínio fica no handler.
 
 ### 2. Pipelines (ingestão + domínio)
-- `runCsvImport` (clássico): `src/lib/importer/csv/pipeline.ts`. Entrada: `ParsedCsv`; calcula hash determinístico (`hashData`), bloqueia duplicata (`DuplicateFileError`), cria `ArquivoImportado`/`LinhaImportada`, delega persistência ao persistor resolvido pelo `tipoEntidade` (ex.: `persistAlunosDomain`).
-- `runGenericImport` (declarativo): `src/lib/importer/generic/pipeline.ts`. Entrada: buffer; usa `extratorId`/`serializadorId`/`persistorId` do profile para extrair/flatten/persistir.
+- `runCsvImport` (clássico): `src/lib/importer/pipelines/csv/pipeline.ts`. Entrada: `ParsedCsv`; calcula hash determinístico (`hashData`), bloqueia duplicata (`DuplicateFileError`), cria `ArquivoImportado`/`LinhaImportada`, delega persistência ao persistor resolvido pelo `tipoEntidade` (ex.: `persistAlunosDomain`).
+- `runGenericImport` (declarativo): `src/lib/importer/pipelines/generic/pipeline.ts`. Entrada: buffer; usa `extratorId`/`serializadorId`/`persistorId` do profile para extrair/flatten/persistir.
 - Deduplicação: `runCsvImport` segue hash por conteúdo normalizado; `runGenericImport` usa hash policy declarada (`hashPolicyId`).
 - Persistência: adapters/persistores continuam separados do handler; nenhum comportamento específico fica no handler.
 

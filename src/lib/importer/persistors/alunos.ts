@@ -1,5 +1,5 @@
 import type { Prisma, LinhaImportada } from "@prisma/client";
-import type { ImportProfile } from "@/lib/importer/csv/types";
+import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 
 type PersistDeps = {
   rows: Record<string, string>[];

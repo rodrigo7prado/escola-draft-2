@@ -1,6 +1,6 @@
 import type { PrismaClient, Prisma } from "@prisma/client";
 import type { KeyBuilderId, ParseResult } from "@/lib/parsers/tipos";
-import type { ImportProfile } from "@/lib/importer/csv/types";
+import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 
 export type LogicalLine = {
   dadosOriginais: Record<string, unknown>;

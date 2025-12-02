@@ -1,10 +1,6 @@
 import type { LinhaImportada } from "@prisma/client";
-import type {
-  ImportProfile,
-  CsvResumoGrupo,
-  CsvResumoPeriodo,
-} from "@/lib/importer/csv/types";
-import { extractContext, extractField, extractName } from "@/lib/importer/csv/extract";
+import { extractContext, extractField, extractName } from "@/lib/importer/pipelines/csv/extract";
+import { CsvResumoGrupo, CsvResumoPeriodo, ImportProfile } from "./types";
 
 type AlunosNoBanco = Map<string, Map<string, Set<string>>>;
 
@@ -100,4 +96,4 @@ export function mapearAlunosBanco(
 }
 
 // Re-export utilitário de chaves existentes para facilitar importações genéricas
-export { loadExistingKeys } from "@/lib/importer/csv/existing";
+export { loadExistingKeys } from "@/lib/importer/pipelines/csv/existing";

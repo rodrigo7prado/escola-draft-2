@@ -1,5 +1,5 @@
 import { ataResultadosFinaisProfile } from "@/lib/importer/profiles/ataResultadosFinaisProfile";
-import type { ImportProfile } from "@/lib/importer/csv/types";
+import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 import { importacaoFichaIndividualProfile } from "@/lib/importer/profiles/importacaoFichaIndividualProfile";
 
 export const PROFILE_ATA_RESULTADOS_FINAIS = "ata-resultados-finais";

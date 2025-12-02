@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { createCsvRouteHandlers } from "@/lib/importer/csv/handlers";
+import { createCsvRouteHandlers } from "@/lib/importer/handlers";
 import { csvProfiles, PROFILE_ATA_RESULTADOS_FINAIS } from "@/lib/importer/profiles";
 
 const { GET, POST, DELETE } = createCsvRouteHandlers({

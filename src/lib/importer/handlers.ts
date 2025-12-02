@@ -1,9 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { PrismaClient } from "@prisma/client";
-import type { ImportProfile } from "@/lib/importer/csv/types";
-import { importAdapters } from "@/lib/importer/adapters/importAdapters";
-import { summaryAdapters } from "@/lib/importer/adapters/summaryAdapters";
-import { deleteAdapters } from "@/lib/importer/adapters/deleteAdapters";
+import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
+import { adaptersByFormat } from "@/lib/importer/adapters/registry";
 
 type ImportRouteConfig = {
   prisma: PrismaClient;
@@ -23,14 +21,15 @@ type ImportRouteConfig = {
 
 export function createImportRouteHandlers(config: ImportRouteConfig) {
   const { prisma, profile, transactionOptions } = config;
-
-  const importAdapterId = profile.importAdapterId ?? (profile.extratorId && profile.serializadorId ? "declarative-multipart" : "csv-multipart");
-  const summaryAdapterId = profile.summaryAdapterId ?? (profile.extratorId && profile.serializadorId ? "chaves-default" : "csv-enturmacoes");
-  const deleteAdapterId = profile.deleteAdapterId ?? (profile.extratorId && profile.serializadorId ? "none" : "csv-delete");
+  const formato = (profile.formato ?? "CSV").toUpperCase();
+  const registry = adaptersByFormat[formato] ?? adaptersByFormat.CSV;
+  const importAdapterId = profile.importAdapterId ?? registry.defaults.importAdapterId;
+  const summaryAdapterId = profile.summaryAdapterId ?? registry.defaults.summaryAdapterId;
+  const deleteAdapterId = profile.deleteAdapterId ?? registry.defaults.deleteAdapterId;
 
   return {
     POST: async (request: NextRequest) => {
-      const adapter = importAdapters[importAdapterId];
+      const adapter = registry.importAdapters[importAdapterId];
       if (!adapter) {
         return NextResponse.json({ error: "Adaptador de importação não suportado" }, { status: 400 });
       }
@@ -39,8 +38,8 @@ export function createImportRouteHandlers(config: ImportRouteConfig) {
 
     GET: async () => {
       try {
-        const adapter = summaryAdapters[summaryAdapterId] ?? summaryAdapters["chaves-default"];
-        const payload = await adapter({ prisma, profile, summaryBuilder: config.summaryBuilder });
+        const adapter = registry.summaryAdapters[summaryAdapterId] ?? registry.summaryAdapters[registry.defaults.summaryAdapterId];
+        const payload = await adapter({ prisma, profile });
         return NextResponse.json(payload);
       } catch (error) {
         console.error("Erro ao listar arquivos:", error);
@@ -49,7 +48,7 @@ export function createImportRouteHandlers(config: ImportRouteConfig) {
     },
 
     DELETE: async (request: NextRequest) => {
-      const adapter = deleteAdapters[deleteAdapterId] ?? deleteAdapters.none;
+      const adapter = registry.deleteAdapters[deleteAdapterId] ?? registry.deleteAdapters[registry.defaults.deleteAdapterId];
       return adapter({ prisma, profile, request, deleteScopes: config.deleteScopes });
     },
   };

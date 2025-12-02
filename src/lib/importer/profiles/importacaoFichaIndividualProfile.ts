@@ -1,4 +1,4 @@
-import type { ImportProfile } from "@/lib/importer/csv/types";
+import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 import fichaIndividualHistoricoMap from "@/lib/parsers/fichaIndividualHistorico/mapeamento";
 
 export const importacaoFichaIndividualProfile: ImportProfile = {

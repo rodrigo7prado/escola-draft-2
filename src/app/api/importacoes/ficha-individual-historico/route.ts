@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { createImportRouteHandlers } from "@/lib/importer/csv/handlers";
+import { createImportRouteHandlers } from "@/lib/importer/handlers";
 import {
   parserProfiles,
   PROFILE_IMPORTACAO_FICHA_INDIVIDUAL,

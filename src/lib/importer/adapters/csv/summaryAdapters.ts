@@ -1,22 +1,13 @@
 import type { PrismaClient } from "@prisma/client";
-import type { ImportProfile, CsvResumoPeriodo } from "@/lib/importer/csv/types";
-import { loadExistingKeys } from "@/lib/importer/csv/existing";
-import { buildPeriodoResumo } from "@/lib/importer/csv/summary";
+import type { ImportProfile, CsvResumoPeriodo } from "@/lib/importer/pipelines/csv/types";
+import { loadExistingKeys, buildPeriodoResumo } from "@/lib/importer/pipelines/csv/summary";
 
 type SummaryAdapterContext = {
   prisma: PrismaClient;
   profile: ImportProfile;
-  summaryBuilder?: (
-    linhas: Awaited<ReturnType<PrismaClient["linhaImportada"]["findMany"]>>,
-    existingKeys: Map<string, Map<string, Set<string>>>,
-    profile: ImportProfile
-  ) => unknown;
 };
 
-type SummaryAdapter = (ctx: SummaryAdapterContext) => Promise<unknown>;
-
-const csvEnturmacoes: SummaryAdapter = async ({ prisma, profile, summaryBuilder }) => {
-  const builder = summaryBuilder ?? buildPeriodoResumo;
+export async function summaryCsvEnturmacoes({ prisma, profile }: SummaryAdapterContext) {
   const [linhas, existingKeys] = await Promise.all([
     prisma.linhaImportada.findMany({
       where: { tipoEntidade: profile.tipoEntidade, arquivo: { status: "ativo" } },
@@ -24,9 +15,7 @@ const csvEnturmacoes: SummaryAdapter = async ({ prisma, profile, summaryBuilder 
     loadExistingKeys(prisma, profile),
   ]);
 
-  const summary = builder(linhas, existingKeys, profile);
-
-  if (!Array.isArray(summary)) return { periodos: summary };
+  const summary = buildPeriodoResumo(linhas, existingKeys, profile);
   return {
     periodos: (summary as CsvResumoPeriodo[]).map((resumo) => ({
       anoLetivo: resumo.periodo,
@@ -50,15 +39,12 @@ const csvEnturmacoes: SummaryAdapter = async ({ prisma, profile, summaryBuilder 
       })),
     })),
   };
-};
+}
 
-const chavesDefault: SummaryAdapter = async ({ profile }) => ({
-  periodos: [],
-  chavesDisponiveis: profile.chavesDisponiveis ?? [],
-  pendencias: [],
-});
-
-export const summaryAdapters: Record<string, SummaryAdapter> = {
-  "csv-enturmacoes": csvEnturmacoes,
-  "chaves-default": chavesDefault,
-};
+export function summaryChavesDefault(profile: ImportProfile) {
+  return {
+    periodos: [],
+    chavesDisponiveis: profile.chavesDisponiveis ?? [],
+    pendencias: [],
+  };
+}

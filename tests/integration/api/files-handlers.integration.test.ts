@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { createCsvRouteHandlers } from "@/lib/importer/csv/handlers";
+import { createCsvRouteHandlers } from "@/lib/importer/handlers";
 import { ataResultadosFinaisProfile } from "@/lib/importer/profiles";
 import { CSV_VALIDO_3_ALUNOS, parseCsvLoose } from "../../helpers/csv-fixtures";
 import {

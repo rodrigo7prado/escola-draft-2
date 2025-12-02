@@ -2,7 +2,7 @@ import type { ParseResult } from "@/lib/parsers/tipos";
 import type { ParsedCsv } from "@/lib/hash";
 import { parseCsvLoose } from "@/lib/parsers/csv/parse";
 import { executarParserXlsxDeclarativo } from "@/lib/parsers/engine/xlsxDeclarativo";
-import type { ImportProfile } from "@/lib/importer/csv/types";
+import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 
 export async function executarExtrator(profile: ImportProfile, buffer: Buffer): Promise<ParseResult | ParsedCsv> {
   if (!profile.extratorId) {

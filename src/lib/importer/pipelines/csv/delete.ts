@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
-import type { ImportProfile } from "@/lib/importer/csv/types";
-import { extractContext } from "@/lib/importer/csv/extract";
+import { extractContext } from "@/lib/importer/pipelines/csv/extract";
+import { ImportProfile } from "./types";
 
 export async function deleteArquivoPorId(prisma: PrismaClient, id: string, profile: ImportProfile) {
   const linhas = await prisma.linhaImportada.findMany({

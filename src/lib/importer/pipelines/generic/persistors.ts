@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import type { ParseResult } from "@/lib/parsers/tipos";
-import type { Persistor } from "@/lib/importer/generic/types";
+import type { Persistor } from "@/lib/importer/pipelines/generic/types";
 
 function toStringSafe(v: unknown) {
   if (v === undefined || v === null) return undefined;
@@ -65,7 +65,7 @@ async function persistSeriesHistorico(
         situacaoFinal: resumo.situacaoFinal ?? undefined,
         unidadeEnsino: resumo.unidadeEnsino ?? undefined,
       },
-    });
+    };
 
     await tx.historicoEscolar.deleteMany({
       where: { serieCursadaId: serieRecord.id },

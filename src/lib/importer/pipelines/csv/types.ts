@@ -8,7 +8,7 @@ export type ImportField = {
 };
 
 export type ImportProfile = {
-  formato: "csv" | "xlsx" | "txt" | string;
+  formato: "CSV" | "XLSX" | "TXT" | string;
   tipoArquivo: string;
   tipoEntidade: string;
   requiredHeaders: string[];
@@ -23,7 +23,6 @@ export type ImportProfile = {
     serie?: ImportField;
     turno?: ImportField;
   };
-  // Campos opcionais para perfis declarativos de parser
   extratorId?: string;
   serializadorId?: string;
   persistorId?: string;
@@ -31,7 +30,6 @@ export type ImportProfile = {
   chavesDisponiveis?: KeyBuilderId[];
   campos?: Record<string, CampoConfig>;
   importAdapterId?: string;
-  inputAdapterId?: string;
   summaryAdapterId?: string;
   deleteAdapterId?: string;
 };

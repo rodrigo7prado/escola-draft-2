@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { PrismaClient } from "@prisma/client";
-import type { ImportProfile } from "@/lib/importer/csv/types";
-import { deleteArquivoPorId, deleteArquivosPorPeriodo } from "@/lib/importer/csv/delete";
+import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
+import { deleteArquivoPorId, deleteArquivosPorPeriodo } from "@/lib/importer/pipelines/csv/delete";
 
 type DeleteAdapterContext = {
   prisma: PrismaClient;
@@ -14,9 +14,12 @@ type DeleteAdapterContext = {
   };
 };
 
-type DeleteAdapter = (ctx: DeleteAdapterContext) => Promise<NextResponse>;
-
-const csvDeleteAdapter: DeleteAdapter = async ({ prisma, profile, request, deleteScopes }) => {
+export async function deleteCsvAdapter({
+  prisma,
+  profile,
+  request,
+  deleteScopes,
+}: DeleteAdapterContext) {
   const deleteById = deleteScopes?.byId ?? true;
   const deleteByPeriod = deleteScopes?.byPeriod ?? false;
   const periodParam = deleteScopes?.periodParam ?? "periodo";
@@ -58,12 +61,8 @@ const csvDeleteAdapter: DeleteAdapter = async ({ prisma, profile, request, delet
     { error: "Escopo de exclusão não permitido para este perfil" },
     { status: 400 }
   );
-};
+}
 
-const deleteNotSupported: DeleteAdapter = async () =>
-  NextResponse.json({ error: "DELETE não suportado" }, { status: 405 });
-
-export const deleteAdapters: Record<string, DeleteAdapter> = {
-  "csv-delete": csvDeleteAdapter,
-  "none": deleteNotSupported,
-};
+export async function deleteNone() {
+  return NextResponse.json({ error: "DELETE não suportado" }, { status: 405 });
+}

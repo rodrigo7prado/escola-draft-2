@@ -1,10 +1,10 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import { DuplicateFileError } from "@/lib/importer/csv/types";
+import { DuplicateFileError } from "@/lib/importer/pipelines/csv/types";
 import { executarExtrator } from "@/lib/parsers/engine/executors";
 import { lineSerializers } from "@/lib/parsers/engine/serializers";
-import { computeHash } from "@/lib/importer/generic/hashPolicies";
-import { persistors } from "@/lib/importer/generic/persistors";
-import type { ImportRunParams, ImportRunResult, LogicalLine } from "@/lib/importer/generic/types";
+import { computeHash } from "@/lib/importer/pipelines/generic/hashPolicies";
+import { persistors } from "@/lib/importer/pipelines/generic/persistors";
+import type { ImportRunParams, ImportRunResult, LogicalLine } from "@/lib/importer/pipelines/generic/types";
 
 async function ensureHashUnique(prisma: PrismaClient, hash: string, tipoArquivo: string) {
   const existing = await prisma.arquivoImportado.findFirst({

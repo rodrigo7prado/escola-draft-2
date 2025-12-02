@@ -1,4 +1,4 @@
-import type { ImportField, ImportProfile } from "@/lib/importer/csv/types";
+import { ImportField, ImportProfile } from "./types";
 
 function stripPrefix(valor: string, prefixes?: string[]) {
   if (!prefixes || prefixes.length === 0) return valor;

@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import type { ParsedCsv } from "@/lib/hash";
-import { parseCsvLoose } from "@/lib/importer/csv/parse";
+import { parseCsvLoose } from "@/lib/importer/pipelines/csv/parse";
 
 type DropCsvProps = {
   title: string;

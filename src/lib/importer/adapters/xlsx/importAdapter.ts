@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { PrismaClient } from "@prisma/client";
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 import type { KeyBuilderId } from "@/lib/parsers/tipos";
-import { runGenericImport } from "@/lib/importer/pipelines/generic/pipeline";
+import { runXlsxImport } from "@/lib/importer/pipelines/xlsx/pipeline";
 import { DuplicateFileError } from "@/lib/importer/pipelines/csv/types";
 
 type ImportAdapterContext = {
@@ -43,7 +43,7 @@ export async function importXlsxMultipart({
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    const resultado = await runGenericImport({
+    const resultado = await runXlsxImport({
       prisma,
       buffer,
       fileName: file.name,

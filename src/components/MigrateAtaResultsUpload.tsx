@@ -4,7 +4,7 @@ import DropCsv from "@/components/DropCsv";
 import { PeriodoCard } from "@/components/PeriodoCard";
 import { useEffect, useState } from "react";
 import type { ParsedCsv } from "@/lib/hash";
-import { ataResultadosFinaisProfile } from "@/lib/importer/profiles";
+import { ataResultadosFinaisProfile } from "@/lib/importer/profiles/ataResultadosFinais/profile";
 
 type TurmaData = {
   nome: string;

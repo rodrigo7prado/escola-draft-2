@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 import type { ImportProfile, CsvResumoPeriodo } from "@/lib/importer/pipelines/csv/types";
-import { loadExistingKeys, buildPeriodoResumo } from "@/lib/importer/pipelines/csv/summary";
+import { loadExistingKeys, buildPeriodoResumo } from "@/lib/importer/profiles/ataResultadosFinais/summary";
 
 type SummaryAdapterContext = {
   prisma: PrismaClient;

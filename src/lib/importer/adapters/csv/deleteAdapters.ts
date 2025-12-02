@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { PrismaClient } from "@prisma/client";
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
-import { deleteArquivoPorId, deleteArquivosPorPeriodo } from "@/lib/importer/pipelines/csv/delete";
+import { deleteArquivoPorId, deleteArquivosPorPeriodo } from "@/lib/importer/profiles/ataResultadosFinais/delete";
 
 type DeleteAdapterContext = {
   prisma: PrismaClient;

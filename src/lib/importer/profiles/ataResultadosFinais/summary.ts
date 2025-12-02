@@ -1,6 +1,6 @@
-import type { LinhaImportada } from "@prisma/client";
-import { extractContext, extractField, extractName } from "@/lib/importer/pipelines/csv/extract";
-import { CsvResumoGrupo, CsvResumoPeriodo, ImportProfile } from "./types";
+import type { LinhaImportada, PrismaClient } from "@prisma/client";
+import { extractContext, extractField, extractName } from "@/lib/importer/profiles/ataResultadosFinais/context";
+import type { CsvResumoGrupo, CsvResumoPeriodo, ImportProfile } from "@/lib/importer/pipelines/csv/types";
 
 type AlunosNoBanco = Map<string, Map<string, Set<string>>>;
 
@@ -95,5 +95,17 @@ export function mapearAlunosBanco(
   return mapa;
 }
 
-// Re-export utilitário de chaves existentes para facilitar importações genéricas
-export { loadExistingKeys } from "@/lib/importer/pipelines/csv/existing";
+export async function loadExistingKeys(
+  prisma: PrismaClient,
+  profile: ImportProfile
+): Promise<AlunosNoBanco> {
+  // Perfil-ata: sempre compara com enturmações
+  const enturmacoes = await prisma.enturmacao.findMany({
+    select: {
+      anoLetivo: true,
+      turma: true,
+      aluno: { select: { matricula: true } },
+    },
+  });
+  return mapearAlunosBanco(enturmacoes);
+}

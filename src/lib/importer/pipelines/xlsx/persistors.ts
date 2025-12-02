@@ -1,4 +1,4 @@
-import type { Persistor } from "@/lib/importer/pipelines/generic/types";
+import type { Persistor } from "@/lib/importer/pipelines/xlsx/types";
 import type { ParseResult } from "@/lib/parsers/tipos";
 import { persistSeriesHistorico } from "@/lib/importer/profiles/fichaIndividualHistorico/persist";
 

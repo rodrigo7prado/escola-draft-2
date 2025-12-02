@@ -1,19 +1,19 @@
-import { ataResultadosFinaisProfile } from "@/lib/importer/profiles/ataResultadosFinaisProfile";
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
-import { importacaoFichaIndividualProfile } from "@/lib/importer/profiles/importacaoFichaIndividualProfile";
+import { ataResultadosFinaisProfile } from "@/lib/importer/profiles/ataResultadosFinais/profile";
+import { fichaIndividualHistoricoProfile } from "@/lib/importer/profiles/fichaIndividualHistorico/profile";
 
 export const PROFILE_ATA_RESULTADOS_FINAIS = "ata-resultados-finais";
+export const PROFILE_FICHA_INDIVIDUAL_HISTORICO = "fichaIndividualHistorico";
+// Compat: alias legado usado em endpoints antigos
+export const PROFILE_IMPORTACAO_FICHA_INDIVIDUAL = "importacaoFichaIndividualHistorico";
 
 export const csvProfiles: Record<string, ImportProfile> = {
   [PROFILE_ATA_RESULTADOS_FINAIS]: ataResultadosFinaisProfile,
 };
 
-export type ProfileKey = typeof PROFILE_ATA_RESULTADOS_FINAIS;
-
-export { ataResultadosFinaisProfile };
-
 export const parserProfiles: Record<string, ImportProfile> = {
-  importacaoFichaIndividualHistorico: importacaoFichaIndividualProfile,
+  [PROFILE_FICHA_INDIVIDUAL_HISTORICO]: fichaIndividualHistoricoProfile,
+  [PROFILE_IMPORTACAO_FICHA_INDIVIDUAL]: fichaIndividualHistoricoProfile,
 };
 
-export const PROFILE_IMPORTACAO_FICHA_INDIVIDUAL = "importacaoFichaIndividualHistorico";
+export { ataResultadosFinaisProfile, fichaIndividualHistoricoProfile };

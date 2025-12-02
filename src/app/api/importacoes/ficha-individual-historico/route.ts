@@ -2,12 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { createImportRouteHandlers } from "@/lib/importer/handlers";
 import {
   parserProfiles,
-  PROFILE_IMPORTACAO_FICHA_INDIVIDUAL,
+  PROFILE_FICHA_INDIVIDUAL_HISTORICO,
 } from "@/lib/importer/profiles";
 
 const { GET, POST, DELETE } = createImportRouteHandlers({
   prisma,
-  profile: parserProfiles[PROFILE_IMPORTACAO_FICHA_INDIVIDUAL],
+  profile: parserProfiles[PROFILE_FICHA_INDIVIDUAL_HISTORICO],
   transactionOptions: {
     maxWait: 10000,
     timeout: 60000,

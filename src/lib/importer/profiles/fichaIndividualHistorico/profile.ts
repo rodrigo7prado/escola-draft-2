@@ -1,7 +1,7 @@
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 import fichaIndividualHistoricoMap from "@/lib/parsers/fichaIndividualHistorico/mapeamento";
 
-export const importacaoFichaIndividualProfile: ImportProfile = {
+export const fichaIndividualHistoricoProfile: ImportProfile = {
   formato: "XLSX",
   tipoArquivo: "fichaIndividualHistorico",
   tipoEntidade: "fichaIndividualHistorico",

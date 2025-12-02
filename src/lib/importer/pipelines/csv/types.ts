@@ -13,16 +13,16 @@ export type ImportProfile = {
   tipoEntidade: string;
   requiredHeaders: string[];
   duplicateKey: ImportField;
-  displayName: ImportField[];
-  existingKeysSource?: "enturmacoes" | "none";
-  cleanupStrategy?: "markFonteAusenteAluno" | "none";
-  context: {
-    periodo: ImportField;
-    grupo: ImportField;
+  displayName?: ImportField[];
+  context?: {
+    periodo?: ImportField;
+    grupo?: ImportField;
     modalidade?: ImportField;
     serie?: ImportField;
     turno?: ImportField;
   };
+  existingKeysSource?: "enturmacoes" | "none";
+  cleanupStrategy?: "markFonteAusenteAluno" | "none";
   extratorId?: string;
   serializadorId?: string;
   persistorId?: string;

@@ -1,4 +1,4 @@
-import type { LogicalLine } from "@/lib/importer/pipelines/generic/types";
+import type { LogicalLine } from "@/lib/importer/pipelines/xlsx/types";
 import type { KeyBuilderId, ParseResult } from "@/lib/parsers/tipos";
 
 function toStringSafe(v: unknown) {

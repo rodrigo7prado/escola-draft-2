@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
-import { extractContext } from "@/lib/importer/pipelines/csv/extract";
-import { ImportProfile } from "./types";
+import { extractContext } from "@/lib/importer/profiles/ataResultadosFinais/context";
+import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 
 export async function deleteArquivoPorId(prisma: PrismaClient, id: string, profile: ImportProfile) {
   const linhas = await prisma.linhaImportada.findMany({
@@ -10,7 +10,6 @@ export async function deleteArquivoPorId(prisma: PrismaClient, id: string, profi
   const linhasIds = linhas.map((l) => l.id);
 
   await prisma.$transaction(async (tx) => {
-    // Remover enturmações e alunos originados destas linhas
     await tx.enturmacao.deleteMany({
       where: { linhaOrigemId: { in: linhasIds }, origemTipo: "csv" },
     });
@@ -18,7 +17,6 @@ export async function deleteArquivoPorId(prisma: PrismaClient, id: string, profi
       where: { linhaOrigemId: { in: linhasIds }, origemTipo: "csv" },
     });
 
-    // Remover linhas e arquivo
     await tx.linhaImportada.deleteMany({ where: { id: { in: linhasIds } } });
     await tx.arquivoImportado.delete({ where: { id } });
   });

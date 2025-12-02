@@ -1,5 +1,5 @@
 import type { ParsedCsv } from "@/lib/hash";
-import type { LogicalLine } from "@/lib/importer/pipelines/generic/types";
+import type { LogicalLine } from "@/lib/importer/pipelines/xlsx/types";
 import type { KeyBuilderId } from "@/lib/parsers/tipos";
 import { serializarFichaDisciplina } from "@/lib/parsers/profiles/fichaIndividualHistorico/serializer";
 

@@ -41,5 +41,6 @@ export const ataResultadosFinaisProfile: ImportProfile = {
   importAdapterId: "csv-multipart",
   summaryAdapterId: "csv-enturmacoes",
   deleteAdapterId: "csv-delete",
+  persistorId: "alunosEnturmacoes",
   chavesDisponiveis: ["nomeDataNascimento", "nome"],
 };

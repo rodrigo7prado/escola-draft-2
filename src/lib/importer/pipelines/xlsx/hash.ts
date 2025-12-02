@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import type { LogicalLine } from "@/lib/importer/pipelines/generic/types";
+import type { LogicalLine } from "@/lib/importer/pipelines/xlsx/types";
 
 function canonicalString(value: unknown): string {
   if (value === null) return "null";

@@ -1,9 +1,8 @@
 import type { PrismaClient, Prisma } from "@prisma/client";
 import { hashData, type ParsedCsv } from "@/lib/hash";
 
-import { persistAlunosDomain } from "@/lib/importer/persistors/alunos";
+import { csvPersistors } from "@/lib/importer/pipelines/csv/persistors";
 import { DuplicateFileError, ImportOutcome, ImportProfile } from "./types";
-import { extractField, extractName, extractContext } from "./extract";
 
 type TransactionOptions = Parameters<PrismaClient["$transaction"]>[1];
 
@@ -15,13 +14,19 @@ type RunCsvImportParams = {
   transactionOptions?: TransactionOptions;
 };
 
-async function ensureHashUnique(prisma: PrismaClient, dataHash: string) {
+async function ensureHashUnique(prisma: PrismaClient, dataHash: string, tipoArquivo: string) {
   const existing = await prisma.arquivoImportado.findFirst({
-    where: { hashArquivo: dataHash, status: "ativo" },
+    where: { hashArquivo: dataHash, status: "ativo", tipo: tipoArquivo },
   });
   if (existing) {
     throw new DuplicateFileError("Arquivo com conteúdo idêntico já existe", existing.id);
   }
+}
+
+function readField(row: Record<string, string>, field?: { column: string }) {
+  if (!field) return undefined;
+  const raw = row[field.column];
+  return typeof raw === "string" ? raw : undefined;
 }
 
 async function createArquivoELinhas(
@@ -43,7 +48,7 @@ async function createArquivoELinhas(
       arquivoId: arquivo.id,
       numeroLinha: i,
       dadosOriginais: row,
-      identificadorChave: extractField(row, profile.duplicateKey),
+      identificadorChave: readField(row, profile.duplicateKey),
       tipoEntidade: profile.tipoEntidade,
     })),
   });
@@ -56,13 +61,6 @@ async function createArquivoELinhas(
   return { arquivo, linhas };
 }
 
-function resolveDomain(profile: ImportProfile) {
-  if (profile.tipoEntidade === "aluno") {
-    return persistAlunosDomain;
-  }
-  return async () => ({});
-}
-
 export async function runCsvImport({
   prisma,
   data,
@@ -71,9 +69,11 @@ export async function runCsvImport({
   transactionOptions,
 }: RunCsvImportParams): Promise<ImportOutcome<any>> {
   const dataHash = await hashData(data);
-  await ensureHashUnique(prisma, dataHash);
+  await ensureHashUnique(prisma, dataHash, profile.tipoArquivo);
 
-  const domainHandler = resolveDomain(profile);
+  const domainHandler =
+    (profile.persistorId && csvPersistors[profile.persistorId]) ||
+    (async () => ({}));
 
   const resultado = await prisma.$transaction(async (tx) => {
     const { arquivo, linhas } = await createArquivoELinhas(tx, {
@@ -90,9 +90,6 @@ export async function runCsvImport({
       dataHash,
       fileName,
       profile,
-      extractField,
-      extractName,
-      extractContext,
     });
 
     return { arquivo, domain };

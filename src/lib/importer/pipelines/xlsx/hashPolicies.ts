@@ -1,5 +1,5 @@
-import type { LogicalLine } from "@/lib/importer/pipelines/generic/types";
-import { hashLogicalLines } from "@/lib/importer/pipelines/generic/hash";
+import type { LogicalLine } from "@/lib/importer/pipelines/xlsx/types";
+import { hashLogicalLines } from "@/lib/importer/pipelines/xlsx/hash";
 
 type HashPolicyFn = (lines: LogicalLine[]) => Promise<string>;
 

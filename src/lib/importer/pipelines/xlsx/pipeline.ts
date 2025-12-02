@@ -2,9 +2,9 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 import { DuplicateFileError } from "@/lib/importer/pipelines/csv/types";
 import { executarExtrator } from "@/lib/parsers/engine/executors";
 import { lineSerializers } from "@/lib/parsers/engine/serializers";
-import { computeHash } from "@/lib/importer/pipelines/generic/hashPolicies";
-import { persistors } from "@/lib/importer/pipelines/generic/persistors";
-import type { ImportRunParams, ImportRunResult, LogicalLine } from "@/lib/importer/pipelines/generic/types";
+import { computeHash } from "@/lib/importer/pipelines/xlsx/hashPolicies";
+import { persistors } from "@/lib/importer/pipelines/xlsx/persistors";
+import type { ImportRunParams, ImportRunResult, LogicalLine } from "@/lib/importer/pipelines/xlsx/types";
 
 async function ensureHashUnique(prisma: PrismaClient, hash: string, tipoArquivo: string) {
   const existing = await prisma.arquivoImportado.findFirst({
@@ -29,7 +29,7 @@ function buildLinhasPayload(
   }));
 }
 
-export async function runGenericImport(params: ImportRunParams): Promise<ImportRunResult> {
+export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunResult> {
   const { prisma, buffer, fileName, profile, selectedKeyId, alunoId, transactionOptions } = params;
 
   if (!profile.serializadorId || !profile.extratorId) {
@@ -78,3 +78,6 @@ export async function runGenericImport(params: ImportRunParams): Promise<ImportR
     domain: resultado.domain,
   };
 }
+
+// Compat: alias antigo
+export const runGenericImport = runXlsxImport;

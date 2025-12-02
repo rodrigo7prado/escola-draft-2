@@ -1,5 +1,6 @@
 import type { Prisma, LinhaImportada } from "@prisma/client";
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
+import { extractContext, extractField, extractName } from "@/lib/importer/profiles/ataResultadosFinais/context";
 
 type PersistDeps = {
   rows: Record<string, string>[];
@@ -8,22 +9,13 @@ type PersistDeps = {
   dataHash: string;
   fileName: string;
   profile: ImportProfile;
-  extractField: (row: Record<string, string>, field: { column: string; prefixes?: string[] }) => string;
-  extractName: (row: Record<string, string>, fields: { column: string; prefixes?: string[] }[]) => string;
-  extractContext: (row: Record<string, string>, profile: ImportProfile) => {
-    periodo: string;
-    grupo: string;
-    modalidade: string;
-    serie: string;
-    turno: string;
-  };
 };
 
 type EnturmacaoSeed = {
   matricula: string;
   linhaId: string;
   row: Record<string, string>;
-  ctx: ReturnType<PersistDeps["extractContext"]>;
+  ctx: ReturnType<typeof extractContext>;
 };
 
 function mapEnturmacoes(deps: PersistDeps) {
@@ -33,12 +25,12 @@ function mapEnturmacoes(deps: PersistDeps) {
   const seeds = new Map<string, EnturmacaoSeed>();
 
   deps.rows.forEach((row, idx) => {
-    const matricula = deps.extractField(row, deps.profile.duplicateKey);
+    const matricula = extractField(row, deps.profile.duplicateKey);
     if (!matricula) return;
     const linhaId = linhasPorNumero.get(idx);
     if (!linhaId) return;
 
-    const ctx = deps.extractContext(row, deps.profile);
+    const ctx = extractContext(row, deps.profile);
     const chave = `${matricula}|${ctx.periodo}|${ctx.grupo}`;
 
     if (!seeds.has(chave)) {
@@ -74,7 +66,7 @@ async function upsertAlunos(
         const novo = await tx.aluno.create({
           data: {
             matricula,
-            nome: deps.extractName(info.row, deps.profile.displayName) || null,
+            nome: extractName(info.row, deps.profile.displayName) || null,
             origemTipo: "csv",
             linhaOrigemId: info.linhaId,
             fonteAusente: false,

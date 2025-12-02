@@ -1,5 +1,4 @@
 import type { ArquivoImportado, LinhaImportada } from "@prisma/client";
-import type { ParsedCsv } from "@/lib/parsers/csv/hash";
 import type { CampoConfig, KeyBuilderId } from "@/lib/parsers/tipos";
 
 export type ImportField = {
@@ -8,11 +7,11 @@ export type ImportField = {
 };
 
 export type ImportProfile = {
-  formato: "CSV" | "XLSX" | "TXT" | string;
+  formato: "CSV" | "XLSX" | "TXT";
   tipoArquivo: string;
   tipoEntidade: string;
   requiredHeaders: string[];
-  duplicateKey: ImportField;
+  duplicateKey?: ImportField;
   displayName?: ImportField[];
   context?: {
     periodo?: ImportField;

@@ -42,6 +42,7 @@ export const adaptersByFormat: Record<string, FormatAdapters> = {
   CSV: {
     importAdapters: {
       csv: importCsvMultipart,
+      "csv-multipart": importCsvMultipart,
     },
     summaryAdapters: {
       "csv-enturmacoes": summaryCsvEnturmacoes,

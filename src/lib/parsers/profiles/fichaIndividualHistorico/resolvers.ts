@@ -1,4 +1,4 @@
-import type { ResolverContext, ResolverFn } from "@/lib/parsers/engine/resolvers";
+import type { ResolverContext, ResolverFn } from "@/lib/parsers/engine/types";
 
 function resolverSituacaoFinal(ctx: ResolverContext) {
   for (const sheet of ctx.sheets) {

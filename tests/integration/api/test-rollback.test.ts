@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { setupTestDatabase, clearTestDatabase, teardownTestDatabase, getTestPrisma } from '../../helpers/db-setup';
 import { CSV_VALIDO_3_ALUNOS, parseCsvLoose } from '../../helpers/csv-fixtures';
-import type { ParsedCsv } from '@/lib/hash';
+import type { ParsedCsv } from "@/lib/parsers/csv/hash";
 
 describe('TESTE DE ROLLBACK - Transação completa', () => {
   beforeAll(async () => {

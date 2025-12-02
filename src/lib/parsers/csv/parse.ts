@@ -1,4 +1,4 @@
-import type { ParsedCsv } from "@/lib/hash";
+import type { ParsedCsv } from "@/lib/parsers/csv/hash";
 
 export function splitCsvLine(line: string): string[] {
   const result: string[] = [];

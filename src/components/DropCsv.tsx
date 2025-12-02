@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import type { ParsedCsv } from "@/lib/hash";
+import type { ParsedCsv } from "@/lib/parsers/csv/hash";
 import { parseCsvLoose } from "@/lib/importer/pipelines/csv/parse";
 
 type DropCsvProps = {

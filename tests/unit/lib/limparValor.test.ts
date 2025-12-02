@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { limparValor, limparCamposContexto } from '@/lib/csv';
+import { limparValor, limparCamposContexto } from "@/lib/parsers/csv/utils";
 
 describe('limparValor', () => {
   describe('Casos básicos (V3.1: Remover prefixos conhecidos)', () => {

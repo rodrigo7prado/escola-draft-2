@@ -31,7 +31,7 @@ import {
   contarRegistros,
 } from "../../helpers/db-setup";
 import { CSV_VALIDO_3_ALUNOS, parseCsvLoose } from "../../helpers/csv-fixtures";
-import { hashData, type ParsedCsv } from "@/lib/hash";
+import { hashData, type ParsedCsv } from "@/lib/parsers/csv/hash";
 
 // Importar a lógica da API (simularemos a chamada)
 // NOTA: Como não podemos testar Next.js route handlers diretamente,

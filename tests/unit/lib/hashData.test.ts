@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { hashData, type ParsedCsv } from '@/lib/hash';
+import { hashData, type ParsedCsv } from "@/lib/parsers/csv/hash";
 
 describe('hashData', () => {
   describe('Casos básicos (V2.2.1: Calcular hash SHA-256)', () => {

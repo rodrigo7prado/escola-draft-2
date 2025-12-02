@@ -1,5 +1,5 @@
 import type { ParseResult } from "@/lib/parsers/tipos";
-import type { ParsedCsv } from "@/lib/hash";
+import type { ParsedCsv } from "@/lib/parsers/csv/hash";
 import { executarParserXlsxDeclarativo } from "@/lib/parsers/engine/xlsx/xlsxDeclarativo";
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 

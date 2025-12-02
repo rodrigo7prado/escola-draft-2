@@ -3,7 +3,7 @@
 import DropCsv from "@/components/DropCsv";
 import { PeriodoCard } from "@/components/PeriodoCard";
 import { useEffect, useState } from "react";
-import type { ParsedCsv } from "@/lib/hash";
+import type { ParsedCsv } from "@/lib/parsers/csv/hash";
 import { ataResultadosFinaisProfile } from "@/lib/importer/profiles/ataResultadosFinais/profile";
 
 type TurmaData = {

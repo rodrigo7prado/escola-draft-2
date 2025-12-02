@@ -1,4 +1,3 @@
-import { loadWorkbookSheets, type SheetRows } from "@/lib/parsers/xlsxUtils";
 import {
   type CampoConfig,
   type CampoExtracao,
@@ -9,6 +8,7 @@ import {
 } from "@/lib/parsers/tipos";
 import { aplicarNormalizacao } from "@/lib/parsers/engine/xlsx/normalizers";
 import { xlsxResolvers as resolvers } from "@/lib/parsers/engine/xlsx/resolvers";
+import { loadWorkbookSheets, SheetRows } from "../../xlsx/utils";
 
 type RotuloValor = { rotulo: string; valor: string };
 

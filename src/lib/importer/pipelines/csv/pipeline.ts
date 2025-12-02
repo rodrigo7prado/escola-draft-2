@@ -1,5 +1,5 @@
 import type { PrismaClient, Prisma } from "@prisma/client";
-import { hashData, type ParsedCsv } from "@/lib/hash";
+import { hashData, type ParsedCsv } from "@/lib/parsers/csv/hash";
 
 import { csvPersistors } from "@/lib/importer/pipelines/csv/persistors";
 import { DuplicateFileError, ImportOutcome, ImportProfile } from "./types";

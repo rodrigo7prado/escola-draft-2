@@ -1,5 +1,5 @@
 import type { ArquivoImportado, LinhaImportada } from "@prisma/client";
-import type { ParsedCsv } from "@/lib/hash";
+import type { ParsedCsv } from "@/lib/parsers/csv/hash";
 import type { CampoConfig, KeyBuilderId } from "@/lib/parsers/tipos";
 
 export type ImportField = {

@@ -1,4 +1,4 @@
-import type { ParsedCsv } from "@/lib/hash";
+import type { ParsedCsv } from "@/lib/parsers/csv/hash";
 import type { LogicalLine } from "@/lib/importer/pipelines/xlsx/types";
 import type { KeyBuilderId } from "@/lib/parsers/tipos";
 

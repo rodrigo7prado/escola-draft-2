@@ -6,8 +6,10 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { createCsvRouteHandlers } from "@/lib/importer/handlers";
+import fs from "fs";
+import path from "path";
 import { ataResultadosFinaisProfile } from "@/lib/importer/profiles";
-import { CSV_VALIDO_3_ALUNOS, parseCsvLoose } from "../../helpers/csv-fixtures";
+import { parseCsvLoose } from "@/lib/parsers/csv/parse";
 import {
   setupTestDatabase,
   teardownTestDatabase,
@@ -16,11 +18,24 @@ import {
   contarRegistros,
 } from "../../helpers/db-setup";
 
-function makePostRequest(body: unknown) {
+const CSV_ATA_FIXTURE = fs.readFileSync(
+  path.join(process.cwd(), "tests/fixtures/Ata_resultados_finais(1).csv"),
+  "utf8"
+);
+
+const parsedFixture = parseCsvLoose(CSV_ATA_FIXTURE, ataResultadosFinaisProfile.requiredHeaders);
+const linhasFixture = parsedFixture.rows;
+const uniqueMatriculas = Array.from(
+  linhasFixture.reduce((set, row) => set.add(row["ALUNO"]), new Set<string>())
+);
+
+function makePostRequest(csvText: string, fileName: string) {
+  const parsed = parseCsvLoose(csvText, ataResultadosFinaisProfile.requiredHeaders);
   return {
     url: "http://localhost/api/importacoes/ata-resultados-finais",
+    headers: { get: () => "application/json" },
     async json() {
-      return body;
+      return { data: parsed, fileName };
     },
   } as any;
 }
@@ -52,8 +67,8 @@ describe("API handlers via createCsvRouteHandlers", () => {
   });
 
   it("POST deve importar e persistir Arquivo, Linhas, Alunos e Enturmações", async () => {
-    const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
-    const req = makePostRequest({ data: csvData, fileName: "ata.csv" });
+    const csvData = parsedFixture;
+    const req = makePostRequest(CSV_ATA_FIXTURE, "ata.csv");
 
     const res = await handlers.POST(req);
     expect(res.status).toBe(201);
@@ -63,13 +78,13 @@ describe("API handlers via createCsvRouteHandlers", () => {
     const counts = await contarRegistros();
     expect(counts.arquivos).toBe(1);
     expect(counts.linhas).toBe(csvData.rows.length);
-    expect(counts.alunos).toBe(csvData.rows.length);
-    expect(counts.enturmacoes).toBe(csvData.rows.length);
+    expect(counts.alunos).toBe(uniqueMatriculas.length);
+    expect(counts.enturmacoes).toBe(uniqueMatriculas.length);
   });
 
   it("POST deve retornar 409 e fileId em caso de hash duplicado", async () => {
-    const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
-    const req = makePostRequest({ data: csvData, fileName: "ata.csv" });
+    const csvData = parsedFixture;
+    const req = makePostRequest(CSV_ATA_FIXTURE, "ata.csv");
 
     const res1 = await handlers.POST(req);
     const body1 = await res1.json();
@@ -83,8 +98,8 @@ describe("API handlers via createCsvRouteHandlers", () => {
   });
 
   it("GET deve refletir alunos no banco (pendentes = 0) após importação", async () => {
-    const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
-    const req = makePostRequest({ data: csvData, fileName: "ata.csv" });
+    const csvData = parsedFixture;
+    const req = makePostRequest(CSV_ATA_FIXTURE, "ata.csv");
     const res = await handlers.POST(req);
     expect(res.status).toBe(201);
 
@@ -96,13 +111,13 @@ describe("API handlers via createCsvRouteHandlers", () => {
     expect(body.periodos).not.toHaveLength(0);
     const resumo = body.periodos[0].resumo;
     expect(resumo.totalAlunosCSV).toBe(csvData.rows.length);
-    expect(resumo.totalAlunosBanco).toBe(csvData.rows.length);
+    expect(resumo.totalAlunosBanco).toBe(uniqueMatriculas.length);
     expect(resumo.pendentes).toBe(0);
   });
 
   it("DELETE por id deve remover registros e marcar fonte ausente", async () => {
-    const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
-    const postRes = await handlers.POST(makePostRequest({ data: csvData, fileName: "ata.csv" }));
+    const csvData = parsedFixture;
+    const postRes = await handlers.POST(makePostRequest(CSV_ATA_FIXTURE, "ata.csv"));
     expect(postRes.status).toBe(201);
     const body = await postRes.json();
     const fileId = body.arquivo.id;
@@ -115,8 +130,8 @@ describe("API handlers via createCsvRouteHandlers", () => {
   });
 
   it("DELETE por período deve apagar arquivos daquele ano", async () => {
-    const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
-    const postRes = await handlers.POST(makePostRequest({ data: csvData, fileName: "ata-2024.csv" }));
+    const csvData = parsedFixture;
+    const postRes = await handlers.POST(makePostRequest(CSV_ATA_FIXTURE, "ata-2024.csv"));
     expect(postRes.status).toBe(201);
 
     const deleteRes = await handlers.DELETE(makeDeleteRequest(`?periodo=2024`));
@@ -130,19 +145,27 @@ describe("API handlers via createCsvRouteHandlers", () => {
   });
 
   it("POST deve rejeitar payload sem data ou fileName", async () => {
-    const badReq1 = makePostRequest({ fileName: "ata.csv" });
+    const badReq1 = {
+      url: "http://localhost/api/importacoes/ata-resultados-finais",
+      headers: { get: () => "application/json" },
+      json: async () => ({ fileName: "ata.csv" }),
+    } as any;
     const res1 = await handlers.POST(badReq1);
     expect(res1.status).toBe(400);
 
-    const badReq2 = makePostRequest({ data: parseCsvLoose(CSV_VALIDO_3_ALUNOS) });
+    const badReq2 = {
+      url: "http://localhost/api/importacoes/ata-resultados-finais",
+      headers: { get: () => "application/json" },
+      json: async () => ({ data: parsedFixture }),
+    } as any;
     const res2 = await handlers.POST(badReq2);
     expect(res2.status).toBe(400);
   });
 
   it("GET deve marcar pendentes quando não há enturmações existentes", async () => {
     const prisma = getTestPrisma();
-    const csvData = parseCsvLoose(CSV_VALIDO_3_ALUNOS);
-    const postRes = await handlers.POST(makePostRequest({ data: csvData, fileName: "ata.csv" }));
+    const csvData = parsedFixture;
+    const postRes = await handlers.POST(makePostRequest(CSV_ATA_FIXTURE, "ata.csv"));
     expect(postRes.status).toBe(201);
 
     // Remove enturmações para simular ausência no banco

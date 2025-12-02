@@ -24,29 +24,34 @@ export async function importCsvMultipart({
       typeof (request as any).headers?.get === "function"
         ? request.headers.get("content-type") ?? ""
         : "";
-    const hasFormData = typeof (request as any).formData === "function";
+    const isJson =
+      contentType.includes("application/json") && typeof (request as any).json === "function";
 
-    if (!contentType.includes("multipart/form-data") || !hasFormData) {
+    if (!isJson) {
       return NextResponse.json(
-        { error: "Content-Type inválido, esperado multipart/form-data" },
+        { error: "Content-Type inválido, esperado application/json" },
         { status: 400 }
       );
     }
 
-    const form = await request.formData();
-    const file = form.get("file");
-    if (!(file instanceof File)) {
-      return NextResponse.json({ error: "Arquivo ausente" }, { status: 400 });
+    const body = await (request as any).json();
+    if (!body?.fileName) {
+      return NextResponse.json({ error: "fileName ausente" }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const texto = buffer.toString("utf8");
-    const parsed = parseCsvLoose(texto, profile.requiredHeaders);
+    let parsed = body.data;
+    if (!parsed && typeof body.csvText === "string") {
+      parsed = parseCsvLoose(body.csvText, profile.requiredHeaders);
+    }
+
+    if (!parsed || !parsed.rows) {
+      return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
+    }
 
     const resultado = await runCsvImport({
       prisma,
       data: parsed,
-      fileName: file.name,
+      fileName: body.fileName,
       profile,
       transactionOptions,
     });

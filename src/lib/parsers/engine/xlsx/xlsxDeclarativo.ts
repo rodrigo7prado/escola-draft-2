@@ -7,8 +7,8 @@ import {
   type DisciplinaExtraida,
   type ResumoSerie,
 } from "@/lib/parsers/tipos";
-import { aplicarNormalizacao } from "@/lib/parsers/engine/normalizers";
-import { resolvers } from "@/lib/parsers/engine/resolvers";
+import { aplicarNormalizacao } from "@/lib/parsers/engine/xlsx/normalizers";
+import { xlsxResolvers as resolvers } from "@/lib/parsers/engine/xlsx/resolvers";
 
 type RotuloValor = { rotulo: string; valor: string };
 

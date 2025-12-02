@@ -1,7 +1,7 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import { DuplicateFileError } from "@/lib/importer/pipelines/csv/types";
-import { executarExtrator } from "@/lib/parsers/engine/executors";
-import { lineSerializers } from "@/lib/parsers/engine/serializers";
+import { executarExtrator } from "@/lib/parsers/engine/index";
+import { xlsxLineSerializers } from "@/lib/parsers/engine/index";
 import { computeHash } from "@/lib/importer/pipelines/xlsx/hashPolicies";
 import { persistors } from "@/lib/importer/pipelines/xlsx/persistors";
 import type { ImportRunParams, ImportRunResult, LogicalLine } from "@/lib/importer/pipelines/xlsx/types";
@@ -37,7 +37,7 @@ export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunR
   }
 
   const parsed = await executarExtrator(profile, buffer);
-  const serializer = lineSerializers[profile.serializadorId as keyof typeof lineSerializers];
+  const serializer = xlsxLineSerializers[profile.serializadorId as keyof typeof xlsxLineSerializers];
   if (!serializer) {
     throw new Error(`Serializador não encontrado: ${profile.serializadorId}`);
   }

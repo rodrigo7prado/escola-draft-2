@@ -5,6 +5,8 @@ import { PeriodoCard } from "@/components/PeriodoCard";
 import { useEffect, useState } from "react";
 import type { ParsedCsv } from "@/lib/parsers/csv/hash";
 import { ataResultadosFinaisProfile } from "@/lib/importer/profiles/ataResultadosFinais/profile";
+import { resolveRequiredHeaders } from "@/lib/parsers/engine/csv/executors";
+import { resolveDuplicateKey } from "@/lib/importer/utils/fieldResolvers";
 
 type TurmaData = {
   nome: string;
@@ -114,8 +116,8 @@ export default function MigrateAtaResultsUpload() {
       {/* Upload de arquivo */}
       <DropCsv
         title="Ata de Resultados Finais"
-        requiredHeaders={ataResultadosFinaisProfile.requiredHeaders}
-        duplicateKey={ataResultadosFinaisProfile.duplicateKey.column}
+        requiredHeaders={resolveRequiredHeaders(ataResultadosFinaisProfile)}
+        duplicateKey={resolveDuplicateKey(ataResultadosFinaisProfile).column}
         onParsed={handleNewFiles}
         showPreview={false}
         multiple={true}

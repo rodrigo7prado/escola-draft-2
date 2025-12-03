@@ -1,12 +1,15 @@
-import { importCsvMultipart } from "@/lib/importer/adapters/csv/importAdapter";
-import { summaryCsvEnturmacoes, summaryChavesDefault } from "@/lib/importer/adapters/csv/summaryAdapters";
-import { deleteCsvAdapter, deleteNone } from "@/lib/importer/adapters/csv/deleteAdapters";
-import { importXlsxMultipart } from "@/lib/importer/adapters/xlsx/importAdapter";
-import { summaryXlsxDefault } from "@/lib/importer/adapters/xlsx/summaryAdapters";
-import { deleteXlsxNone } from "@/lib/importer/adapters/xlsx/deleteAdapters";
+import {
+  summaryCsvEnturmacoes,
+  summaryChavesDefault,
+} from "@/lib/importer/profiles/ataResultadosFinais/adapters/summaryAdapter";
+import { deleteCsvAdapter, deleteNone } from "@/lib/importer/profiles/ataResultadosFinais/adapters/deleteAdapter";
+import { summaryXlsxDefault } from "@/lib/importer/profiles/fichaIndividualHistorico/adapters/summaryAdapters";
+import { deleteXlsxNone } from "@/lib/importer/profiles/fichaIndividualHistorico/adapters/deleteAdapters";
 import type { PrismaClient } from "@prisma/client";
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 import type { NextRequest } from "next/server";
+import { importCsvJson } from "./importCsvAdapter";
+import { importXlsxJson } from "./importXlsxAdapter";
 
 type ImportAdapter = (ctx: {
   prisma: PrismaClient;
@@ -41,8 +44,7 @@ type FormatAdapters = {
 export const adaptersByFormat: Record<string, FormatAdapters> = {
   CSV: {
     importAdapters: {
-      csv: importCsvMultipart,
-      "csv-multipart": importCsvMultipart,
+      csv: importCsvJson,
     },
     summaryAdapters: {
       "csv-enturmacoes": summaryCsvEnturmacoes,
@@ -60,7 +62,7 @@ export const adaptersByFormat: Record<string, FormatAdapters> = {
   },
   XLSX: {
     importAdapters: {
-      xlsx: importXlsxMultipart,
+      xlsx: importXlsxJson,
     },
     summaryAdapters: {
       "chaves-default": ({ profile }) => summaryXlsxDefault(profile),

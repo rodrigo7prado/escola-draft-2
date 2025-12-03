@@ -1,22 +1,26 @@
 import type { LinhaImportada, PrismaClient } from "@prisma/client";
 import { extractContext, extractField, extractName } from "@/lib/importer/profiles/ataResultadosFinais/context";
 import type { CsvResumoGrupo, CsvResumoPeriodo, ImportProfile } from "@/lib/importer/pipelines/csv/types";
+import { resolveDuplicateKey, resolveDisplayName } from "@/lib/importer/utils/fieldResolvers";
 
 type AlunosNoBanco = Map<string, Map<string, Set<string>>>;
+type ReferenceKeysLoader = (prisma: PrismaClient, profile: ImportProfile) => Promise<AlunosNoBanco>;
 
 export function buildPeriodoResumo(
   linhas: LinhaImportada[],
   alunosBanco: AlunosNoBanco,
   profile: ImportProfile
 ): CsvResumoPeriodo[] {
+  const duplicateKey = resolveDuplicateKey(profile);
+  const displayName = resolveDisplayName(profile);
   const periodos = new Map<string, Map<string, CsvResumoGrupo>>();
 
   for (const linha of linhas) {
     const dados = linha.dadosOriginais as Record<string, string>;
     const ctx = extractContext(dados, profile);
-    const chave = extractField(dados, profile.duplicateKey);
+    const chave = extractField(dados, duplicateKey);
     if (!chave) continue;
-    const nome = extractName(dados, profile.displayName);
+    const nome = extractName(dados, displayName);
     const periodo = ctx.periodo || "(sem período)";
     const grupo = ctx.grupo || "(sem grupo)";
 
@@ -95,17 +99,25 @@ export function mapearAlunosBanco(
   return mapa;
 }
 
-export async function loadExistingKeys(
-  prisma: PrismaClient,
-  profile: ImportProfile
-): Promise<AlunosNoBanco> {
-  // Perfil-ata: sempre compara com enturmações
-  const enturmacoes = await prisma.enturmacao.findMany({
-    select: {
-      anoLetivo: true,
-      turma: true,
-      aluno: { select: { matricula: true } },
-    },
-  });
-  return mapearAlunosBanco(enturmacoes);
+const referenceKeyLoaders: Record<string, ReferenceKeysLoader> = {
+  "enturmacoes-por-turma": async (prisma) => {
+    const enturmacoes = await prisma.enturmacao.findMany({
+      select: {
+        anoLetivo: true,
+        turma: true,
+        aluno: { select: { matricula: true } },
+      },
+    });
+    return mapearAlunosBanco(enturmacoes);
+  },
+  none: async () => new Map(),
+};
+
+export async function loadExistingKeys(prisma: PrismaClient, profile: ImportProfile): Promise<AlunosNoBanco> {
+  const source = profile.summaryDeleteKeysSource ?? "enturmacoes-por-turma";
+  const loader = referenceKeyLoaders[source];
+  if (!loader) {
+    throw new Error(`Fonte de chaves de resumo/delete não suportada: ${source}`);
+  }
+  return loader(prisma, profile);
 }

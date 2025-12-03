@@ -1,5 +1,9 @@
 import { serializarFichaDisciplina } from "@/lib/parsers/profiles/fichaIndividualHistorico/serializer";
 
-export const xlsxLineSerializers = {
-  fichaDisciplinaFlatten: serializarFichaDisciplina,
+const xlsxLineSerializers = {
+  fichaIndividualHistorico: serializarFichaDisciplina,
 };
+
+export function resolveXlsxSerializer(tipoArquivo: string) {
+  return xlsxLineSerializers[tipoArquivo];
+}

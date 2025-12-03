@@ -6,26 +6,35 @@ export type ImportField = {
   prefixes?: string[];
 };
 
+export type FieldRole = "key" | "display" | "context";
+
+export type FieldSource = {
+  header?: string;
+  headers?: string[];
+  prefixes?: string[];
+};
+
+export type FieldPersist =
+  | { tipo: "vinculacao"; modelo: string; campo: string }
+  | { tipo: "gravacao"; modelo: string; campo: string }
+  | { tipo: "composicao" };
+
+export type ImportFieldDef = {
+  name: string;
+  source: FieldSource;
+  required?: boolean;
+  roles: FieldRole[];
+  persist: FieldPersist;
+};
+
 export type ImportProfile = {
   formato: "CSV" | "XLSX" | "TXT";
   tipoArquivo: string;
   tipoEntidade: string;
-  requiredHeaders: string[];
-  duplicateKey?: ImportField;
-  displayName?: ImportField[];
-  context?: {
-    periodo?: ImportField;
-    grupo?: ImportField;
-    modalidade?: ImportField;
-    serie?: ImportField;
-    turno?: ImportField;
-  };
-  existingKeysSource?: "enturmacoes" | "none";
+  fields?: ImportFieldDef[];
+  summaryDeleteKeysSource?: "enturmacoes-por-turma" | "none";
   cleanupStrategy?: "markFonteAusenteAluno" | "none";
-  extratorId?: string;
-  serializadorId?: string;
   persistorId?: string;
-  hashPolicyId?: string;
   chavesDisponiveis?: KeyBuilderId[];
   campos?: Record<string, CampoConfig>;
   importAdapterId?: string;

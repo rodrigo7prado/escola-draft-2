@@ -3,6 +3,7 @@ import { hashData, type ParsedCsv } from "@/lib/parsers/csv/hash";
 
 import { csvPersistors } from "@/lib/importer/pipelines/csv/persistors";
 import { DuplicateFileError, ImportOutcome, ImportProfile } from "./types";
+import { resolveDuplicateKey } from "@/lib/importer/utils/fieldResolvers";
 
 type TransactionOptions = Parameters<PrismaClient["$transaction"]>[1];
 
@@ -34,6 +35,7 @@ async function createArquivoELinhas(
   params: { data: ParsedCsv; fileName: string; profile: ImportProfile; dataHash: string }
 ) {
   const { data, fileName, profile, dataHash } = params;
+  const duplicateKey = resolveDuplicateKey(profile);
   const arquivo = await tx.arquivoImportado.create({
     data: {
       nomeArquivo: fileName,
@@ -48,7 +50,7 @@ async function createArquivoELinhas(
       arquivoId: arquivo.id,
       numeroLinha: i,
       dadosOriginais: row,
-      identificadorChave: readField(row, profile.duplicateKey),
+      identificadorChave: readField(row, duplicateKey),
       tipoEntidade: profile.tipoEntidade,
     })),
   });

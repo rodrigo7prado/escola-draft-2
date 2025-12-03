@@ -2,8 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { PrismaClient } from "@prisma/client";
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 import type { KeyBuilderId } from "@/lib/parsers/tipos";
-import { runCsvImport } from "@/lib/importer/pipelines/csv/pipeline";
-import { parseCsvLoose } from "@/lib/parsers/csv/parse";
+import { runXlsxImport } from "@/lib/importer/pipelines/xlsx/pipeline";
 import { DuplicateFileError } from "@/lib/importer/pipelines/csv/types";
 
 type ImportAdapterContext = {
@@ -13,7 +12,7 @@ type ImportAdapterContext = {
   transactionOptions?: Parameters<PrismaClient["$transaction"]>[1];
 };
 
-export async function importCsvMultipart({
+export async function importXlsxJson({
   prisma,
   profile,
   request,
@@ -35,24 +34,40 @@ export async function importCsvMultipart({
     }
 
     const body = await (request as any).json();
-    if (!body?.fileName) {
+    const fileName = body?.fileName;
+    const fileData = body?.fileData;
+    const selectedKeyId = body?.selectedKeyId as KeyBuilderId | undefined;
+    const alunoId = body?.alunoId as string | undefined;
+
+    if (!fileName) {
       return NextResponse.json({ error: "fileName ausente" }, { status: 400 });
     }
 
-    let parsed = body.data;
-    if (!parsed && typeof body.csvText === "string") {
-      parsed = parseCsvLoose(body.csvText, profile.requiredHeaders);
+    if (!fileData) {
+      return NextResponse.json({ error: "fileData ausente" }, { status: 400 });
     }
 
-    if (!parsed || !parsed.rows) {
-      return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
+    let buffer: Buffer;
+    try {
+      if (typeof fileData === "string") {
+        buffer = Buffer.from(fileData, "base64");
+      } else if (Array.isArray(fileData)) {
+        buffer = Buffer.from(fileData);
+      } else {
+        return NextResponse.json({ error: "formato de fileData inválido" }, { status: 400 });
+      }
+    } catch (err) {
+      console.error("Erro ao decodificar fileData:", err);
+      return NextResponse.json({ error: "Erro ao ler arquivo" }, { status: 400 });
     }
 
-    const resultado = await runCsvImport({
+    const resultado = await runXlsxImport({
       prisma,
-      data: parsed,
-      fileName: body.fileName,
+      buffer,
+      fileName,
       profile,
+      selectedKeyId,
+      alunoId,
       transactionOptions,
     });
 
@@ -60,7 +75,8 @@ export async function importCsvMultipart({
       {
         arquivo: resultado.arquivo,
         linhasImportadas: resultado.linhasImportadas,
-        ...resultado.domain,
+        hash: resultado.dataHash,
+        domain: resultado.domain,
       },
       { status: 201 }
     );

@@ -10,6 +10,7 @@ import fs from "fs";
 import path from "path";
 import { ataResultadosFinaisProfile } from "@/lib/importer/profiles";
 import { parseCsvLoose } from "@/lib/parsers/csv/parse";
+import { resolveRequiredHeaders } from "@/lib/parsers/engine/csv/executors";
 import {
   setupTestDatabase,
   teardownTestDatabase,
@@ -23,14 +24,14 @@ const CSV_ATA_FIXTURE = fs.readFileSync(
   "utf8"
 );
 
-const parsedFixture = parseCsvLoose(CSV_ATA_FIXTURE, ataResultadosFinaisProfile.requiredHeaders);
+const parsedFixture = parseCsvLoose(CSV_ATA_FIXTURE, resolveRequiredHeaders(ataResultadosFinaisProfile));
 const linhasFixture = parsedFixture.rows;
 const uniqueMatriculas = Array.from(
   linhasFixture.reduce((set, row) => set.add(row["ALUNO"]), new Set<string>())
 );
 
 function makePostRequest(csvText: string, fileName: string) {
-  const parsed = parseCsvLoose(csvText, ataResultadosFinaisProfile.requiredHeaders);
+  const parsed = parseCsvLoose(csvText, resolveRequiredHeaders(ataResultadosFinaisProfile));
   return {
     url: "http://localhost/api/importacoes/ata-resultados-finais",
     headers: { get: () => "application/json" },

@@ -1,4 +1,5 @@
 import type { ImportField, ImportProfile } from "@/lib/importer/pipelines/csv/types";
+import { resolveContext } from "@/lib/importer/utils/fieldResolvers";
 
 function stripPrefix(valor: string, prefixes?: string[]) {
   if (!prefixes || prefixes.length === 0) return valor;
@@ -27,7 +28,7 @@ export function extractName(row: Record<string, string>, fields: ImportField[] =
 }
 
 export function extractContext(row: Record<string, string>, profile: ImportProfile) {
-  const ctx = profile.context ?? {};
+  const ctx = resolveContext(profile);
   return {
     periodo: ctx.periodo ? extractField(row, ctx.periodo) : "",
     grupo: ctx.grupo ? extractField(row, ctx.grupo) : "",

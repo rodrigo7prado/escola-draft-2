@@ -1,6 +1,7 @@
 import type { Prisma, LinhaImportada } from "@prisma/client";
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 import { extractContext, extractField, extractName } from "@/lib/importer/profiles/ataResultadosFinais/context";
+import { resolveDuplicateKey, resolveDisplayName } from "@/lib/importer/utils/fieldResolvers";
 
 type PersistDeps = {
   rows: Record<string, string>[];
@@ -23,9 +24,10 @@ function mapEnturmacoes(deps: PersistDeps) {
     deps.linhas.map((linha) => [linha.numeroLinha, linha.id])
   );
   const seeds = new Map<string, EnturmacaoSeed>();
+  const duplicateKey = resolveDuplicateKey(deps.profile);
 
   deps.rows.forEach((row, idx) => {
-    const matricula = extractField(row, deps.profile.duplicateKey);
+    const matricula = duplicateKey ? extractField(row, duplicateKey) : "";
     if (!matricula) return;
     const linhaId = linhasPorNumero.get(idx);
     if (!linhaId) return;
@@ -54,6 +56,7 @@ async function upsertAlunos(
   alunos: Map<string, EnturmacaoSeed>,
   deps: PersistDeps
 ) {
+  const displayNames = resolveDisplayName(deps.profile);
   const ids = new Map<string, string>();
   let novos = 0;
   let atualizados = 0;
@@ -66,7 +69,7 @@ async function upsertAlunos(
         const novo = await tx.aluno.create({
           data: {
             matricula,
-            nome: extractName(info.row, deps.profile.displayName) || null,
+            nome: extractName(info.row, displayNames) || null,
             origemTipo: "csv",
             linhaOrigemId: info.linhaId,
             fonteAusente: false,

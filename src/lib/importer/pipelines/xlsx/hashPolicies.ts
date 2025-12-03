@@ -7,7 +7,7 @@ export const hashPolicies: Record<string, HashPolicyFn> = {
   default: hashLogicalLines,
 };
 
-export async function computeHash(policyId: string | undefined, lines: LogicalLine[]) {
+export async function computeHash(lines: LogicalLine[], policyId?: string) {
   const fn = (policyId && hashPolicies[policyId]) || hashPolicies.default;
   return fn(lines);
 }

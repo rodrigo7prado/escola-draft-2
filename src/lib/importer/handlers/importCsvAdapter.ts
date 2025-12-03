@@ -2,8 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { PrismaClient } from "@prisma/client";
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 import type { KeyBuilderId } from "@/lib/parsers/tipos";
-import { runXlsxImport } from "@/lib/importer/pipelines/xlsx/pipeline";
+import { runCsvImport } from "@/lib/importer/pipelines/csv/pipeline";
+import { parseCsvLoose } from "@/lib/parsers/csv/parse";
 import { DuplicateFileError } from "@/lib/importer/pipelines/csv/types";
+import { resolveRequiredHeaders } from "@/lib/parsers/engine/csv/executors";
 
 type ImportAdapterContext = {
   prisma: PrismaClient;
@@ -12,7 +14,7 @@ type ImportAdapterContext = {
   transactionOptions?: Parameters<PrismaClient["$transaction"]>[1];
 };
 
-export async function importXlsxMultipart({
+export async function importCsvJson({
   prisma,
   profile,
   request,
@@ -23,33 +25,36 @@ export async function importXlsxMultipart({
       typeof (request as any).headers?.get === "function"
         ? request.headers.get("content-type") ?? ""
         : "";
-    const hasFormData = typeof (request as any).formData === "function";
+    const isJson =
+      contentType.includes("application/json") && typeof (request as any).json === "function";
 
-    if (!contentType.includes("multipart/form-data") || !hasFormData) {
+    if (!isJson) {
       return NextResponse.json(
-        { error: "Content-Type inválido, esperado multipart/form-data" },
+        { error: "Content-Type inválido, esperado application/json" },
         { status: 400 }
       );
     }
 
-    const form = await request.formData();
-    const file = form.get("file");
-    const selectedKeyId = form.get("selectedKeyId")?.toString() as KeyBuilderId | undefined;
-    const alunoId = form.get("alunoId")?.toString();
-
-    if (!(file instanceof File)) {
-      return NextResponse.json({ error: "Arquivo ausente" }, { status: 400 });
+    const body = await (request as any).json();
+    if (!body?.fileName) {
+      return NextResponse.json({ error: "fileName ausente" }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    let parsed = body.data;
+    if (!parsed && typeof body.csvText === "string") {
+      const requiredHeaders = resolveRequiredHeaders(profile);
+      parsed = parseCsvLoose(body.csvText, requiredHeaders);
+    }
 
-    const resultado = await runXlsxImport({
+    if (!parsed || !parsed.rows) {
+      return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
+    }
+
+    const resultado = await runCsvImport({
       prisma,
-      buffer,
-      fileName: file.name,
+      data: parsed,
+      fileName: body.fileName,
       profile,
-      selectedKeyId,
-      alunoId,
       transactionOptions,
     });
 
@@ -57,8 +62,7 @@ export async function importXlsxMultipart({
       {
         arquivo: resultado.arquivo,
         linhasImportadas: resultado.linhasImportadas,
-        hash: resultado.dataHash,
-        domain: resultado.domain,
+        ...resultado.domain,
       },
       { status: 201 }
     );

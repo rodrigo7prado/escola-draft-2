@@ -7,23 +7,13 @@ export async function executarExtratorXlsx(
   profile: ImportProfile,
   buffer: Buffer
 ): Promise<ParseResult | ParsedCsv> {
-  if (!profile.extratorId) {
-    throw new Error("Extrator não definido no profile");
-  }
-
-  switch (profile.extratorId) {
-    case "xlsxDeclarativo": {
-      if (!profile.campos) throw new Error("Campos não definidos para extrator XLSX");
-      return executarParserXlsxDeclarativo(
-        {
-          parserNome: profile.tipoArquivo,
-          formatosSuportados: [profile.formato as any],
-          campos: profile.campos,
-        },
-        buffer
-      );
-    }
-    default:
-      throw new Error(`Extrator XLSX não suportado: ${profile.extratorId}`);
-  }
+  if (!profile.campos) throw new Error("Campos não definidos para extrator XLSX");
+  return executarParserXlsxDeclarativo(
+    {
+      parserNome: profile.tipoArquivo,
+      formatosSuportados: [profile.formato as any],
+      campos: profile.campos,
+    },
+    buffer
+  );
 }

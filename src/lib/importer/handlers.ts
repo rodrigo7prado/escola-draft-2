@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { PrismaClient } from "@prisma/client";
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
-import { adaptersByFormat } from "@/lib/importer/adapters/registry";
+import { adaptersByFormat } from "@/lib/importer/handlers/registry";
+import { validateFields } from "@/lib/importer/utils/profileValidation";
 
 type ImportRouteConfig = {
   prisma: PrismaClient;
@@ -21,6 +22,7 @@ type ImportRouteConfig = {
 
 export function createImportRouteHandlers(config: ImportRouteConfig) {
   const { prisma, profile, transactionOptions } = config;
+  validateFields(profile);
   const formato = (profile.formato ?? "CSV").toUpperCase();
   const registry = adaptersByFormat[formato] ?? adaptersByFormat.CSV;
   const importAdapterId = profile.importAdapterId ?? registry.defaults.importAdapterId;

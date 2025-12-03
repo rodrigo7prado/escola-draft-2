@@ -1,7 +1,6 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import { DuplicateFileError } from "@/lib/importer/pipelines/csv/types";
-import { executarExtrator } from "@/lib/parsers/engine/index";
-import { xlsxLineSerializers } from "@/lib/parsers/engine/index";
+import { executarExtrator, resolveXlsxSerializer } from "@/lib/parsers/engine/index";
 import { computeHash } from "@/lib/importer/pipelines/xlsx/hashPolicies";
 import { persistors } from "@/lib/importer/pipelines/xlsx/persistors";
 import type { ImportRunParams, ImportRunResult, LogicalLine } from "@/lib/importer/pipelines/xlsx/types";
@@ -32,18 +31,14 @@ function buildLinhasPayload(
 export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunResult> {
   const { prisma, buffer, fileName, profile, selectedKeyId, alunoId, transactionOptions } = params;
 
-  if (!profile.serializadorId || !profile.extratorId) {
-    throw new Error("Profile declarativo inválido: extratorId ou serializadorId ausente");
-  }
-
   const parsed = await executarExtrator(profile, buffer);
-  const serializer = xlsxLineSerializers[profile.serializadorId as keyof typeof xlsxLineSerializers];
+  const serializer = resolveXlsxSerializer(profile.tipoArquivo);
   if (!serializer) {
-    throw new Error(`Serializador não encontrado: ${profile.serializadorId}`);
+    throw new Error(`Serializador não encontrado para tipoArquivo: ${profile.tipoArquivo}`);
   }
 
   const lines = serializer(parsed as any, { selectedKeyId });
-  const dataHash = await computeHash(profile.hashPolicyId, lines);
+  const dataHash = await computeHash(lines);
 
   await ensureHashUnique(prisma, dataHash, profile.tipoArquivo);
 

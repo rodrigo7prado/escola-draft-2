@@ -1,0 +1,2 @@
+Beleza, então a direção é unificar: em vez de requiredHeaders separado, teremos um catálogo de campos declarativos (para CSV e XLSX) onde cada campo traz suas propriedades de extração/normalização/persistência, e a presença de headers obrigatórios vira um atributo desse catálogo. Podemos manter a lista plana só como compat enquanto migramos, mas o alvo é removê-la. Quando quiser, seguimos definindo quais atributos mínimos cada campo precisa carregar para cobrir ambos os perfis e o ciclo completo (extrair, normalizar, dedupe/vínculo, persistir).
+

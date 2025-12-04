@@ -47,6 +47,10 @@ export async function importXlsxJson({
       return NextResponse.json({ error: "fileData ausente" }, { status: 400 });
     }
 
+    if (!alunoId) {
+      return NextResponse.json({ error: "alunoId ausente" }, { status: 400 });
+    }
+
     let buffer: Buffer;
     try {
       if (typeof fileData === "string") {

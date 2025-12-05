@@ -29,9 +29,11 @@ export type ParserExecutor = (
   buffer: Buffer
 ) => Promise<ParseResult | Record<string, unknown>>;
 
+export type RawSheetCells = { name: string; cells: Record<string, string> };
+
 export type LineSerializer = (
   parsed: ParseResult | Record<string, unknown>,
-  opts: { selectedKeyId?: KeyBuilderId }
+  opts: { selectedKeyId?: KeyBuilderId; rawSheets?: RawSheetCells[] }
 ) => LogicalLine[];
 
 export type Persistor = (

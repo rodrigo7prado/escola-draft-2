@@ -1,4 +1,4 @@
-import type { LogicalLine } from "@/lib/importer/pipelines/xlsx/types";
+import type { LogicalLine, RawSheetCells } from "@/lib/importer/pipelines/xlsx/types";
 import type { KeyBuilderId, ParseResult } from "@/lib/parsers/tipos";
 
 function toStringSafe(v: unknown) {
@@ -33,12 +33,27 @@ function resolveKeyBuilder(id?: KeyBuilderId): KeyBuilder {
 
 export function serializarFichaDisciplina(
   parsed: ParseResult,
-  opts: { selectedKeyId?: KeyBuilderId }
+  opts: { selectedKeyId?: KeyBuilderId; rawSheets?: RawSheetCells[] }
 ): LogicalLine[] {
   const builder = resolveKeyBuilder(opts.selectedKeyId);
   const baseKey = builder(parsed.aluno);
   const linhas: LogicalLine[] = [];
 
+  const sheets = opts.rawSheets;
+  if (sheets && sheets.length) {
+    for (const sheet of sheets) {
+      linhas.push({
+        dadosOriginais: {
+          sheet: sheet.name,
+          cells: sheet.cells,
+        },
+        identificadorChave: baseKey,
+      });
+    }
+    return linhas;
+  }
+
+  // Fallback: estrutura baseada em séries/disciplinas extraídas
   for (const serie of parsed.series) {
     if (!serie.disciplinas.length) {
       linhas.push({

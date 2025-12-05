@@ -3,7 +3,13 @@ import { DuplicateFileError } from "@/lib/importer/pipelines/csv/types";
 import { executarExtrator, resolveXlsxSerializer } from "@/lib/parsers/engine/index";
 import { computeHash } from "@/lib/importer/pipelines/xlsx/hashPolicies";
 import { persistors } from "@/lib/importer/pipelines/xlsx/persistors";
-import type { ImportRunParams, ImportRunResult, LogicalLine } from "@/lib/importer/pipelines/xlsx/types";
+import type {
+  ImportRunParams,
+  ImportRunResult,
+  LogicalLine,
+  RawSheetCells,
+} from "@/lib/importer/pipelines/xlsx/types";
+import { loadWorkbookSheets } from "@/lib/parsers/xlsx/utils";
 
 async function ensureHashUnique(prisma: PrismaClient, hash: string, tipoArquivo: string) {
   const existing = await prisma.arquivoImportado.findFirst({
@@ -37,7 +43,20 @@ export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunR
     throw new Error(`Serializador não encontrado para tipoArquivo: ${profile.tipoArquivo}`);
   }
 
-  const lines = serializer(parsed as any, { selectedKeyId });
+  const rawSheets: RawSheetCells[] = [];
+  const sheets = await loadWorkbookSheets(buffer);
+  for (const sheet of sheets) {
+    const cells: Record<string, string> = {};
+    for (const [rowNumber, cols] of Object.entries(sheet.rows)) {
+      for (const [col, val] of Object.entries(cols)) {
+        if (val === undefined || val === null) continue;
+        cells[`${col}${rowNumber}`] = typeof val === "string" ? val : String(val);
+      }
+    }
+    rawSheets.push({ name: sheet.name, cells });
+  }
+
+  const lines = serializer(parsed as any, { selectedKeyId, rawSheets });
   const dataHash = await computeHash(lines);
 
   await ensureHashUnique(prisma, dataHash, profile.tipoArquivo);

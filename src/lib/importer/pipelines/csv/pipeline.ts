@@ -1,9 +1,9 @@
 import type { PrismaClient, Prisma } from "@prisma/client";
 import { hashData, type ParsedCsv } from "@/lib/parsers/csv/hash";
 
-import { csvPersistors } from "@/lib/importer/pipelines/csv/persistors";
 import { DuplicateFileError, ImportOutcome, ImportProfile } from "./types";
 import { resolveDuplicateKey } from "@/lib/importer/utils/fieldResolvers";
+import { getProfileComponents } from "@/lib/importer/profiles/registry";
 
 type TransactionOptions = Parameters<PrismaClient["$transaction"]>[1];
 
@@ -73,9 +73,11 @@ export async function runCsvImport({
   const dataHash = await hashData(data);
   await ensureHashUnique(prisma, dataHash, profile.tipoArquivo);
 
-  const domainHandler =
-    (profile.persistorId && csvPersistors[profile.persistorId]) ||
-    (async () => ({}));
+  // Busca componentes do perfil no registry
+  const components = getProfileComponents(profile.tipoArquivo);
+  if (!components) {
+    throw new Error(`Perfil não registrado: ${profile.tipoArquivo}`);
+  }
 
   const resultado = await prisma.$transaction(async (tx) => {
     const { arquivo, linhas } = await createArquivoELinhas(tx, {
@@ -85,14 +87,17 @@ export async function runCsvImport({
       dataHash,
     });
 
-    const domain = await domainHandler(tx, {
-      rows: data.rows,
-      linhas,
-      arquivo,
-      dataHash,
-      fileName,
-      profile,
-    });
+    let domain: unknown;
+    if (components.csvPersistor) {
+      domain = await components.csvPersistor(tx, {
+        rows: data.rows,
+        linhas,
+        arquivo,
+        dataHash,
+        fileName,
+        profile,
+      });
+    }
 
     return { arquivo, domain };
   }, transactionOptions);

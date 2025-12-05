@@ -62,7 +62,9 @@ export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunR
     rawSheets.push({ name: sheet.name, cells });
   }
 
-  const lines = components.serializer(parsed, { selectedKeyId, rawSheets });
+  // Type assertion: no pipeline XLSX, serializer é sempre XlsxProfileSerializer
+  const xlsxSerializer = components.serializer as import("@/lib/importer/profiles/registry").XlsxProfileSerializer;
+  const lines = xlsxSerializer(parsed, { selectedKeyId, rawSheets });
   const dataHash = await computeHash(lines);
 
   await ensureHashUnique(prisma, dataHash, profile.tipoArquivo);
@@ -83,8 +85,8 @@ export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunR
     }
 
     let domain: unknown;
-    if (components.persistor) {
-      domain = await components.persistor(tx, { parsed, lines, profile, alunoId });
+    if (components.xlsxPersistor) {
+      domain = await components.xlsxPersistor(tx, { parsed, lines, profile, alunoId });
     }
 
     return { arquivo, domain };

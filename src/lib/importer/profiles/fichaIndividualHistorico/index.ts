@@ -7,7 +7,7 @@ import { persistSeriesHistorico } from "@/lib/importer/profiles/fichaIndividualH
 registerProfile("fichaIndividualHistorico", {
   resolvers: fichaIndividualResolvers,
   serializer: serializarFichaDisciplina,
-  persistor: async (tx, params) => persistSeriesHistorico(tx, {
+  xlsxPersistor: async (tx, params) => persistSeriesHistorico(tx, {
     parsed: params.parsed as any,
     alunoId: params.alunoId
   }),

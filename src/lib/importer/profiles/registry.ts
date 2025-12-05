@@ -1,5 +1,6 @@
 import type { ResolverFn } from "@/lib/parsers/engine/types";
-import type { LogicalLine, Persistor } from "@/lib/importer/pipelines/xlsx/types";
+import type { LogicalLine, Persistor as XlsxPersistor } from "@/lib/importer/pipelines/xlsx/types";
+import type { CsvPersistor } from "@/lib/importer/pipelines/csv/persistors";
 import type { KeyBuilderId, ParseResult } from "@/lib/parsers/tipos";
 import type { ParsedCsv } from "@/lib/parsers/csv/hash";
 
@@ -20,7 +21,8 @@ export type CsvProfileSerializer = (
 export type ProfileComponents = {
   resolvers?: Record<string, ProfileResolver>;
   serializer?: XlsxProfileSerializer | CsvProfileSerializer;
-  persistor?: Persistor;
+  xlsxPersistor?: XlsxPersistor;
+  csvPersistor?: CsvPersistor;
 };
 
 const profileRegistry: Record<string, ProfileComponents> = {};

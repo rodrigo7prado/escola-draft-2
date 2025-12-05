@@ -1,17 +1,25 @@
 import type { ResolverFn } from "@/lib/parsers/engine/types";
 import type { LogicalLine, Persistor } from "@/lib/importer/pipelines/xlsx/types";
 import type { KeyBuilderId, ParseResult } from "@/lib/parsers/tipos";
+import type { ParsedCsv } from "@/lib/parsers/csv/hash";
 
 export type ProfileResolver = ResolverFn;
 
-export type ProfileSerializer = (
+// Serializer para XLSX (recebe ParseResult)
+export type XlsxProfileSerializer = (
   parsed: ParseResult,
   opts: { selectedKeyId?: KeyBuilderId; rawSheets?: any[] }
 ) => LogicalLine[];
 
+// Serializer para CSV (recebe ParsedCsv)
+export type CsvProfileSerializer = (
+  parsed: ParsedCsv,
+  opts: { selectedKeyId?: KeyBuilderId }
+) => LogicalLine[];
+
 export type ProfileComponents = {
   resolvers?: Record<string, ProfileResolver>;
-  serializer?: ProfileSerializer;
+  serializer?: XlsxProfileSerializer | CsvProfileSerializer;
   persistor?: Persistor;
 };
 

@@ -1,2 +1,43 @@
-Beleza, então a direção é unificar: em vez de requiredHeaders separado, teremos um catálogo de campos declarativos (para CSV e XLSX) onde cada campo traz suas propriedades de extração/normalização/persistência, e a presença de headers obrigatórios vira um atributo desse catálogo. Podemos manter a lista plana só como compat enquanto migramos, mas o alvo é removê-la. Quando quiser, seguimos definindo quais atributos mínimos cada campo precisa carregar para cobrir ambos os perfis e o ciclo completo (extrair, normalizar, dedupe/vínculo, persistir).
+## Separação de LÓGICA DE FORMATO e LÓGICA DE PERFIL
+1. Registry centralizado em: profiles/registry.ts
+Funções: registerProfile(), getProfileComponents(), isProfileRegistered(), listRegisteredProfiles();
+Simplificado: engine/xlsx/resolvers.ts (apenas exporta tipos)
+2. xlsxDeclarativo recebe resolvers como parâmetro
+Linha 164 de xlsxDeclarativo.ts
+Engine não conhece mais resolvers específicos de perfis
+3. Criado auto-registro para fichaIndividualHistorico
+Arquivo novo: profiles/fichaIndividualHistorico/index.ts
+Perfil se auto-registra com resolvers, serializer e persistor
+4. Pipeline XLSX usa registry
+pipeline.ts busca componentes do registry
+Não mais dependências diretas de profiles específicos
+5. Tipos corrigidos
+executarExtratorXlsx retorna apenas ParseResult (não mais union com ParsedCsv)
+ProfileSerializer tipado corretamente
+ESTRUTURA FINAL
+engine/ (GENÉRICO - lógica de formato)
+├── xlsx/
+│   ├── xlsxDeclarativo.ts  ← recebe resolvers via parâmetro
+│   └── executors.ts         ← busca resolvers do registry
+│
+profiles/ (ESPECÍFICO - lógica de perfil)
+├── registry.ts              ← ✨ NOVO: registry centralizado
+├── fichaIndividualHistorico/
+│   ├── index.ts             ← ✨ NOVO: auto-registro
+│   ├── resolvers.ts         ← resolvers do perfil
+│   ├── serializer.ts        ← serializer do perfil
+│   └── persist.ts           ← persistor do perfil
+
+## COMO ADICIONAR NOVO PERFIL
+// profiles/novoPerfil/index.ts
+import { registerProfile } from "@/lib/importer/profiles/registry";
+
+registerProfile("novoPerfil", {
+  resolvers: { meuResolver: (ctx) => /* ... */ },
+  serializer: (parsed, opts) => /* ... */,
+  persistor: async (tx, params) => /* ... */,
+});
+
+export { novoPerfilProfile } from "./profile";
+✅ SEM tocar na engine!
 

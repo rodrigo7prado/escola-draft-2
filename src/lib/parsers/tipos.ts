@@ -8,9 +8,9 @@ export type EstrategiaCSV =
 
 export type EstrategiaXLSX =
   | { estrategia: "BLOCO_ROTULO"; rotuloRegex: RegExp }
-  | { estrategia: "TABELA_DISCIPLINAS"; colunaHeader: RegExp }
-  | { estrategia: "RESUMO_TOTAL"; campo: "C.H" | "%FR" }
-  | { estrategia: "RESOLVER"; resolverNome: "situacaoFinal" };
+  | { estrategia: "TABELA_LINHAS"; colunaHeader: RegExp }
+  | { estrategia: "TOTALIZADOR"; campoRegex: RegExp }
+  | { estrategia: "RESOLVER"; resolverNome: string };
 
 export type Normalizacao =
   | { tipo: "DATA_ISO" }

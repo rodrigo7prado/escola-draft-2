@@ -7,7 +7,7 @@ import {
   type ResumoSerie,
 } from "@/lib/parsers/tipos";
 import { aplicarNormalizacao } from "@/lib/parsers/engine/xlsx/normalizers";
-import { xlsxResolvers as resolvers } from "@/lib/parsers/engine/xlsx/resolvers";
+import type { ResolverFn } from "@/lib/parsers/engine/types";
 import { loadWorkbookSheets, SheetRows } from "../../xlsx/utils";
 
 type RotuloValor = { rotulo: string; valor: string };
@@ -73,7 +73,7 @@ function detectarColunasTabela(
       const normalized = normalizarHeaderTexto(val);
       for (const campo of camposTabela) {
         const estrategia = campo.estrategia;
-        if (!estrategia || estrategia.estrategia !== "TABELA_DISCIPLINAS") continue;
+        if (!estrategia || estrategia.estrategia !== "TABELA_LINHAS") continue;
         if (estrategia.colunaHeader.test(normalized)) {
           if (!headerRowNumber) headerRowNumber = n;
           if (!colunas.has(campo.nome)) {
@@ -128,9 +128,8 @@ function extrairTabela(
     if (isResumo) {
       for (const campo of camposResumo) {
         const estrategia = campo.estrategia;
-        if (!estrategia || estrategia.estrategia !== "RESUMO_TOTAL") continue;
-        const regex = estrategia.campo === "C.H" ? /^C\.?H/i : /^%?FR/i;
-        const col = findColunaPorRegex(regex);
+        if (!estrategia || estrategia.estrategia !== "TOTALIZADOR") continue;
+        const col = findColunaPorRegex(estrategia.campoRegex);
         const raw = col ? row[col] : undefined;
         if (raw === undefined) continue;
         const normalizado = aplicarNormalizacao(raw, campo.cfg.normalizacao);
@@ -159,7 +158,11 @@ function extrairTabela(
   return { disciplinas, resumo };
 }
 
-export async function executarParserXlsxDeclarativo(config: ParserConfig, buffer: Buffer): Promise<ParseResult> {
+export async function executarParserXlsxDeclarativo(
+  config: ParserConfig,
+  buffer: Buffer,
+  resolvers?: Record<string, ResolverFn>
+): Promise<ParseResult> {
   const sheets = await loadWorkbookSheets(buffer);
   if (!sheets.length) throw new Error("XLSX sem sheets lidas");
 
@@ -167,10 +170,10 @@ export async function executarParserXlsxDeclarativo(config: ParserConfig, buffer
     ([, cfg]) => cfg.extracao.XLSX && cfg.extracao.XLSX.estrategia === "BLOCO_ROTULO"
   );
   const camposTabela = Object.entries(config.campos)
-    .filter(([, cfg]) => cfg.extracao.XLSX && cfg.extracao.XLSX.estrategia === "TABELA_DISCIPLINAS")
+    .filter(([, cfg]) => cfg.extracao.XLSX && cfg.extracao.XLSX.estrategia === "TABELA_LINHAS")
     .map(([nome, cfg]) => ({ nome, estrategia: cfg.extracao.XLSX, cfg }));
   const camposResumo = Object.entries(config.campos)
-    .filter(([, cfg]) => cfg.extracao.XLSX && cfg.extracao.XLSX.estrategia === "RESUMO_TOTAL")
+    .filter(([, cfg]) => cfg.extracao.XLSX && cfg.extracao.XLSX.estrategia === "TOTALIZADOR")
     .map(([nome, cfg]) => ({ nome, estrategia: cfg.extracao.XLSX, cfg }));
   const camposResolver = Object.entries(config.campos)
     .filter(([, cfg]) => cfg.extracao.XLSX && cfg.extracao.XLSX.estrategia === "RESOLVER")
@@ -207,21 +210,23 @@ export async function executarParserXlsxDeclarativo(config: ParserConfig, buffer
     series.push({ contexto, disciplinas, resumo });
   }
 
-  // Resolvers globais (ex.: situacaoFinal)
-  const resolverContext = { sheets };
-  for (const campoResolver of camposResolver) {
-    const estrategia = campoResolver.estrategia;
-    if (!estrategia || estrategia.estrategia !== "RESOLVER") continue;
-    const resolver = resolvers[estrategia.resolverNome];
-    if (!resolver) continue;
-    const valor = resolver(resolverContext);
-    if (valor === undefined) continue;
-    const destino = destinoCampo(campoResolver.cfg, campoResolver.nome);
-    for (const serie of series) {
-      (serie.resumo as Record<string, unknown>)[destino] = aplicarNormalizacao(
-        valor,
-        campoResolver.cfg.normalizacao
-      );
+  // Resolvers customizados (fornecidos pelo perfil)
+  if (resolvers && camposResolver.length) {
+    const resolverContext = { sheets };
+    for (const campoResolver of camposResolver) {
+      const estrategia = campoResolver.estrategia;
+      if (!estrategia || estrategia.estrategia !== "RESOLVER") continue;
+      const resolver = resolvers[estrategia.resolverNome];
+      if (!resolver) continue;
+      const valor = resolver(resolverContext);
+      if (valor === undefined) continue;
+      const destino = destinoCampo(campoResolver.cfg, campoResolver.nome);
+      for (const serie of series) {
+        (serie.resumo as Record<string, unknown>)[destino] = aplicarNormalizacao(
+          valor,
+          campoResolver.cfg.normalizacao
+        );
+      }
     }
   }
 

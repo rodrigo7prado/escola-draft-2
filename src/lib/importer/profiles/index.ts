@@ -1,6 +1,6 @@
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 import { ataResultadosFinaisProfile } from "@/lib/importer/profiles/ataResultadosFinais/profile";
-import { fichaIndividualHistoricoProfile } from "@/lib/importer/profiles/fichaIndividualHistorico/profile";
+import { fichaIndividualHistoricoProfile } from "@/lib/importer/profiles/fichaIndividualHistorico";
 
 export const PROFILE_ATA_RESULTADOS_FINAIS = "ata-resultados-finais";
 export const PROFILE_FICHA_INDIVIDUAL_HISTORICO = "fichaIndividualHistorico";

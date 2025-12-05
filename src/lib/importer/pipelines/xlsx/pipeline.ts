@@ -1,8 +1,8 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import { DuplicateFileError } from "@/lib/importer/pipelines/csv/types";
-import { executarExtrator, resolveXlsxSerializer } from "@/lib/parsers/engine/index";
+import { executarExtratorXlsx } from "@/lib/parsers/engine/xlsx/executors";
 import { computeHash } from "@/lib/importer/pipelines/xlsx/hashPolicies";
-import { persistors } from "@/lib/importer/pipelines/xlsx/persistors";
+import { getProfileComponents } from "@/lib/importer/profiles/registry";
 import type {
   ImportRunParams,
   ImportRunResult,
@@ -37,11 +37,17 @@ function buildLinhasPayload(
 export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunResult> {
   const { prisma, buffer, fileName, profile, selectedKeyId, alunoId, transactionOptions } = params;
 
-  const parsed = await executarExtrator(profile, buffer);
-  const serializer = resolveXlsxSerializer(profile.tipoArquivo);
-  if (!serializer) {
-    throw new Error(`Serializador não encontrado para tipoArquivo: ${profile.tipoArquivo}`);
+  // Busca componentes do perfil no registry
+  const components = getProfileComponents(profile.tipoArquivo);
+  if (!components) {
+    throw new Error(`Perfil não registrado: ${profile.tipoArquivo}`);
   }
+
+  if (!components.serializer) {
+    throw new Error(`Serializador não encontrado para perfil: ${profile.tipoArquivo}`);
+  }
+
+  const parsed = await executarExtratorXlsx(profile, buffer);
 
   const rawSheets: RawSheetCells[] = [];
   const sheets = await loadWorkbookSheets(buffer);
@@ -56,7 +62,7 @@ export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunR
     rawSheets.push({ name: sheet.name, cells });
   }
 
-  const lines = serializer(parsed as any, { selectedKeyId, rawSheets });
+  const lines = components.serializer(parsed, { selectedKeyId, rawSheets });
   const dataHash = await computeHash(lines);
 
   await ensureHashUnique(prisma, dataHash, profile.tipoArquivo);
@@ -77,9 +83,8 @@ export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunR
     }
 
     let domain: unknown;
-    const persistor = persistors[profile.persistorId ?? ""];
-    if (persistor) {
-      domain = await persistor(tx, { parsed, lines, profile, alunoId });
+    if (components.persistor) {
+      domain = await components.persistor(tx, { parsed, lines, profile, alunoId });
     }
 
     return { arquivo, domain };

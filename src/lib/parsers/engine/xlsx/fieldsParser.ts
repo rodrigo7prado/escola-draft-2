@@ -136,8 +136,8 @@ function detectarCabecalho(
       }
     }
 
-    // Header encontrado se tiver pelo menos 70% das colunas
-    if (colunas.size >= headersParaBuscar.length * 0.7) {
+    // Header encontrado apenas se 100% das colunas esperadas forem localizadas
+    if (colunas.size === headersParaBuscar.length) {
       return { headerRow: n, colunas };
     }
   }

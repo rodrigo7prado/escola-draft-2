@@ -9,9 +9,10 @@ export async function executarExtratorXlsx(
 ): Promise<ParseResult> {
   if (!profile.fields) throw new Error("Fields não definidos para extrator XLSX");
 
-  // Extrair headers dos fields
+  // Detectar o cabeçalho da tabela usando somente os campos graváveis de linha (HistoricoEscolar)
   const headers = profile.fields
-    .map((f) => f.source.header)
+    .filter((f) => f.persist?.tipo === "gravacao" && f.persist.modelo === "HistoricoEscolar")
+    .flatMap((f) => f.source.headers ?? [f.source.header])
     .filter((h): h is string => Boolean(h));
 
   // 1. Parser genérico: buffer → estrutura XLSX genérica

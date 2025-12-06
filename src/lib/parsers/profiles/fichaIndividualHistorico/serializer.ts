@@ -1,6 +1,14 @@
 import type { LogicalLine, RawSheetCells } from "@/lib/importer/pipelines/xlsx/types";
 import type { KeyBuilderId, ParseResult } from "@/lib/parsers/tipos";
 
+function normalizarTexto(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toUpperCase()
+    .trim();
+}
+
 function isPresent(value: unknown): boolean {
   if (value === null || value === undefined) return false;
   if (typeof value === "string") return value.trim() !== "";
@@ -78,6 +86,14 @@ export function serializarFichaDisciplina(
   parsed: ParseResult,
   opts: { selectedKeyId?: KeyBuilderId; rawSheets?: RawSheetCells[] }
 ): LogicalLine[] {
+  const rawSheets = opts.rawSheets ?? [];
+  preencherContextoComFallback(parsed, rawSheets);
+
+  // Debug: imprimir contexto das séries para diagnóstico de parse
+  if (process.env.DEBUG_IMPORT === "true") {
+    // eslint-disable-next-line no-console
+    console.log("parsed.contextos", parsed.series.map((s) => s.contexto));
+  }
   validarParseResult(parsed);
 
   const builder = resolveKeyBuilder(opts.selectedKeyId);
@@ -127,4 +143,51 @@ export function serializarFichaDisciplina(
   }
 
   return linhas;
+}
+
+function preencherContextoComFallback(parsed: ParseResult, rawSheets: RawSheetCells[]) {
+  parsed.series.forEach((serie, idx) => {
+    const sheet = rawSheets[idx];
+    if (!sheet) return;
+
+    const contexto = serie.contexto ?? {};
+    const mapa = construirMapaRotulos(sheet);
+
+    const campos: Record<string, string[]> = {
+      anoLetivo: ["ANO", "ANO LETIVO"],
+      periodoLetivo: ["PERIODO", "PERIODO LETIVO", "PERÍODO"],
+      curso: ["CURSO"],
+      serie: ["SERIE", "SÉRIE"],
+      turma: ["TURMA"],
+      turno: ["TURNO"],
+      escola: ["ESCOLA"],
+    };
+
+    Object.entries(campos).forEach(([campo, rotulos]) => {
+      if (isPresent((contexto as any)[campo])) return;
+      const valor = rotulos
+        .map((r) => mapa.get(normalizarTexto(r)))
+        .find((v): v is string => isPresent(v));
+      if (valor !== undefined) {
+        (contexto as any)[campo] = valor;
+      }
+    });
+
+    serie.contexto = contexto;
+  });
+}
+
+function construirMapaRotulos(sheet: RawSheetCells): Map<string, string> {
+  const mapa = new Map<string, string>();
+  for (const val of Object.values(sheet.cells)) {
+    if (!val) continue;
+    if (typeof val !== "string") continue;
+    const partes = val.split(":");
+    if (partes.length < 2) continue;
+    const rotulo = normalizarTexto(partes[0] ?? "");
+    const resto = partes.slice(1).join(":").trim();
+    if (!rotulo || !resto) continue;
+    mapa.set(rotulo, resto);
+  }
+  return mapa;
 }

@@ -23,7 +23,7 @@ function parseCellValue(cell: any): CellValue {
       return inline
         .map((item) => {
           if (typeof item === "string") return item;
-          if (item && typeof item === "object") return item.text ?? "";
+          if (item && typeof item === "object") return item.text ?? item["#text"] ?? "";
           return "";
         })
         .join("");
@@ -31,6 +31,26 @@ function parseCellValue(cell: any): CellValue {
     if (inline && typeof inline === "object") {
       if (typeof inline.text === "string") return inline.text;
       if (typeof inline["#text"] === "string") return inline["#text"];
+    }
+
+    // Rich text inline strings (<is><r><t>...</t></r>...</is>)
+    if (cell.is.r) {
+      const fragments = Array.isArray(cell.is.r) ? cell.is.r : [cell.is.r];
+      const texto = fragments
+        .map((part: any) => {
+          if (typeof part === "string") return part;
+          if (part && typeof part === "object") {
+            if (typeof part.t === "string") return part.t;
+            if (part.t && typeof part.t === "object") {
+              if (typeof part.t.text === "string") return part.t.text;
+              if (typeof part.t["#text"] === "string") return part.t["#text"];
+            }
+            if (typeof part.text === "string") return part.text;
+          }
+          return "";
+        })
+        .join("");
+      return texto || undefined;
     }
   }
 

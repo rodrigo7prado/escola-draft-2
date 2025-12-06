@@ -22,15 +22,18 @@ function parseCellValue(cell: any): CellValue {
     if (Array.isArray(inline)) {
       return inline
         .map((item) => {
-          if (typeof item === "string") return item;
-          if (item && typeof item === "object") return item.text ?? item["#text"] ?? "";
+          if (typeof item === "string" || typeof item === "number") return String(item);
+          if (item && typeof item === "object") {
+            if (item.text !== undefined) return String(item.text);
+            if (item["#text"] !== undefined) return String(item["#text"]);
+          }
           return "";
         })
         .join("");
     }
     if (inline && typeof inline === "object") {
-      if (typeof inline.text === "string") return inline.text;
-      if (typeof inline["#text"] === "string") return inline["#text"];
+      if (inline.text !== undefined) return String(inline.text);
+      if (inline["#text"] !== undefined) return String(inline["#text"]);
     }
 
     // Rich text inline strings (<is><r><t>...</t></r>...</is>)
@@ -40,12 +43,12 @@ function parseCellValue(cell: any): CellValue {
         .map((part: any) => {
           if (typeof part === "string") return part;
           if (part && typeof part === "object") {
-            if (typeof part.t === "string") return part.t;
+            if (typeof part.t === "string" || typeof part.t === "number") return String(part.t);
             if (part.t && typeof part.t === "object") {
-              if (typeof part.t.text === "string") return part.t.text;
-              if (typeof part.t["#text"] === "string") return part.t["#text"];
+              if (part.t.text !== undefined) return String(part.t.text);
+              if (part.t["#text"] !== undefined) return String(part.t["#text"]);
             }
-            if (typeof part.text === "string") return part.text;
+            if (part.text !== undefined) return String(part.text);
           }
           return "";
         })

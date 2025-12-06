@@ -26,6 +26,12 @@ describe("Ficha Individual - Histórico (XLSX)", () => {
       ),
     }));
 
+    // Debug: imprimir contexto e resumos antes da validação
+    // eslint-disable-next-line no-console
+    console.log("contextos:", parsed.series.map((s) => s.contexto));
+    // eslint-disable-next-line no-console
+    console.log("resumos:", parsed.series.map((s) => s.resumo));
+
     const linhas = serializarFichaDisciplina(parsed, { rawSheets });
 
     expect(parsed.aluno).toBeTruthy();

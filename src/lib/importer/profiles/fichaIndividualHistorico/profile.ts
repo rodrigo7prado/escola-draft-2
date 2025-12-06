@@ -23,14 +23,14 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
     },
     {
       name: "anoLetivo",
-      source: { header: "ANO LETIVO" },
+      source: { header: "ANO" },
       roles: ["context"],
       persist: { tipo: "composicao" },
       normalize: { type: "number", format: "int" }
     },
     {
       name: "periodoLetivo",
-      source: { header: "PERÍODO LETIVO" },
+      source: { header: "PERÍODO" },
       roles: ["context"],
       persist: { tipo: "composicao" },
       normalize: { type: "number", format: "int" }
@@ -67,7 +67,7 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
     },
     {
       name: "componenteCurricular",
-      source: { header: "COMPONENTE CURRICULAR" },
+      source: { header: "DISCIPLINA" },
       roles: ["display"],
       persist: {
         tipo: "gravacao",
@@ -77,7 +77,7 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
     },
     {
       name: "cargaHoraria",
-      source: { header: "CARGA HORÁRIA" },
+      source: { header: "C.H." },
       roles: ["display"],
       persist: {
         tipo: "gravacao",
@@ -88,7 +88,7 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
     },
     {
       name: "frequencia",
-      source: { header: "FREQUÊNCIA" },
+      source: { header: "%FR." },
       roles: ["display"],
       persist: {
         tipo: "gravacao",
@@ -99,7 +99,7 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
     },
     {
       name: "totalPontos",
-      source: { header: "TOTAL DE PONTOS" },
+      source: { header: "PONTOS" },
       roles: ["display"],
       persist: {
         tipo: "gravacao",
@@ -110,7 +110,7 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
     },
     {
       name: "faltasTotais",
-      source: { header: "FALTAS TOTAIS" },
+      source: { header: "T.F." },
       roles: ["display"],
       persist: {
         tipo: "gravacao",
@@ -121,7 +121,7 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
     },
     {
       name: "cargaHorariaTotal",
-      source: { header: "CARGA HORÁRIA TOTAL" },
+      source: { header: "C.H." },
       roles: ["display"],
       persist: {
         tipo: "gravacao",
@@ -132,7 +132,7 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
     },
     {
       name: "frequenciaGlobal",
-      source: { header: "FREQUÊNCIA GLOBAL" },
+      source: { header: "%FR." },
       roles: ["display"],
       persist: {
         tipo: "gravacao",

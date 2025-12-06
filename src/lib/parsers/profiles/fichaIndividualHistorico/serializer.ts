@@ -1,6 +1,12 @@
 import type { LogicalLine, RawSheetCells } from "@/lib/importer/pipelines/xlsx/types";
 import type { KeyBuilderId, ParseResult } from "@/lib/parsers/tipos";
 
+function isPresent(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim() !== "";
+  return true;
+}
+
 function toStringSafe(v: unknown) {
   if (v === undefined || v === null) return undefined;
   return typeof v === "string" ? v : String(v);
@@ -31,10 +37,49 @@ function resolveKeyBuilder(id?: KeyBuilderId): KeyBuilder {
   return keyBuilders.nomeDataNascimento;
 }
 
+function validarParseResult(parsed: ParseResult) {
+  const missing: string[] = [];
+
+  if (!isPresent((parsed.aluno as any)?.nome)) missing.push("aluno.nome");
+  if (!isPresent((parsed.aluno as any)?.dataNascimento)) missing.push("aluno.dataNascimento");
+
+  if (!parsed.series || parsed.series.length === 0) {
+    throw new Error("Nenhuma série encontrada na planilha");
+  }
+
+  parsed.series.forEach((serie, idx) => {
+    const ctx = serie.contexto || {};
+    const requiredContext = ["anoLetivo", "periodoLetivo", "curso", "serie", "turma", "turno", "escola"];
+    requiredContext.forEach((key) => {
+      if (!isPresent((ctx as any)[key])) {
+        missing.push(`series[${idx}].contexto.${key}`);
+      }
+    });
+  });
+
+  const totalDisciplinas = parsed.series.reduce(
+    (sum, serie) => sum + (serie.disciplinas?.length ?? 0),
+    0
+  );
+  const hasResumo = parsed.series.some((serie) =>
+    Object.values(serie.resumo ?? {}).some((v) => isPresent(v))
+  );
+
+  if (missing.length) {
+    throw new Error(`Campos obrigatórios ausentes: ${missing.join(", ")}`);
+  }
+
+  if (totalDisciplinas === 0 && !hasResumo) {
+    throw new Error("Cabeçalho da tabela não encontrado ou nenhuma disciplina/resumo lido");
+  }
+}
+
 export function serializarFichaDisciplina(
   parsed: ParseResult,
   opts: { selectedKeyId?: KeyBuilderId; rawSheets?: RawSheetCells[] }
 ): LogicalLine[] {
+  validarParseResult(parsed);
+
   const builder = resolveKeyBuilder(opts.selectedKeyId);
   const baseKey = builder(parsed.aluno);
   const linhas: LogicalLine[] = [];

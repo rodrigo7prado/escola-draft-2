@@ -19,12 +19,19 @@ export type FieldPersist =
   | { tipo: "gravacao"; modelo: string; campo: string }
   | { tipo: "composicao" };
 
+export type FieldNormalize =
+  | { type: "string"; transform?: "uppercase" | "lowercase" | "trim" }
+  | { type: "number"; format: "int" | "float" }
+  | { type: "date"; inputFormat: "DD/MM/YYYY"; outputFormat: "YYYY-MM-DD" }
+  | { type: "none" };
+
 export type ImportFieldDef = {
   name: string;
   source: FieldSource;
   required?: boolean;
   roles: FieldRole[];
   persist: FieldPersist;
+  normalize?: FieldNormalize;
 };
 
 export type ImportProfile = {

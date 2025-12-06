@@ -2,6 +2,10 @@ import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
 import { ataResultadosFinaisProfile } from "@/lib/importer/profiles/ataResultadosFinais";
 import { fichaIndividualHistoricoProfile } from "@/lib/importer/profiles/fichaIndividualHistorico";
 
+// Importar para garantir side-effect do auto-registro
+import "@/lib/importer/profiles/ataResultadosFinais";
+import "@/lib/importer/profiles/fichaIndividualHistorico";
+
 export const PROFILE_ATA_RESULTADOS_FINAIS = "ata-resultados-finais";
 export const PROFILE_FICHA_INDIVIDUAL_HISTORICO = "fichaIndividualHistorico";
 // Compat: alias legado usado em endpoints antigos

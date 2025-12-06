@@ -41,3 +41,35 @@ registerProfile("novoPerfil", {
 export { novoPerfilProfile } from "./profile";
 ✅ SEM tocar na engine!
 
+---------------------------------------------------------------------
+
+✅ IMPLEMENTAÇÃO CONCLUÍDA
+O que foi implementado:
+Parser XLSX Genérico (fieldsParser.ts)
+✅ Extrai rótulos (padrão LABEL: value)
+✅ Detecta e extrai tabelas (headers + rows)
+✅ 100% agnóstico de domínio
+✅ Retorna ParsedXlsx (estrutura genérica)
+Interpretador Genérico (fieldsInterpreter.ts)
+✅ Usa apenas metadata declarativa (roles, persist.tipo, persist.modelo)
+✅ Converte ParsedXlsx → ParseResult
+✅ Não conhece domínio específico
+Executor Atualizado (executors.ts)
+✅ Usa fields ao invés de campos
+✅ Fluxo: buffer → parseXlsxGeneric → interpretarXlsxComFields → ParseResult
+Profile Corrigido (profile.ts)
+✅ Removida importação do mapeamento.ts
+✅ Usa apenas fields (simétrico com CSV)
+Auto-registro Garantido (index.ts)
+✅ Side-effect imports para executar registerProfile()
+Arquitetura Final:
+CSV:  profile.fields → parseCsvLoose → ParsedCsv → csvPersistor
+XLSX: profile.fields → parseXlsxGeneric → ParsedXlsx → interpretarXlsxComFields → ParseResult → xlsxPersistor
+Separação rigorosa:
+✅ Formato (XLSX) = genérico, não conhece domínio
+✅ Perfil = declarativo via fields
+✅ Lógica específica = no persistor do perfil
+Próximos passos sugeridos:
+Testar importação XLSX com arquivo real
+Validar se os dados estão sendo persistidos corretamente
+Ajustar normalização se necessário (atualmente por heurística de nome)

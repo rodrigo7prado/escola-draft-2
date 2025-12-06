@@ -1,5 +1,4 @@
 import type { ImportProfile } from "@/lib/importer/pipelines/csv/types";
-import fichaIndividualHistoricoMap from "@/lib/parsers/profiles/fichaIndividualHistorico/mapeamento";
 
 export const fichaIndividualHistoricoProfile: ImportProfile = {
   formato: "XLSX",
@@ -12,25 +11,29 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
       name: "nome",
       source: { header: "NOME DO ALUNO" },
       roles: ["key", "display"],
-      persist: { tipo: "vinculacao", modelo: "Aluno", campo: "nome" }
+      persist: { tipo: "vinculacao", modelo: "Aluno", campo: "nome" },
+      normalize: { type: "string", transform: "uppercase" }
     },
     {
       name: "dataNascimento",
       source: { header: "DATA DE NASCIMENTO" },
       roles: ["display"],
-      persist: { tipo: "vinculacao", modelo: "Aluno", campo: "dataNascimento" }
+      persist: { tipo: "vinculacao", modelo: "Aluno", campo: "dataNascimento" },
+      normalize: { type: "date", inputFormat: "DD/MM/YYYY", outputFormat: "YYYY-MM-DD" }
     },
     {
       name: "anoLetivo",
       source: { header: "ANO LETIVO" },
       roles: ["context"],
-      persist: { tipo: "composicao" }
+      persist: { tipo: "composicao" },
+      normalize: { type: "number", format: "int" }
     },
     {
       name: "periodoLetivo",
       source: { header: "PERÍODO LETIVO" },
       roles: ["context"],
-      persist: { tipo: "composicao" }
+      persist: { tipo: "composicao" },
+      normalize: { type: "number", format: "int" }
     },
     {
       name: "curso",
@@ -80,7 +83,8 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
         tipo: "gravacao",
         modelo: "HistoricoEscolar",
         campo: "cargaHoraria"
-      }
+      },
+      normalize: { type: "number", format: "int" }
     },
     {
       name: "frequencia",
@@ -90,7 +94,8 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
         tipo: "gravacao",
         modelo: "HistoricoEscolar",
         campo: "frequencia"
-      }
+      },
+      normalize: { type: "number", format: "float" }
     },
     {
       name: "totalPontos",
@@ -100,7 +105,8 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
         tipo: "gravacao",
         modelo: "HistoricoEscolar",
         campo: "totalPontos"
-      }
+      },
+      normalize: { type: "number", format: "float" }
     },
     {
       name: "faltasTotais",
@@ -110,7 +116,8 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
         tipo: "gravacao",
         modelo: "HistoricoEscolar",
         campo: "faltasTotais"
-      }
+      },
+      normalize: { type: "number", format: "int" }
     },
     {
       name: "cargaHorariaTotal",
@@ -120,7 +127,8 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
         tipo: "gravacao",
         modelo: "SerieCursada",
         campo: "cargaHorariaTotal"
-      }
+      },
+      normalize: { type: "number", format: "int" }
     },
     {
       name: "frequenciaGlobal",
@@ -130,7 +138,8 @@ export const fichaIndividualHistoricoProfile: ImportProfile = {
         tipo: "gravacao",
         modelo: "SerieCursada",
         campo: "frequenciaGlobal"
-      }
+      },
+      normalize: { type: "number", format: "float" }
     },
     {
       name: "situacaoFinal",

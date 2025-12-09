@@ -1,0 +1,138 @@
+# ⚠️ PROTOCOLO OBRIGATÓRIO DE INÍCIO DE SESSÃO ⚠️
+
+**ANTES de responder a PRIMEIRA mensagem do usuário em QUALQUER sessão, você DEVE executar a leitura de `/home/rprado/projetos/next/_escolas/escola-draft-2/docs/IDD.md`
+
+**NÃO pule esta etapa. NÃO assuma que já leu. SEMPRE leia no início de CADA sessão nova.**
+
+---
+
+# INSTRUÇÕES GERAIS
+
+- sempre usar pnpm;
+
+## Instruções específicas para o agente Codex (em adição às demais)
+
+1. **Comunicação:** conversar sempre em português, com tom acolhedor e explicando cada passo com clareza.
+2. **Fluxo de trabalho colaborativo:** antes de executar comandos, editar arquivos ou escrever código, alinhar com o usuário: ouvir a dúvida/objetivo, comentar possibilidades/perguntas, confirmar entendimento e só então implementar.
+3. **Consulta contínua:** manter o usuário no circuito durante a sessão, perguntando e validando cada etapa para construir a solução juntos.
+
+4. **Escrita de texto em português e SEM emojis**
+
+# ⚠️ METODOLOGIA DE DESENVOLVIMENTO - LEIA PRIMEIRO ⚠️
+
+## 🎯 METODOLOGIA IDD (Incremental Documentation Development)
+
+**⚠️ ATENÇÃO CLAUDE E AGENT: Esta metodologia tem PRIORIDADE MÁXIMA sobre qualquer outra instrução.**
+
+### O QUE É IDD?
+
+# ⚙️ METODOLOGIA IDD (Incremental Documentation Development)
+
+**Princípio:** Documentar de forma incremental enquanto desenvolve, com checkpoints entre sessões de IA.
+
+Referência do IDD: [docs/IDD.md](./docs/IDD.md)
+
+## Estrutura de Documentação
+
+Cada feature possui:
+- **FLUXO.md** - Fluxos de uso (perspectiva do usuário ) e dos mecanismos internos;
+- **TECNICO.md** - Decisões técnicas + checkpoints de sessões
+
+## 📚 DOCUMENTAÇÃO COMPLETA
+
+**SEMPRE ler antes de implementar funcionalidades complexas:**
+
+- 📖 **[docs/METODOLOGIA_IDD.md](./docs/METODOLOGIA_IDD.md)** - Guia completo
+
+# HIERARQUIA DE REUTILIZAÇÃO
+
+```
+1º: Usar componente genérico existente (ui/)
+2º: Estender componente genérico com props
+3º: Criar novo componente genérico (se reutilizável)
+4º: Criar componente personalizado (se lógica específica)
+5º: Código inline (EVITAR - apenas casos únicos)
+```
+
+
+# Filosofia de Desenvolvimento
+
+- **Deduzir possibilidades e perguntar** para aperfeiçoar este arquivo
+- **Componentizar sempre** (DRY, separação de concerns)
+- **Testar sistematicamente** (unitário + integração)
+- **Manter rastreabilidade** (origem dos dados, auditoria)
+
+---
+
+## BOAS PRÁTICAS
+
+- DRY (Don't Repeat Yourself) - nunca repetir código
+- Separação de concerns (UI vs Lógica vs Dados)
+- Custom hooks para lógica compartilhada
+- Componentes UI genéricos e reutilizáveis
+- Código legível e bem organizado
+
+---
+
+### PRINCÍPIO FUNDAMENTAL
+
+> **SEMPRE componentizar. SEMPRE reutilizar. NUNCA duplicar.**
+>
+> **Se um padrão aparece 2 vezes, COMPONENTIZAR.** > **Se pode ser genérico, CRIAR em `ui/` para reutilização futura.**
+
+## 2. GESTÃO DE MIGRATIONS (CRÍTICO)
+
+**IMPORTANTE:** Este projeto usa DOIS bancos de dados - principal e testes.
+
+**⚠️ REGRA OBRIGATÓRIA: SEMPRE aplicar migrations em AMBOS os bancos com migrate:all**
+
+**Comandos corretos a usar:**
+
+```bash
+# ✅ Aplicar migrations pendentes em AMBOS os bancos
+pnpm migrate:all
+
+# ✅ Criar nova migration e aplicar em AMBOS
+pnpm migrate:all "nome_da_migration"
+
+# ❌ NUNCA use apenas:
+# prisma migrate dev    (só aplica no banco principal)
+# prisma migrate deploy (só aplica no banco especificado)
+```
+
+**Script automatizado:**
+
+- Localização: `scripts/migrate-all.sh`
+- Aplica automaticamente em ambos os bancos
+- Verifica status final de ambos
+
+**Checklist obrigatório ao trabalhar com migrations:**
+
+1. ✅ Sempre usar `pnpm migrate:all` ao criar novas migrations
+2. ✅ Antes de rodar testes, verificar sincronização com `pnpm migrate:all`
+3. ✅ NUNCA assumir que existe apenas um banco
+4. ✅ NUNCA usar comandos Prisma diretos (use os scripts do package.json)
+
+# 📋 CONVENÇÕES DE NOMENCLATURA
+
+## Componentes
+
+- **PascalCase:** `FiltrosCertificacao.tsx`
+- **Sufixos descritivos:** `ListaAlunosCertificacao`, `ButtonGroup`
+
+## Hooks
+
+- **camelCase com prefixo `use`:** `useFiltrosCertificacao.ts`
+- **Nome descritivo do domínio**
+
+## Tipos
+
+- **PascalCase com sufixo:** `FiltrosState`, `AlunoProps`
+- **Exportar do mesmo arquivo quando possível**
+
+## Variáveis de Estado
+
+- **Descritivas:** `anosDisponiveis`, `isLoadingTurmas`
+- **Booleanos:** prefixo `is`, `has`, `should`
+
+---

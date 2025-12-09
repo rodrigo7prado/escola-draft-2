@@ -1,1 +1,1 @@
-C:/Users/rprado/Projetos/Next/_escolas/senor_abravanel_draft-2/CLAUDE.md
+/home/rprado/projetos/next/_escolas/escola-draft-2/CLAUDE.md

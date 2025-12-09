@@ -16,6 +16,13 @@ export async function persistSeriesHistorico(
   const aluno = await tx.aluno.findUnique({ where: { id: alunoId } });
   if (!aluno) return { persistido: false, motivo: "aluno não encontrado" };
 
+  const seriesNaoEncontradas: Array<{
+    anoLetivo?: string;
+    periodoLetivo?: string;
+    curso?: string;
+    serie?: string;
+  }> = [];
+
   for (const serie of parsed.series) {
     const resumo = {
       anoLetivo: toStringSafe(serie.contexto["anoLetivo"] ?? serie.contexto["ANO LETIVO"]),
@@ -29,33 +36,40 @@ export async function persistSeriesHistorico(
       situacaoFinal: toStringSafe(serie.resumo.situacaoFinal),
     };
 
-    const where = {
-      alunoMatricula_anoLetivo_periodoLetivo_curso_serie: {
-        alunoMatricula: aluno.matricula,
-        anoLetivo: resumo.anoLetivo ?? "0000",
-        periodoLetivo: resumo.periodoLetivo ?? "0",
-        curso: resumo.curso ?? "DESCONHECIDO",
-        serie: resumo.serie ?? "DESCONHECIDA",
-      },
+    if (!resumo.anoLetivo || !resumo.periodoLetivo || !resumo.curso || !resumo.serie) {
+      throw new Error("Contexto incompleto para localizar série (ano/periodo/curso/serie)");
+    }
+
+    const chave = {
+      alunoMatricula: aluno.matricula,
+      anoLetivo: resumo.anoLetivo as string,
+      periodoLetivo: resumo.periodoLetivo as string,
+      curso: resumo.curso as string,
+      serie: resumo.serie as string,
     };
 
-    const serieRecord = await tx.serieCursada.upsert({
-      where,
-      create: {
-        alunoMatricula: aluno.matricula,
-        anoLetivo: resumo.anoLetivo ?? "0000",
-        periodoLetivo: resumo.periodoLetivo ?? "0",
-        curso: resumo.curso,
-        serie: resumo.serie,
-        turno: resumo.turno,
-        cargaHorariaTotal: resumo.cargaHorariaTotal,
-        frequenciaGlobal: resumo.frequenciaGlobal,
-        situacaoFinal: resumo.situacaoFinal,
-        modalidade: "FICHA_INDIVIDUAL",
-        segmento: null,
-        unidadeEnsino: resumo.unidadeEnsino,
+    const existente = await tx.serieCursada.findUnique({
+      where: {
+        alunoMatricula_anoLetivo_periodoLetivo_curso_serie: chave,
       },
-      update: {
+    });
+
+    if (!existente) {
+      seriesNaoEncontradas.push(chave);
+      continue; // não cria novas séries
+    }
+
+    const serieRecord = await tx.serieCursada.update({
+      where: {
+        alunoMatricula_anoLetivo_periodoLetivo_curso_serie: {
+          alunoMatricula: chave.alunoMatricula,
+          anoLetivo: chave.anoLetivo,
+          periodoLetivo: chave.periodoLetivo,
+          curso: chave.curso,
+          serie: chave.serie,
+        },
+      },
+      data: {
         turno: resumo.turno ?? undefined,
         curso: resumo.curso ?? undefined,
         serie: resumo.serie ?? undefined,
@@ -66,6 +80,7 @@ export async function persistSeriesHistorico(
       },
     });
 
+    // Regrava disciplinas: remove existentes e insere as novas
     await tx.historicoEscolar.deleteMany({
       where: { serieCursadaId: serieRecord.id },
     });
@@ -84,6 +99,11 @@ export async function persistSeriesHistorico(
           })),
       });
     }
+  }
+
+  if (seriesNaoEncontradas.length) {
+    console.warn("Séries não encontradas para atualização:", seriesNaoEncontradas);
+    throw new Error(`Séries não encontradas para atualização (${seriesNaoEncontradas.length})`);
   }
 
   return { persistido: true };

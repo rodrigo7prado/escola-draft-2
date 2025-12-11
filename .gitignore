@@ -49,3 +49,9 @@ docs/templates/FichasIndividuaisExemplos/*
 
 # Backup files
 backups/*
+
+# Templates files
+docs/templates/*
+
+# Draft files
+DRAFT.md

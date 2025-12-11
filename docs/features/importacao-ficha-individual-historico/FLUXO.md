@@ -4,5 +4,5 @@ F2: Na lista de alunos por turma, haverá um menu de opções (apenas com um íc
 F3: Exibirá a opção de importar csv de [Ficha Individual - Histórico];
 F4: Múltiplos arquivos poderão ser escolhidos, e então o parser analisará após confirmação;
 F5: O parser analisará os arquivos, exibindo um modal de progresso [DRY.UI:MODAL_INFO_UPLOAD].
-<!-- F6 em desenvolvimento -->
-F6: Após o término, cada aluno será atualizado na UI, em caso de sucesso, com um ícone de "check" verde correspondente à fase de HE concluída, de acordo com [DRY.UI:AGREGADOR_ICONES_STATUS];
+F6: O importer/parser necessitará da matrícula do aluno para associar os dados corretamente. Para isso, será fornecida automaticamente a matrícula do aluno selecionado na lista de alunos por turma.
+F7: Após o término, cada aluno será atualizado na UI, em caso de sucesso, com um ícone de "check" verde correspondente à fase de HE concluída, de acordo com [DRY.UI:AGREGADOR_ICONES_STATUS];

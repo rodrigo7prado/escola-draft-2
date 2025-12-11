@@ -91,30 +91,36 @@ function extrairTabelas(
 
   if (!headersParaBuscar.length) return tabelas;
 
-  const headerInfo = detectarCabecalho(rows, headersParaBuscar);
-  if (!headerInfo) return tabelas;
+  const cabecalhos = detectarCabecalhos(rows, headersParaBuscar);
+  if (!cabecalhos.length) return tabelas;
 
-  const { headerRow, colunas } = headerInfo;
-  const linhas = extrairLinhasTabela(rows, headerRow, colunas);
+  cabecalhos.forEach((info, idx) => {
+    const headerRow = info.headerRow;
+    const colunas = info.colunas;
+    const proxHeaderRow = cabecalhos[idx + 1]?.headerRow;
+    const linhas = extrairLinhasTabela(rows, headerRow, colunas, proxHeaderRow);
 
-  tabelas.push({
-    headerRow,
-    colunasPorHeader: colunas,
-    linhas,
+    tabelas.push({
+      headerRow,
+      colunasPorHeader: colunas,
+      linhas,
+    });
   });
 
   return tabelas;
 }
 
-function detectarCabecalho(
+function detectarCabecalhos(
   rows: SheetRows,
   headersParaBuscar: string[]
-): { headerRow: number; colunas: Map<string, string> } | null {
+): Array<{ headerRow: number; colunas: Map<string, string> }> {
+  const encontrados: Array<{ headerRow: number; colunas: Map<string, string> }> = [];
   const rowNumbers = Object.keys(rows)
     .map(Number)
     .sort((a, b) => a - b);
 
-  for (const n of rowNumbers) {
+  for (let i = 0; i < rowNumbers.length; i++) {
+    const n = rowNumbers[i];
     const row = rows[n];
     const colunas = new Map<string, string>();
 
@@ -138,17 +144,18 @@ function detectarCabecalho(
 
     // Header encontrado apenas se 100% das colunas esperadas forem localizadas
     if (colunas.size === headersParaBuscar.length) {
-      return { headerRow: n, colunas };
+      encontrados.push({ headerRow: n, colunas });
     }
   }
 
-  return null;
+  return encontrados;
 }
 
 function extrairLinhasTabela(
   rows: SheetRows,
   headerRow: number,
-  colunas: Map<string, string>
+  colunas: Map<string, string>,
+  stopBeforeRow?: number
 ): Array<Record<string, unknown>> {
   const linhas: Array<Record<string, unknown>> = [];
   const rowNumbers = Object.keys(rows)
@@ -157,6 +164,7 @@ function extrairLinhasTabela(
 
   for (const n of rowNumbers) {
     if (n <= headerRow) continue;
+    if (stopBeforeRow && n >= stopBeforeRow) break;
 
     const row = rows[n];
     const linha: Record<string, unknown> = {};

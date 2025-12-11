@@ -94,7 +94,6 @@ function extrairDeTabelasGenericas(
     return { disciplinas, resumo };
   }
 
-  const tabela = tabelas[0];
   const modelos = Array.from(fieldsPorModelo.keys());
 
   // Assumir: primeiro modelo = linhas de dados, demais = resumo
@@ -108,21 +107,23 @@ function extrairDeTabelasGenericas(
   const campoAncora = fieldsDados[0];
   const headerAncora = campoAncora?.source.header;
 
-  for (const linhaRaw of tabela.linhas) {
-    const valorAncora = headerAncora ? linhaRaw[headerAncora] : undefined;
-    const isLinhaVazia = !valorAncora || String(valorAncora).trim() === "";
+  for (const tabela of tabelas) {
+    for (const linhaRaw of tabela.linhas) {
+      const valorAncora = headerAncora ? linhaRaw[headerAncora] : undefined;
+      const isLinhaVazia = !valorAncora || String(valorAncora).trim() === "";
 
-    if (isLinhaVazia && fieldsResumo.length) {
-      // Linha vazia = resumo
-      extrairLinha(linhaRaw, fieldsResumo, resumo);
-    } else if (!isLinhaVazia) {
-      // Linha com dados
-      const linha: Record<string, unknown> = {};
-      extrairLinha(linhaRaw, fieldsDados, linha);
+      if (isLinhaVazia && fieldsResumo.length) {
+        // Linha vazia = resumo
+        extrairLinha(linhaRaw, fieldsResumo, resumo);
+      } else if (!isLinhaVazia) {
+        // Linha com dados
+        const linha: Record<string, unknown> = {};
+        extrairLinha(linhaRaw, fieldsDados, linha);
 
-      const temDados = Object.values(linha).some((v) => v !== undefined && v !== "");
-      if (temDados) {
-        disciplinas.push(linha);
+        const temDados = Object.values(linha).some((v) => v !== undefined && v !== "");
+        if (temDados) {
+          disciplinas.push(linha);
+        }
       }
     }
   }

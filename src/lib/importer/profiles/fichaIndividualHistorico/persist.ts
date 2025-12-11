@@ -81,6 +81,14 @@ export async function persistSeriesHistorico(
 
     if (!existente) {
       console.warn("Série não encontrada. Buscando:", chave);
+      const seriesDoAluno = await tx.serieCursada.findMany({
+        where: { alunoMatricula: chave.alunoMatricula },
+        select: { alunoMatricula: true, segmento: true, anoLetivo: true, periodoLetivo: true, curso: true, serie: true },
+      });
+      console.warn(
+        `Séries existentes no banco para o aluno ${chave.alunoMatricula}:`,
+        seriesDoAluno
+      );
       seriesNaoEncontradas.push(chave);
       continue;
     }

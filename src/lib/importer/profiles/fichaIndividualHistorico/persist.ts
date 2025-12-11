@@ -10,6 +10,7 @@ export async function persistSeriesHistorico(
   tx: Prisma.TransactionClient,
   params: { parsed: ParseResult; alunoId?: string }
 ) {
+  const debugImport = process.env.DEBUG_IMPORT === "true";
   const { parsed, alunoId } = params;
   if (!alunoId) return { persistido: false, motivo: "alunoId ausente" };
 
@@ -47,6 +48,18 @@ export async function persistSeriesHistorico(
       periodoLetivo: resumo.periodoLetivo as string,
       segmento: segmentoPlanilha,
     };
+
+    if (debugImport) {
+      console.info("[persist:fichaHistorico] matching serie", {
+        alunoMatricula: aluno.matricula,
+        anoLetivo: chave.anoLetivo,
+        periodoLetivo: chave.periodoLetivo,
+        segmento: chave.segmento,
+        serieArquivo: resumo.serie,
+        turno: resumo.turno,
+        escola: resumo.unidadeEnsino,
+      });
+    }
 
     // Tentar busca exata primeiro
     let existente = await tx.serieCursada.findFirst({
@@ -108,6 +121,17 @@ export async function persistSeriesHistorico(
       );
       seriesNaoEncontradas.push(chave);
       continue;
+    }
+
+    if (debugImport) {
+      console.info("[persist:fichaHistorico] serie encontrada", {
+        alunoMatricula: aluno.matricula,
+        id: existente.id,
+        segmentoAtual: existente.segmento,
+        cursoAtual: existente.curso,
+        serieAtual: existente.serie,
+        atualizarParaSegmento: segmentoPlanilha,
+      });
     }
 
     const serieRecord = await tx.serieCursada.update({

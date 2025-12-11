@@ -40,22 +40,25 @@ export async function persistSeriesHistorico(
       throw new Error("Contexto incompleto para localizar série (ano/periodo/curso/serie)");
     }
 
+    const segmentoPlanilha = resumo.curso as string;
     const chave = {
       alunoMatricula: aluno.matricula,
       anoLetivo: resumo.anoLetivo as string,
       periodoLetivo: resumo.periodoLetivo as string,
-      curso: resumo.curso as string,
-      serie: resumo.serie as string,
+      segmento: segmentoPlanilha,
     };
 
     // Tentar busca exata primeiro
-    let existente = await tx.serieCursada.findUnique({
+    let existente = await tx.serieCursada.findFirst({
       where: {
-        alunoMatricula_anoLetivo_periodoLetivo_curso_serie: chave,
+        alunoMatricula: chave.alunoMatricula,
+        anoLetivo: chave.anoLetivo,
+        periodoLetivo: chave.periodoLetivo,
+        segmento: chave.segmento,
       },
     });
 
-    // Se não encontrar, tentar busca por ano/periodo com curso/serie NULL
+    // Se não encontrar, tentar busca por ano/periodo com segmento NULL
     if (!existente) {
       const candidatos = await tx.serieCursada.findMany({
         where: {
@@ -63,27 +66,41 @@ export async function persistSeriesHistorico(
           anoLetivo: chave.anoLetivo,
           periodoLetivo: chave.periodoLetivo,
           OR: [
-            { curso: null },
-            { serie: null },
-            { AND: [{ curso: null }, { serie: null }] },
+            { segmento: null },
+            { segmento: "" },
           ],
         },
       });
 
       if (candidatos.length === 1) {
         existente = candidatos[0];
-        console.log(`Série encontrada com curso/serie NULL, atualizando para: ${chave.curso}/${chave.serie}`);
+        console.log(
+          `Série encontrada com segmento NULL, atualizando para: ${chave.segmento}`
+        );
       } else if (candidatos.length > 1) {
-        console.warn(`Múltiplas séries com NULL encontradas para ${chave.anoLetivo}/${chave.periodoLetivo}. Usando a primeira.`);
+        console.warn(
+          `Múltiplas séries com segmento NULL encontradas para ${chave.anoLetivo}/${chave.periodoLetivo}. Usando a primeira.`
+        );
         existente = candidatos[0];
       }
     }
 
     if (!existente) {
-      console.warn("Série não encontrada. Buscando:", chave);
+      console.warn("Série não encontrada. Buscando:", {
+        ...chave,
+        cursoArquivo: resumo.curso,
+        serieArquivo: resumo.serie,
+      });
       const seriesDoAluno = await tx.serieCursada.findMany({
         where: { alunoMatricula: chave.alunoMatricula },
-        select: { alunoMatricula: true, segmento: true, anoLetivo: true, periodoLetivo: true, curso: true, serie: true },
+        select: {
+          alunoMatricula: true,
+          segmento: true,
+          anoLetivo: true,
+          periodoLetivo: true,
+          curso: true,
+          serie: true,
+        },
       });
       console.warn(
         `Séries existentes no banco para o aluno ${chave.alunoMatricula}:`,
@@ -94,19 +111,10 @@ export async function persistSeriesHistorico(
     }
 
     const serieRecord = await tx.serieCursada.update({
-      where: {
-        alunoMatricula_anoLetivo_periodoLetivo_curso_serie: {
-          alunoMatricula: chave.alunoMatricula,
-          anoLetivo: chave.anoLetivo,
-          periodoLetivo: chave.periodoLetivo,
-          curso: chave.curso,
-          serie: chave.serie,
-        },
-      },
+      where: { id: existente.id },
       data: {
+        segmento: segmentoPlanilha ?? undefined,
         turno: resumo.turno ?? undefined,
-        curso: resumo.curso ?? undefined,
-        serie: resumo.serie ?? undefined,
         cargaHorariaTotal: resumo.cargaHorariaTotal ?? undefined,
         frequenciaGlobal: resumo.frequenciaGlobal ?? undefined,
         situacaoFinal: resumo.situacaoFinal ?? undefined,

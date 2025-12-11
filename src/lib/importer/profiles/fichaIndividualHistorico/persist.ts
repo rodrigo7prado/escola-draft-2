@@ -23,8 +23,12 @@ export async function persistSeriesHistorico(
     curso?: string;
     serie?: string;
   }> = [];
+  const historicosPorSerieId = new Map<
+    string,
+    { disciplinas: Array<Prisma.HistoricoEscolarCreateManyInput>; sheets: number[] }
+  >();
 
-  for (const serie of parsed.series) {
+  for (const [idx, serie] of parsed.series.entries()) {
     const resumo = {
       anoLetivo: toStringSafe(serie.contexto["anoLetivo"] ?? serie.contexto["ANO LETIVO"]),
       periodoLetivo: toStringSafe(serie.contexto["periodoLetivo"] ?? serie.contexto["PERÍODO LETIVO"]),
@@ -49,8 +53,9 @@ export async function persistSeriesHistorico(
     };
 
     if (debugImport) {
-      console.info("[persist:fichaHistorico] matching serie", {
+      console.info("[persist:fichaHistorico] matching sheet", {
         alunoMatricula: aluno.matricula,
+        sheetIndex: idx,
         anoLetivo: chave.anoLetivo,
         periodoLetivo: chave.periodoLetivo,
         segmento: segmentoPlanilha,
@@ -109,6 +114,7 @@ export async function persistSeriesHistorico(
         cursoAtual: existente.curso,
         serieAtual: existente.serie,
         atualizarParaSegmento: segmentoPlanilha,
+        sheetIndex: idx,
       });
     }
 
@@ -124,23 +130,36 @@ export async function persistSeriesHistorico(
       },
     });
 
-    // Regrava disciplinas: remove existentes e insere as novas
-    await tx.historicoEscolar.deleteMany({
-      where: { serieCursadaId: serieRecord.id },
-    });
+    const disciplinasSheet = serie.disciplinas
+      .filter((d) => d.componenteCurricular)
+      .map((d) => ({
+        serieCursadaId: serieRecord.id,
+        componenteCurricular: d.componenteCurricular ?? "DESCONHECIDO",
+        cargaHoraria: d.cargaHoraria ?? null,
+        frequencia: d.frequencia ?? null,
+        totalPontos: d.totalPontos ?? null,
+        faltasTotais: d.faltasTotais ?? null,
+      }));
 
-    if (serie.disciplinas.length) {
-      await tx.historicoEscolar.createMany({
-        data: serie.disciplinas
-          .filter((d) => d.componenteCurricular)
-          .map((d) => ({
-            serieCursadaId: serieRecord.id,
-            componenteCurricular: d.componenteCurricular ?? "DESCONHECIDO",
-            cargaHoraria: d.cargaHoraria ?? null,
-            frequencia: d.frequencia ?? null,
-            totalPontos: d.totalPontos ?? null,
-            faltasTotais: d.faltasTotais ?? null,
-          })),
+    if (!historicosPorSerieId.has(serieRecord.id)) {
+      historicosPorSerieId.set(serieRecord.id, { disciplinas: [], sheets: [] });
+    }
+    const agregado = historicosPorSerieId.get(serieRecord.id)!;
+    agregado.disciplinas.push(...disciplinasSheet);
+    agregado.sheets.push(idx);
+  }
+
+  // Persistir disciplinas acumuladas por série (não sobrepor entre sheets)
+  for (const [serieId, payload] of historicosPorSerieId.entries()) {
+    await tx.historicoEscolar.deleteMany({ where: { serieCursadaId: serieId } });
+    if (payload.disciplinas.length) {
+      await tx.historicoEscolar.createMany({ data: payload.disciplinas });
+    }
+    if (debugImport) {
+      console.info("[persist:fichaHistorico] disciplinas acumuladas", {
+        serieCursadaId: serieId,
+        totalDisciplinas: payload.disciplinas.length,
+        sheetsOrigem: payload.sheets,
       });
     }
   }

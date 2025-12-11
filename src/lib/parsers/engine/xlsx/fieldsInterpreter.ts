@@ -1,6 +1,7 @@
 import type { ParseResult, DisciplinaExtraida, ResumoSerie } from "@/lib/parsers/tipos";
 import type { ImportFieldDef } from "@/lib/importer/pipelines/csv/types";
 import type { ParsedXlsx } from "./fieldsParser";
+const debugImport = process.env.DEBUG_IMPORT === "true";
 
 /**
  * Interpretador genérico que converte ParsedXlsx → ParseResult
@@ -30,8 +31,28 @@ export function interpretarXlsxComFields(
   const series: ParseResult["series"] = [];
 
   for (const sheet of parsed.sheets) {
+    if (debugImport) {
+      console.info("[interpret:xlsx] sheet", {
+        sheet: sheet.name,
+        tabelas: sheet.tabelas.length,
+        linhasPorTabela: sheet.tabelas.map((t) => t.linhas.length),
+      });
+    }
+
     const contexto = extrairDeRotulos(sheet.rotulos, fieldsContexto);
-    const { disciplinas, resumo } = extrairDeTabelasGenericas(sheet.tabelas, fieldsPorModelo);
+    const { disciplinas, resumo } = extrairDeTabelasGenericas(
+      sheet.tabelas,
+      fieldsPorModelo,
+      sheet.name
+    );
+
+    if (debugImport) {
+      console.info("[interpret:xlsx] sheet resultado", {
+        sheet: sheet.name,
+        disciplinas: disciplinas.length,
+        resumoCampos: Object.keys(resumo).length,
+      });
+    }
 
     series.push({ contexto, disciplinas, resumo });
   }
@@ -85,7 +106,8 @@ function extrairDeRotulos(
 
 function extrairDeTabelasGenericas(
   tabelas: ParsedXlsx["sheets"][0]["tabelas"],
-  fieldsPorModelo: Map<string, ImportFieldDef[]>
+  fieldsPorModelo: Map<string, ImportFieldDef[]>,
+  sheetName?: string
 ): { disciplinas: DisciplinaExtraida[]; resumo: ResumoSerie } {
   const disciplinas: DisciplinaExtraida[] = [];
   const resumo: ResumoSerie = {};
@@ -107,7 +129,10 @@ function extrairDeTabelasGenericas(
   const campoAncora = fieldsDados[0];
   const headerAncora = campoAncora?.source.header;
 
-  for (const tabela of tabelas) {
+  tabelas.forEach((tabela, idx) => {
+    let disciplinasIncluidas = 0;
+    let linhasResumo = 0;
+
     for (const linhaRaw of tabela.linhas) {
       const valorAncora = headerAncora ? linhaRaw[headerAncora] : undefined;
       const isLinhaVazia = !valorAncora || String(valorAncora).trim() === "";
@@ -115,6 +140,7 @@ function extrairDeTabelasGenericas(
       if (isLinhaVazia && fieldsResumo.length) {
         // Linha vazia = resumo
         extrairLinha(linhaRaw, fieldsResumo, resumo);
+        linhasResumo += 1;
       } else if (!isLinhaVazia) {
         // Linha com dados
         const linha: Record<string, unknown> = {};
@@ -123,10 +149,20 @@ function extrairDeTabelasGenericas(
         const temDados = Object.values(linha).some((v) => v !== undefined && v !== "");
         if (temDados) {
           disciplinas.push(linha);
+          disciplinasIncluidas += 1;
         }
       }
     }
-  }
+    if (debugImport) {
+      console.info("[interpret:xlsx] tabela processada", {
+        sheet: sheetName,
+        tabelaIndex: idx,
+        linhas: tabela.linhas.length,
+        disciplinasIncluidas,
+        linhasResumo,
+      });
+    }
+  });
 
   return { disciplinas, resumo };
 }

@@ -1,4 +1,5 @@
 import { loadWorkbookSheets, type SheetRows } from "../../xlsx/utils";
+const debugImport = process.env.DEBUG_IMPORT === "true";
 
 /**
  * Estrutura genérica de dados extraídos de XLSX
@@ -30,7 +31,7 @@ export async function parseXlsxGeneric(
 
   for (const sheet of sheets) {
     const rotulos = extrairRotulos(sheet.rows);
-    const tabelas = extrairTabelas(sheet.rows, headersParaBuscar);
+    const tabelas = extrairTabelas(sheet.rows, headersParaBuscar, sheet.name);
 
     resultado.sheets.push({
       name: sheet.name,
@@ -77,7 +78,8 @@ function extrairRotulos(rows: SheetRows): Record<string, string> {
  */
 function extrairTabelas(
   rows: SheetRows,
-  headersParaBuscar: string[]
+  headersParaBuscar: string[],
+  sheetName: string
 ): Array<{
   headerRow: number;
   colunasPorHeader: Map<string, string>;
@@ -92,13 +94,21 @@ function extrairTabelas(
   if (!headersParaBuscar.length) return tabelas;
 
   const cabecalhos = detectarCabecalhos(rows, headersParaBuscar);
-  if (!cabecalhos.length) return tabelas;
+  if (!cabecalhos.length) {
+    if (debugImport) {
+      console.info("[parse:xlsx] nenhum cabecalho completo encontrado", {
+        sheet: sheetName,
+        headersBuscados: headersParaBuscar,
+      });
+    }
+    return tabelas;
+  }
 
   cabecalhos.forEach((info, idx) => {
     const headerRow = info.headerRow;
     const colunas = info.colunas;
     const proxHeaderRow = cabecalhos[idx + 1]?.headerRow;
-    const linhas = extrairLinhasTabela(rows, headerRow, colunas, proxHeaderRow);
+    const linhas = extrairLinhasTabela(rows, headerRow, colunas, proxHeaderRow, sheetName);
 
     tabelas.push({
       headerRow,
@@ -155,16 +165,20 @@ function extrairLinhasTabela(
   rows: SheetRows,
   headerRow: number,
   colunas: Map<string, string>,
-  stopBeforeRow?: number
+  stopBeforeRow: number | undefined,
+  sheetName: string
 ): Array<Record<string, unknown>> {
   const linhas: Array<Record<string, unknown>> = [];
   const rowNumbers = Object.keys(rows)
     .map(Number)
     .sort((a, b) => a - b);
+  let totalConsideradas = 0;
+  let descartarVazia = 0;
 
   for (const n of rowNumbers) {
     if (n <= headerRow) continue;
     if (stopBeforeRow && n >= stopBeforeRow) break;
+    totalConsideradas += 1;
 
     const row = rows[n];
     const linha: Record<string, unknown> = {};
@@ -184,7 +198,20 @@ function extrairLinhasTabela(
 
     if (temDados) {
       linhas.push(linha);
+    } else {
+      descartarVazia += 1;
     }
+  }
+
+  if (debugImport) {
+    console.info("[parse:xlsx] linhas extraidas da tabela", {
+      sheet: sheetName,
+      headerRow,
+      stopBeforeRow,
+      linhasIncluidas: linhas.length,
+      linhasConsideradas: totalConsideradas,
+      linhasVazias: descartarVazia,
+    });
   }
 
   return linhas;

@@ -100,28 +100,17 @@ export function serializarFichaDisciplina(
   const baseKey = builder(parsed.aluno);
   const linhas: LogicalLine[] = [];
 
-  const sheets = opts.rawSheets;
-  if (sheets && sheets.length) {
-    for (const sheet of sheets) {
-      linhas.push({
-        dadosOriginais: {
-          sheet: sheet.name,
-          cells: sheet.cells,
-        },
-        identificadorChave: baseKey,
-      });
-    }
-    return linhas;
-  }
-
   // Fallback: estrutura baseada em séries/disciplinas extraídas
-  for (const serie of parsed.series) {
+  for (const [idx, serie] of parsed.series.entries()) {
+    const sheetInfo = opts.rawSheets?.[idx];
+
     if (!serie.disciplinas.length) {
       linhas.push({
         dadosOriginais: {
           aluno: parsed.aluno,
           contexto: serie.contexto,
           resumo: serie.resumo,
+          sheet: sheetInfo?.name,
           disciplina: null,
         },
         identificadorChave: baseKey,
@@ -136,6 +125,7 @@ export function serializarFichaDisciplina(
           contexto: serie.contexto,
           resumo: serie.resumo,
           disciplina,
+          sheet: sheetInfo?.name,
         },
         identificadorChave: baseKey,
       });

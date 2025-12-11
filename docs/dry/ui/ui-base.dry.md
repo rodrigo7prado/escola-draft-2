@@ -31,7 +31,8 @@ Tudo que está em /src/components/ui são componentes bases de UI (botões, inpu
     - Deve mostrar contadores de totalFiles, processedFiles e errorFiles.
     - Deve ter um botão para fechar o modal que dispara o evento onClose.
 
-#### [ ] 3. *`DRY.UI:ICONE_PERSONALIZADO_STATUS`*;
+#### [x] 3. *`DRY.UI:ICONE_PERSONALIZADO_STATUS`*;
+  - Localização: [Link](/src/components/ui/IconePersonalizadoStatus.tsx)
   - Descrição: Ícone personalizado para representar status (sucesso, erro, pendente).
   - Propriedades:
     - status (string): status a ser representado ("success", "error", "pending").
@@ -40,7 +41,8 @@ Tudo que está em /src/components/ui são componentes bases de UI (botões, inpu
     - Deve exibir o ícone correspondente ao status com a cor apropriada.
     - Deve mostrar o tooltip ao passar o mouse sobre o ícone.
 
-#### [ ] 4. *`DRY.UI:AGREGADOR_ICONES_STATUS`*;
+#### [x] 4. *`DRY.UI:AGREGADOR_ICONES_STATUS`*;
+  - Localização: [Link](/src/components/ui/AgregadorIconesStatus.tsx)
   - Descrição: Componente que agrega múltiplos ícones de status personalizados.
   - Propriedades:
     - statuses (array): lista de status a serem exibidos, cada um com status e tooltip.

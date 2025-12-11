@@ -46,7 +46,6 @@ export async function persistSeriesHistorico(
       alunoMatricula: aluno.matricula,
       anoLetivo: resumo.anoLetivo as string,
       periodoLetivo: resumo.periodoLetivo as string,
-      segmento: segmentoPlanilha,
     };
 
     if (debugImport) {
@@ -54,48 +53,27 @@ export async function persistSeriesHistorico(
         alunoMatricula: aluno.matricula,
         anoLetivo: chave.anoLetivo,
         periodoLetivo: chave.periodoLetivo,
-        segmento: chave.segmento,
+        segmento: segmentoPlanilha,
         serieArquivo: resumo.serie,
         turno: resumo.turno,
         escola: resumo.unidadeEnsino,
       });
     }
 
-    // Tentar busca exata primeiro
-    let existente = await tx.serieCursada.findFirst({
+    // Busca somente por matricula + ano + periodo
+    const candidatos = await tx.serieCursada.findMany({
       where: {
         alunoMatricula: chave.alunoMatricula,
         anoLetivo: chave.anoLetivo,
         periodoLetivo: chave.periodoLetivo,
-        segmento: chave.segmento,
       },
+      orderBy: { atualizadoEm: "desc" },
     });
-
-    // Se não encontrar, tentar busca por ano/periodo com segmento NULL
-    if (!existente) {
-      const candidatos = await tx.serieCursada.findMany({
-        where: {
-          alunoMatricula: aluno.matricula,
-          anoLetivo: chave.anoLetivo,
-          periodoLetivo: chave.periodoLetivo,
-          OR: [
-            { segmento: null },
-            { segmento: "" },
-          ],
-        },
-      });
-
-      if (candidatos.length === 1) {
-        existente = candidatos[0];
-        console.log(
-          `Série encontrada com segmento NULL, atualizando para: ${chave.segmento}`
-        );
-      } else if (candidatos.length > 1) {
-        console.warn(
-          `Múltiplas séries com segmento NULL encontradas para ${chave.anoLetivo}/${chave.periodoLetivo}. Usando a primeira.`
-        );
-        existente = candidatos[0];
-      }
+    let existente = candidatos[0];
+    if (candidatos.length > 1) {
+      console.warn(
+        `Múltiplas séries encontradas para ${chave.anoLetivo}/${chave.periodoLetivo} (matrícula ${chave.alunoMatricula}). Usando a primeira.`
+      );
     }
 
     if (!existente) {

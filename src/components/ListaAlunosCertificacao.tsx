@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import type {
   AlunoCertificacao,
   ResumoDadosEscolares,
@@ -8,6 +9,9 @@ import type {
 import type { FiltrosCertificacaoState } from "@/hooks/useFiltrosCertificacao";
 import { Button } from "@/components/ui/Button";
 import { BotaoColagemAluno } from "./BotaoColagemAluno";
+import { OverflowMenu } from "@/components/ui/OverflowMenu";
+import { ModalInfoUpload } from "@/components/ui/ModalInfoUpload";
+import { useImportacaoHistoricoEscolar } from "@/hooks/useImportacaoHistoricoEscolar";
 import { GraduationCap, UserCheck } from "lucide-react";
 
 type ListaAlunosCertificacaoProps = {
@@ -22,6 +26,7 @@ type ListaAlunosCertificacaoProps = {
   error: string | null;
   totalAlunos: number;
   resumoDadosPessoais: ResumoDadosPessoaisTurma;
+  onImportacaoCompleta?: () => void;
 };
 
 export function ListaAlunosCertificacao({
@@ -36,7 +41,35 @@ export function ListaAlunosCertificacao({
   error,
   totalAlunos,
   resumoDadosPessoais,
+  onImportacaoCompleta,
 }: ListaAlunosCertificacaoProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { progresso, modalAberto, fecharModal, importarArquivos } =
+    useImportacaoHistoricoEscolar();
+
+  const handleImportarHistorico = () => {
+    if (!alunoSelecionadoId) {
+      alert("Selecione um aluno para importar o histórico escolar");
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !alunoSelecionadoId) return;
+
+    const aluno = alunos.find((a) => a.id === alunoSelecionadoId);
+    if (!aluno) return;
+
+    await importarArquivos(files, aluno.matricula);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    onImportacaoCompleta?.();
+  };
   if (isLoading) {
     return (
       <div className="text-center py-8 text-neutral-500">
@@ -70,22 +103,52 @@ export function ListaAlunosCertificacao({
   }
 
   return (
-    <div className="border rounded-sm flex flex-col min-h-0 h-full">
-      {/* Header - Fixed Container */}
-      <div className="bg-neutral-100 px-3 py-2 border-b shrink-0 space-y-1">
-        <div className="flex items-center justify-between text-xs font-semibold text-neutral-700">
-          <h3>Alunos ({totalAlunos})</h3>
-          <div className="flex items-center gap-2 text-[11px] font-medium text-neutral-500">
-            <span>Dados pessoais</span>
-            {isAtualizando && (
-              <span className="text-[10px] text-neutral-400 animate-pulse">
-                Atualizando...
-              </span>
-            )}
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx"
+        multiple
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
+      <ModalInfoUpload
+        isOpen={modalAberto}
+        totalFiles={progresso.totalFiles}
+        processedFiles={progresso.processedFiles}
+        errorFiles={progresso.errorFiles}
+        onClose={fecharModal}
+      />
+
+      <div className="border rounded-sm flex flex-col min-h-0 h-full">
+        {/* Header - Fixed Container */}
+        <div className="bg-neutral-100 px-3 py-2 border-b shrink-0 space-y-1">
+          <div className="flex items-center justify-between text-xs font-semibold text-neutral-700">
+            <h3>Alunos ({totalAlunos})</h3>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-[11px] font-medium text-neutral-500">
+                <span>Dados pessoais</span>
+                {isAtualizando && (
+                  <span className="text-[10px] text-neutral-400 animate-pulse">
+                    Atualizando...
+                  </span>
+                )}
+              </div>
+              <OverflowMenu
+                options={[
+                  {
+                    label: "Importar Histórico Escolar (XLSX)",
+                    onClick: handleImportarHistorico,
+                    disabled: !alunoSelecionadoId,
+                  },
+                ]}
+                icon="kebab"
+              />
+            </div>
           </div>
+          <PainelResumoTurma resumo={resumoDadosPessoais} />
         </div>
-        <PainelResumoTurma resumo={resumoDadosPessoais} />
-      </div>
 
       {/* Content Wrapper */}
       <div className="min-h-0 flex-1">
@@ -151,6 +214,7 @@ export function ListaAlunosCertificacao({
         </div>
       </div>
     </div>
+    </>
   );
 }
 

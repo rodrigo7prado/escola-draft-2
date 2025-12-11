@@ -115,6 +115,7 @@ export function FluxoCertificacao() {
             error={erroAlunos}
             totalAlunos={totalAlunos}
             resumoDadosPessoais={resumoDadosPessoais}
+            onImportacaoCompleta={refreshAlunos}
           />
         </div>
 

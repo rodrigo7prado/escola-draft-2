@@ -59,10 +59,7 @@ export function ListaAlunosCertificacao({
     const files = e.target.files;
     if (!files || files.length === 0 || !alunoSelecionadoId) return;
 
-    const aluno = alunos.find((a) => a.id === alunoSelecionadoId);
-    if (!aluno) return;
-
-    await importarArquivos(files, aluno.matricula);
+    await importarArquivos(files, alunoSelecionadoId);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";

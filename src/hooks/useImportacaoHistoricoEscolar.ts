@@ -12,7 +12,7 @@ type UseImportacaoHistoricoEscolarReturn = {
   modalAberto: boolean;
   abrirModal: () => void;
   fecharModal: () => void;
-  importarArquivos: (arquivos: FileList, matricula: string) => Promise<void>;
+  importarArquivos: (arquivos: FileList, alunoId: string) => Promise<void>;
 };
 
 /**
@@ -33,7 +33,7 @@ export function useImportacaoHistoricoEscolar(): UseImportacaoHistoricoEscolarRe
     setProgresso({ totalFiles: 0, processedFiles: 0, errorFiles: 0 });
   };
 
-  const importarArquivos = async (arquivos: FileList, matricula: string) => {
+  const importarArquivos = async (arquivos: FileList, alunoId: string) => {
     setIsImportando(true);
     abrirModal();
 
@@ -46,7 +46,7 @@ export function useImportacaoHistoricoEscolar(): UseImportacaoHistoricoEscolarRe
     // Processar arquivos sequencialmente
     for (const arquivo of Array.from(arquivos)) {
       try {
-        await importarArquivo(arquivo, matricula);
+        await importarArquivo(arquivo, alunoId);
         processedFiles++;
       } catch (error) {
         console.error(`Erro ao importar arquivo ${arquivo.name}:`, error);
@@ -73,14 +73,22 @@ export function useImportacaoHistoricoEscolar(): UseImportacaoHistoricoEscolarRe
 /**
  * Importa um único arquivo XLSX de histórico escolar
  */
-async function importarArquivo(arquivo: File, matricula: string): Promise<void> {
-  const formData = new FormData();
-  formData.append("file", arquivo);
-  formData.append("matricula", matricula);
+async function importarArquivo(arquivo: File, alunoId: string): Promise<void> {
+  // Converter arquivo para base64
+  const arrayBuffer = await arquivo.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+  const fileData = btoa(String.fromCharCode(...uint8Array));
 
   const response = await fetch("/api/importacoes/ficha-individual-historico", {
     method: "POST",
-    body: formData,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fileName: arquivo.name,
+      fileData,
+      alunoId,
+    }),
   });
 
   if (!response.ok) {

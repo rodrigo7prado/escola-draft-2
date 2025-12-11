@@ -48,15 +48,41 @@ export async function persistSeriesHistorico(
       serie: resumo.serie as string,
     };
 
-    const existente = await tx.serieCursada.findUnique({
+    // Tentar busca exata primeiro
+    let existente = await tx.serieCursada.findUnique({
       where: {
         alunoMatricula_anoLetivo_periodoLetivo_curso_serie: chave,
       },
     });
 
+    // Se não encontrar, tentar busca por ano/periodo com curso/serie NULL
     if (!existente) {
+      const candidatos = await tx.serieCursada.findMany({
+        where: {
+          alunoMatricula: aluno.matricula,
+          anoLetivo: chave.anoLetivo,
+          periodoLetivo: chave.periodoLetivo,
+          OR: [
+            { curso: null },
+            { serie: null },
+            { AND: [{ curso: null }, { serie: null }] },
+          ],
+        },
+      });
+
+      if (candidatos.length === 1) {
+        existente = candidatos[0];
+        console.log(`Série encontrada com curso/serie NULL, atualizando para: ${chave.curso}/${chave.serie}`);
+      } else if (candidatos.length > 1) {
+        console.warn(`Múltiplas séries com NULL encontradas para ${chave.anoLetivo}/${chave.periodoLetivo}. Usando a primeira.`);
+        existente = candidatos[0];
+      }
+    }
+
+    if (!existente) {
+      console.warn("Série não encontrada. Buscando:", chave);
       seriesNaoEncontradas.push(chave);
-      continue; // não cria novas séries
+      continue;
     }
 
     const serieRecord = await tx.serieCursada.update({

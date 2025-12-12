@@ -6,6 +6,15 @@ function toStringSafe(v: unknown) {
   return typeof v === "string" ? v : String(v);
 }
 
+function isLinhaSituacaoFinal(texto?: string | null) {
+  if (!texto) return false;
+  const normalized = texto
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toUpperCase();
+  return normalized.includes("A VISTA DOS RESULTADOS OBTIDOS O(A) ALUNO(A) FOI CONSIDERADO(A)");
+}
+
 export async function persistSeriesHistorico(
   tx: Prisma.TransactionClient,
   params: { parsed: ParseResult; alunoId?: string }
@@ -131,7 +140,7 @@ export async function persistSeriesHistorico(
     });
 
     const disciplinasSheet = serie.disciplinas
-      .filter((d) => d.componenteCurricular)
+      .filter((d) => d.componenteCurricular && !isLinhaSituacaoFinal(d.componenteCurricular))
       .map((d) => ({
         serieCursadaId: serieRecord.id,
         componenteCurricular: d.componenteCurricular ?? "DESCONHECIDO",

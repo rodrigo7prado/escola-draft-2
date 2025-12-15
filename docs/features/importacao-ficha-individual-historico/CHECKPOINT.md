@@ -7,6 +7,8 @@ Caso não ocorra correspondência, reportar erro.
 [x] CP2: A funcionalidade deve permitir a seleção de múltiplos arquivos XLSX para importação.
 [x] CP3: Após a confirmação da importação, deve ser exibido um modal de progresso conforme definido em [DRY.UI:MODAL_INFO_UPLOAD], indicando o andamento da análise dos arquivos.
 [x] CP4: O endpoint da API deve receber a matrícula do aluno selecionado na lista de alunos por turma para associar corretamente os dados importados.
-[ ] CP5: Ao término da importação, cada aluno deve ser atualizado na UI com um ícone de "check" verde, conforme especificado em [DRY.UI:AGREGADOR_ICONES_STATUS], indicando que a fase de importação do Histórico Escolar foi concluída com sucesso. (ADIADO)
-[x] CP6: Em caso de erros durante a importação, o modal deve exibir uma confirmação dos dados de upload, incluindo a quantidade de arquivos processados e eventuais erros encontrados, conforme definido em [DRY.UI:MODAL_INFO_UPLOAD].
-[x] CP7: Integrar com o backend para garantir que os dados importados sejam corretamente processados e armazenados no sistema.
+[ ] CP5: Ao término da importação:
+  [ ] CP.1: Cada aluno deve ser atualizado na UI com um ícone de "check" verde, conforme especificado em [DRY.UI:AGREGADOR_ICONES_STATUS], indicando que a fase de importação do Histórico Escolar foi concluída com sucesso.
+  [ ] CP.2: A aba de "Histórico Escolar" do aluno deve ser atualizada para refletir os dados importados na seção de dados no Painel de Gestão do Aluno.
+[x] CP7: Em caso de erros durante a importação, o modal deve exibir uma confirmação dos dados de upload, incluindo a quantidade de arquivos processados e eventuais erros encontrados, conforme definido em [DRY.UI:MODAL_INFO_UPLOAD].
+[x] CP8: Integrar com o backend para garantir que os dados importados sejam corretamente processados e armazenados no sistema.

@@ -55,3 +55,4 @@ docs/templates/*
 
 # Draft files
 DRAFT.md
+.draft/*

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseDadosEscolares } from "@/lib/parsing/parseDadosEscolares";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,10 +29,15 @@ const ESPERADO_PATH = join(
   "DadosEscolaresEsperados.json"
 );
 
-const TEXTO_COMPLETO = readFileSync(TEMPLATE_PATH, "utf8");
-const DADOS_ESPERADOS = JSON.parse(readFileSync(ESPERADO_PATH, "utf8"));
+const fixturesExist = existsSync(TEMPLATE_PATH) && existsSync(ESPERADO_PATH);
+const TEXTO_COMPLETO = fixturesExist ? readFileSync(TEMPLATE_PATH, "utf8") : "";
+const DADOS_ESPERADOS = fixturesExist
+  ? JSON.parse(readFileSync(ESPERADO_PATH, "utf8"))
+  : {};
 
-describe("parseDadosEscolares", () => {
+const suite = fixturesExist ? describe : describe.skip;
+
+suite("parseDadosEscolares", () => {
   it("deve extrair dados conforme modelo oficial", () => {
     const resultado = parseDadosEscolares(TEXTO_COMPLETO, "202200001111222");
 

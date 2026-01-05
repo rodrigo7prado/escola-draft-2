@@ -19,15 +19,12 @@ Sumário organizado das documentações de DRY e IDD para refletir o estado atua
 ## UI
 
 ### Componentes Base
-1. [DRY.UI:OVERFLOW_MENU](ui/ui-base.dry.md#x-1-dryuioverflow_menu)
-2. [DRY.UI:MODAL_INFO_UPLOAD](ui/ui-base.dry.md#x-2-dryuimodal_info_upload)
-3. [DRY.UI:ICONE_PERSONALIZADO_STATUS](ui/ui-base.dry.md#--3-dryuiicone_personalizado_status)
-4. [DRY.UI:AGREGADOR_ICONES_STATUS](ui/ui-base.dry.md#--4-dryuiagregador_icones_status)
-5. [DRY.BASE-UI:BARRA_PROGRESSO_ASINCRONA](ui/ui-base.dry.md#--5-drybase-uibarra_progresso_asincrona)
+1. [DRY.UI:OVERFLOW_MENU](ui/ui-components.dry.md#1-overflow-menu) - Menu de opções
+2. [DRY.UI:MODAL_INFO_UPLOAD](ui/ui-components.dry.md#2-modal-info-upload) - Modal de progresso
+3. [DRY.UI:ICONE_PERSONALIZADO_STATUS](ui/ui-components.dry.md#3-ícone-personalizado-status) - Ícone de status
+4. [DRY.UI:AGREGADOR_ICONES_STATUS](ui/ui-components.dry.md#4-agregador-ícones-status) - Coleção de ícones
+5. [DRY.BASE-UI:BARRA_PROGRESSO_ASINCRONA](ui/ui-components.dry.md#5-barra-progresso-assíncrona) - Barra de progresso
 
-### Componentes Integrados
-1. [DRY.UI:CONFIRMACAO_POR_DIGITACAO](ui/ui-components.dry.md#--1-dryuiconfirmacao_por_digitacao)
-2. [DRY.UI:MODAL_INFO_UPLOAD](ui/ui-components.dry.md#--2-dryuimodal_info_upload)
-3. [DRY.UI:ICONE_PERSONALIZADO_STATUS](ui/ui-components.dry.md#--3-dryuiicone_personalizado_status)
-4. [DRY.UI:AGREGADOR_ICONES_STATUS](ui/ui-components.dry.md#--4-dryuiagregador_icones_status)
-5. [DRY.UI:ANALISE_COMPLETUDE_DE_DADOS](ui/ui-components.dry.md#--5-dryuianalise_completude_de_dados)
+### Componentes Especializados
+6. [DRY.UI:CONFIRMACAO_POR_DIGITACAO](ui/ui-components.dry.md#6-confirmação-por-digitação) - Confirmação com digitação
+7. [DRY.UI:ANALISE_COMPLETUDE_DE_DADOS](ui/ui-components.dry.md#7-análise-completude-de-dados) - Análise de completude

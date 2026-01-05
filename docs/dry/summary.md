@@ -3,13 +3,13 @@
 Sumário organizado das documentações de DRY e IDD para refletir o estado atual dos componentes e processos. A estrutura obedece à organização vigente no diretório docs/dry/.
 
 ## Macro
-1. [DRY.CONCEPT:PAINEL_MIGRACAO](ui/ui-macro.md#--1-dryconceptpainel_migracao)
-2. [DRY.CONCEPT:PAINEL_GESTAO_ALUNOS](ui/ui-macro.md#--2-dryconceptpainel_gestao_alunos)
-2.1. [DRY.CONCEPT:LISTA_ALUNOS](ui/ui-macro.md#--21-dryconceptlista_alunos)
-2.1.1. [DRY.CONCEPT:BARRA_RESUMO_ALUNOS](ui/ui-macro.md#--211-dryconceptbarra_resumo_alunos)
-2.1.2. [DRY.CONCEPT:ITEM_ALUNO](ui/ui-macro.md#--212-dryconceptitem_aluno)
-2.2. [DRY.CONCEPT:DADOS_DO_ALUNO](ui/ui-macro.md#--22-dryconceptdados_do_aluno)
-3. [DRY.CONCEPT:PAINEL_IMPRESSAO](ui/ui-macro.md#--3-dryconceptpainel_impressao)
+1. [DRY.CONCEPT:PAINEL_MIGRACAO](ui/ui-macro.md#1-dryconceptpainel_migracao)
+2. [DRY.CONCEPT:PAINEL_GESTAO_ALUNOS](ui/ui-macro.md#2-dryconceptpainel_gestao_alunos)
+2.1. [DRY.CONCEPT:LISTA_ALUNOS](ui/ui-macro.md#21-dryconceptlista_alunos)
+2.1.1. [DRY.CONCEPT:BARRA_RESUMO_ALUNOS](ui/ui-macro.md#211-dryconceptbarra_resumo_alunos)
+2.1.2. [DRY.CONCEPT:ITEM_ALUNO](ui/ui-macro.md#212-dryconceptitem_aluno)
+2.2. [DRY.CONCEPT:DADOS_DO_ALUNO](ui/ui-macro.md#22-dryconceptdados_do_aluno)
+3. [DRY.CONCEPT:PAINEL_IMPRESSAO](ui/ui-macro.md#3-dryconceptpainel_impressao)
 
 ## Backend
 
@@ -28,3 +28,16 @@ Sumário organizado das documentações de DRY e IDD para refletir o estado atua
 ### Componentes Especializados
 6. [DRY.UI:CONFIRMACAO_POR_DIGITACAO](ui/ui-components.dry.md#6-confirmação-por-digitação) - Confirmação com digitação
 7. [DRY.UI:ANALISE_COMPLETUDE_DE_DADOS](ui/ui-components.dry.md#7-análise-completude-de-dados) - Análise de completude
+
+## Objetos e Tipos
+
+### Objetos Principais
+1. [DRY.OBJECT:PHASES](objects/phases.md) - Sistema de fases de gestão de alunos
+
+### Tipos de Dados
+2. [DRY.TYPE:Phase](objects/index.md#drytypephase) - Literal types das fases
+3. [DRY.TYPE:PhaseSchema](objects/index.md#drytypephaseschema) - Schema genérico de fase
+4. [DRY.TYPE:ModelosPrismaFluxo](objects/index.md#drytypemodelosprismafluxo) - Modelos do fluxo
+5. [DRY.TYPE:DocEmissao](objects/index.md#drytypedocemissao) - Tipos de documentos
+
+**Ver índice completo:** [objects/index.md](objects/index.md)

@@ -89,7 +89,20 @@ class DryValidator {
     const lines = content.split('\n');
     const relPath = path.relative(process.cwd(), filePath);
 
+    let inCodeBlock = false;
+
     lines.forEach((line, index) => {
+      // Detectar início/fim de blocos de código
+      if (line.trim().startsWith('```')) {
+        inCodeBlock = !inCodeBlock;
+        return; // Pular a linha do delimitador
+      }
+
+      // Ignorar linhas dentro de blocos de código
+      if (inCodeBlock) {
+        return;
+      }
+
       // Extrair definições (apenas em cabeçalhos markdown ou itens de lista de definição)
       const isDefinitionContext =
         line.trim().match(/^#{1,6}\s+.*\*`DRY\./) ||     // Cabeçalho markdown
@@ -122,9 +135,17 @@ class DryValidator {
         const refMatches = [...line.matchAll(this.patterns.reference)];
         refMatches.forEach((match) => {
           const id = match[1];
+          const fullMatch = match[0];
 
-          // Ignorar se está dentro de um link markdown ou é uma definição
-          if (!line.includes('`' + id + '`') || line.includes('[' + id + ']')) {
+          // Ignorar se:
+          // 1. Está dentro de backticks inline (exemplo de formato)
+          // 2. Não está entre colchetes (não é uma referência real)
+          const isInBackticks = line.includes('`' + id + '`') ||
+                                line.includes('`' + fullMatch + '`');
+          const isReference = fullMatch.startsWith('[') && fullMatch.endsWith(']');
+
+          // Só adicionar se for uma referência real (entre colchetes) e não estiver em backticks
+          if (isReference && !isInBackticks) {
             const ref = {
               id,
               file: relPath,
@@ -195,8 +216,11 @@ class DryValidator {
           return;
         }
 
+        // Separar caminho e âncora
+        const [pathPart, anchor] = linkPath.split('#');
+
         // Resolver caminho do link
-        let targetPath = linkPath.split('#')[0]; // Remover âncora
+        let targetPath = pathPart;
         if (targetPath.startsWith('/')) {
           // Caminho absoluto do projeto
           targetPath = path.join(process.cwd(), targetPath);
@@ -212,11 +236,63 @@ class DryValidator {
             message: `Link quebrado: "${linkText}" aponta para "${linkPath}"`,
             file: relPath,
             line: index + 1,
-            suggestion: `Verifique se o caminho está correto ou se o arquivo foi movido`,
+            suggestion: `Arquivo não encontrado: ${pathPart}`,
           });
+          return;
+        }
+
+        // Se há âncora, verificar se ela existe no arquivo de destino
+        if (anchor) {
+          const targetContent = fs.readFileSync(targetPath, 'utf-8');
+          const anchorExists = this.checkAnchorExists(targetContent, anchor);
+
+          if (!anchorExists) {
+            this.warnings.push({
+              type: 'broken_link',
+              message: `Âncora não encontrada: "${linkText}" → #${anchor}`,
+              file: relPath,
+              line: index + 1,
+              suggestion: `O arquivo ${pathPart} existe, mas não contém a seção #${anchor}`,
+            });
+          }
         }
       });
     });
+  }
+
+  checkAnchorExists(content, anchor) {
+    // Converter âncora para o formato esperado em markdown
+    // GitHub/CommonMark converte títulos em IDs:
+    // - Remove caracteres especiais
+    // - Converte para minúsculas
+    // - Substitui espaços por hífens
+    const expectedAnchors = [
+      anchor, // Âncora exata
+      anchor.toLowerCase(), // Minúsculas
+      anchor.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-'), // Normalizada
+    ];
+
+    const lines = content.split('\n');
+
+    for (const line of lines) {
+      // Verificar se é um cabeçalho
+      const headerMatch = line.match(/^#{1,6}\s+(.+)$/);
+      if (headerMatch) {
+        const headerText = headerMatch[1].trim();
+        // Gerar ID da âncora a partir do cabeçalho
+        const generatedAnchor = headerText
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-');
+
+        if (expectedAnchors.includes(generatedAnchor) ||
+            expectedAnchors.some(a => generatedAnchor.includes(a))) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   printReport(result) {

@@ -6,9 +6,19 @@ Validar automaticamente a documentação DRY em `/docs/dry/`, garantindo consist
 
 ## Como Usar
 
+### Via Comando
+
 ```bash
 pnpm validate:dry
 ```
+
+### Via Skill Claude Code
+
+```
+/validate-dry
+```
+
+A skill executa a validação e apresenta o relatório de forma interativa, oferecendo ajuda para corrigir problemas encontrados.
 
 ## O que é Validado
 
@@ -181,13 +191,13 @@ Escolha um arquivo para manter a definição e remova do outro, ou use IDs mais 
 
 ## Limitações Conhecidas
 
-1. **Âncoras não são validadas** - apenas a existência do arquivo, não as seções
-2. **Links externos não são validados** - apenas links internos relativos
-3. **Case sensitive** - IDs devem usar maiúsculas conforme padrão
+1. **Links externos não são validados** - apenas links internos relativos
+2. **Case sensitive** - IDs devem usar maiúsculas conforme padrão
+3. **Âncoras complexas** - a validação pode ter falsos positivos com caracteres especiais em títulos
 
 ## Roadmap Futuro
 
-- [ ] Validação de âncoras em links markdown
+- [x] Validação de âncoras em links markdown
 - [ ] Sugestões automáticas de correção
 - [ ] Geração automática do summary.md
 - [ ] Integração com VSCode (extension)

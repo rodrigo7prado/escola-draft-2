@@ -10,8 +10,8 @@ Fase 2: Documentar objetos e estruturas de dados
  [x] Documentar estrutura de fases (PHASES object)
  [x] Criar referências cruzadas entre DRY docs e código
 Fase 3: Melhorar navegabilidade
- [ ] Criar ferramenta que gera summary.md automaticamente
- [ ] Adicionar busca por ID DRY (CLI tool)
+ [x] Criar ferramenta que gera summary.md automaticamente
+ [x] Adicionar busca por ID DRY (CLI tool)
  [ ] Criar templates para novos componentes DRY
 Fase 4: Integração com workflow IDD
  [ ] Criar guidelines de quando usar DRY vs quando criar novo

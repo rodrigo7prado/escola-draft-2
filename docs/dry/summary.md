@@ -13,31 +13,29 @@ Sumário organizado das documentações de DRY e IDD para refletir o estado atua
 
 ## Backend
 
-### Import Profile
-1. [DRY.BACKEND:IMPORT_PROFILE](backend/imports/import-profile/backend.dry.md#importação-de-perfil)
+### Importação de Perfil
+1. [DRY.BACKEND:IMPORT_PROFILE](backend/imports/import-profile/backend.dry.md#importacao-de-perfil)
 
 ## UI
 
 ### Componentes Base
-1. [DRY.UI:OVERFLOW_MENU](ui/ui-components.dry.md#1-overflow-menu) - Menu de opções
-2. [DRY.UI:MODAL_INFO_UPLOAD](ui/ui-components.dry.md#2-modal-info-upload) - Modal de progresso
-3. [DRY.UI:ICONE_PERSONALIZADO_STATUS](ui/ui-components.dry.md#3-ícone-personalizado-status) - Ícone de status
-4. [DRY.UI:AGREGADOR_ICONES_STATUS](ui/ui-components.dry.md#4-agregador-ícones-status) - Coleção de ícones
-5. [DRY.BASE-UI:BARRA_PROGRESSO_ASINCRONA](ui/ui-components.dry.md#5-barra-progresso-assíncrona) - Barra de progresso
+1. [DRY.UI:OVERFLOW_MENU](ui/ui-components.dry.md#1-overflow-menu) - Menu de opções (kebab/meatball/hamburger)
+2. [DRY.UI:MODAL_INFO_UPLOAD](ui/ui-components.dry.md#2-modal-info-upload) - Modal de progresso de upload
+3. [DRY.UI:ICONE_PERSONALIZADO_STATUS](ui/ui-components.dry.md#3-icone-personalizado-status) - Ícone de status com tooltip
+4. [DRY.UI:AGREGADOR_ICONES_STATUS](ui/ui-components.dry.md#4-agregador-icones-status) - Coleção de ícones de status
+5. [DRY.BASE-UI:BARRA_PROGRESSO_ASINCRONA](ui/ui-components.dry.md#5-barra-progresso-assincrona) - Barra de progresso assíncrona
 
 ### Componentes Especializados
-6. [DRY.UI:CONFIRMACAO_POR_DIGITACAO](ui/ui-components.dry.md#6-confirmação-por-digitação) - Confirmação com digitação
-7. [DRY.UI:ANALISE_COMPLETUDE_DE_DADOS](ui/ui-components.dry.md#7-análise-completude-de-dados) - Análise de completude
+6. [DRY.UI:CONFIRMACAO_POR_DIGITACAO](ui/ui-components.dry.md#6-confirmacao-por-digitacao) - Confirmação com digitação
+7. [DRY.UI:ANALISE_COMPLETUDE_DE_DADOS](ui/ui-components.dry.md#7-analise-completude-de-dados) - Análise de completude
 
 ## Objetos e Tipos
 
 ### Objetos Principais
-1. [DRY.OBJECT:PHASES](objects/phases.md) - Sistema de fases de gestão de alunos
+1. [DRY.OBJECT:PHASES](objects/phases.md#dryobjectphases) - Sistema de fases de gestão de alunos
 
 ### Tipos de Dados
 2. [DRY.TYPE:Phase](objects/index.md#drytypephase) - Literal types das fases
 3. [DRY.TYPE:PhaseSchema](objects/index.md#drytypephaseschema) - Schema genérico de fase
 4. [DRY.TYPE:ModelosPrismaFluxo](objects/index.md#drytypemodelosprismafluxo) - Modelos do fluxo
 5. [DRY.TYPE:DocEmissao](objects/index.md#drytypedocemissao) - Tipos de documentos
-
-**Ver índice completo:** [objects/index.md](objects/index.md)

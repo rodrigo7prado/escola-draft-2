@@ -17,7 +17,9 @@
     "migrate:dev": "bash scripts/migrate-all.sh dev",
     "backup-db": "bash scripts/backup-db.sh",
     "restore-db": "bash scripts/restore-db.sh",
-    "validate:dry": "node scripts/validate-dry.js"
+    "validate:dry": "node scripts/validate-dry.js",
+    "summary:dry": "node scripts/generate-dry-summary.js",
+    "search:dry": "node scripts/search-dry.js"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",

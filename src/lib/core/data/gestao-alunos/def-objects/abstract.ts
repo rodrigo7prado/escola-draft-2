@@ -37,7 +37,8 @@ export type ModelosPrismaFluxo = (typeof modelosPrismaFluxo)[number];
 export const PHASES = [
   "FASE:DADOS_PESSOAIS",
   "FASE:DADOS_ESCOLARES",
-  "FASE:HISTORICO_ESCOLAR"
+  "FASE:HISTORICO_ESCOLAR",
+  "FASE:EMISSAO_DOCUMENTOS",
 ] as const;
 export type Phase = (typeof PHASES)[number];
 
@@ -45,6 +46,7 @@ export const phaseSchema = {
   "FASE:DADOS_PESSOAIS": { modelosEnvolvidos: ["Aluno"] },
   "FASE:DADOS_ESCOLARES": { modelosEnvolvidos: ["Aluno", "SerieCursada"] },
   "FASE:HISTORICO_ESCOLAR": { modelosEnvolvidos: ["SerieCursada", "HistoricoEscolar"] },
+  "FASE:EMISSAO_DOCUMENTOS": { modelosEnvolvidos: [] },
 } as const satisfies Record<
   Phase,
   { modelosEnvolvidos: readonly ModelosPrismaFluxo[] }
@@ -100,5 +102,13 @@ const gestaoAlunos2 = {
       name: "FileText",
       lib: "Lucide"
     }
-  }
+  },
+  "FASE:EMISSAO_DOCUMENTOS": {
+    titulo: "Emissão de Documentos",
+    camposExigidos: {} as PhaseSchema<"FASE:EMISSAO_DOCUMENTOS">,
+    icone: {
+      name: "FileCheck",
+      lib: "Lucide"
+    }
+  },
 } as const satisfies { [K in Phase]: Schema<K> };

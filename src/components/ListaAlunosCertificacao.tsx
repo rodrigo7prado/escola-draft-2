@@ -49,12 +49,12 @@ export function ListaAlunosCertificacao({
   onImportacaoCompleta,
 }: ListaAlunosCertificacaoProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { progresso, modalAberto, fecharModal, importarArquivos } =
+  const { progresso, modalAberto, fecharModal, importarArquivos, isImportando } =
     useImportacaoHistoricoEscolar();
 
   const handleImportarHistorico = () => {
-    if (!alunoSelecionadoId) {
-      alert("Selecione um aluno para importar o histórico escolar");
+    if (alunos.length === 0) {
+      alert("Nenhum aluno carregado para importar histórico escolar.");
       return;
     }
     fileInputRef.current?.click();
@@ -62,9 +62,9 @@ export function ListaAlunosCertificacao({
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || files.length === 0 || !alunoSelecionadoId) return;
+    if (!files || files.length === 0) return;
 
-    await importarArquivos(files, alunoSelecionadoId);
+    await importarArquivos(files, alunos);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -140,9 +140,9 @@ export function ListaAlunosCertificacao({
               <OverflowMenu
                 options={[
                   {
-                    label: "Importar Histórico Escolar (XLSX)",
+                    label: "Importar Históricos Escolares (XLSX)",
                     onClick: handleImportarHistorico,
-                    disabled: !alunoSelecionadoId,
+                    disabled: isImportando || alunos.length === 0,
                   },
                 ]}
                 icon="kebab"

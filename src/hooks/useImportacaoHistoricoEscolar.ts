@@ -1,4 +1,9 @@
 import { useState } from "react";
+import type { AlunoCertificacao } from "@/hooks/useAlunosCertificacao";
+import {
+  extrairMatriculaDoNomeArquivo,
+  normalizarMatricula,
+} from "@/lib/utils/matriculas";
 
 type ProgressoImportacao = {
   totalFiles: number;
@@ -12,7 +17,10 @@ type UseImportacaoHistoricoEscolarReturn = {
   modalAberto: boolean;
   abrirModal: () => void;
   fecharModal: () => void;
-  importarArquivos: (arquivos: FileList, alunoId: string) => Promise<void>;
+  importarArquivos: (
+    arquivos: FileList,
+    alunos: Pick<AlunoCertificacao, "id" | "matricula" | "nome">[]
+  ) => Promise<void>;
 };
 
 /**
@@ -33,7 +41,10 @@ export function useImportacaoHistoricoEscolar(): UseImportacaoHistoricoEscolarRe
     setProgresso({ totalFiles: 0, processedFiles: 0, errorFiles: 0 });
   };
 
-  const importarArquivos = async (arquivos: FileList, alunoId: string) => {
+  const importarArquivos = async (
+    arquivos: FileList,
+    alunos: Pick<AlunoCertificacao, "id" | "matricula" | "nome">[]
+  ) => {
     setIsImportando(true);
     abrirModal();
 
@@ -42,22 +53,62 @@ export function useImportacaoHistoricoEscolar(): UseImportacaoHistoricoEscolarRe
 
     let processedFiles = 0;
     let errorFiles = 0;
+    const alunosPorMatricula = new Map(
+      alunos.map((aluno) => [normalizarMatricula(aluno.matricula), aluno])
+    );
+    const errosPreProcessamento: string[] = [];
+    const errosImportacao: string[] = [];
 
-    // Processar arquivos sequencialmente
-    for (const arquivo of Array.from(arquivos)) {
-      try {
-        await importarArquivo(arquivo, alunoId);
-        processedFiles++;
-      } catch (error) {
-        console.error(`Erro ao importar arquivo ${arquivo.name}:`, error);
-        errorFiles++;
-        processedFiles++;
+    try {
+      // Processar arquivos sequencialmente
+      for (const arquivo of Array.from(arquivos)) {
+        const matriculaArquivo = extrairMatriculaDoNomeArquivo(arquivo.name);
+        if (!matriculaArquivo) {
+          errorFiles++;
+          processedFiles++;
+          errosPreProcessamento.push(
+            `Arquivo "${arquivo.name}": não foi possível identificar a matrícula antes do "_" no nome do arquivo (ex: 123456_2022.xlsx).`
+          );
+          setProgresso({ totalFiles, processedFiles, errorFiles });
+          continue;
+        }
+
+        const alunoDestino = alunosPorMatricula.get(
+          normalizarMatricula(matriculaArquivo)
+        );
+        if (!alunoDestino) {
+          errorFiles++;
+          processedFiles++;
+          errosPreProcessamento.push(
+            `Arquivo "${arquivo.name}": matrícula ${matriculaArquivo} não corresponde a nenhum aluno carregado.`
+          );
+          setProgresso({ totalFiles, processedFiles, errorFiles });
+          continue;
+        }
+
+        try {
+          await importarArquivo(arquivo, alunoDestino);
+          processedFiles++;
+        } catch (error) {
+          console.error(`Erro ao importar arquivo ${arquivo.name}:`, error);
+          const mensagemErro =
+            error instanceof Error && error.message
+              ? error.message
+              : "Erro ao importar arquivo";
+          errosImportacao.push(`Arquivo "${arquivo.name}": ${mensagemErro}`);
+          errorFiles++;
+          processedFiles++;
+        }
+
+        setProgresso({ totalFiles, processedFiles, errorFiles });
       }
 
-      setProgresso({ totalFiles, processedFiles, errorFiles });
+      if (errosPreProcessamento.length || errosImportacao.length) {
+        alert([...errosPreProcessamento, ...errosImportacao].join("\n"));
+      }
+    } finally {
+      setIsImportando(false);
     }
-
-    setIsImportando(false);
   };
 
   return {
@@ -73,7 +124,10 @@ export function useImportacaoHistoricoEscolar(): UseImportacaoHistoricoEscolarRe
 /**
  * Importa um único arquivo XLSX de histórico escolar
  */
-async function importarArquivo(arquivo: File, alunoId: string): Promise<void> {
+async function importarArquivo(
+  arquivo: File,
+  aluno: Pick<AlunoCertificacao, "id" | "matricula" | "nome">
+): Promise<void> {
   // Converter arquivo para base64
   const arrayBuffer = await arquivo.arrayBuffer();
   const uint8Array = new Uint8Array(arrayBuffer);
@@ -87,13 +141,18 @@ async function importarArquivo(arquivo: File, alunoId: string): Promise<void> {
     body: JSON.stringify({
       fileName: arquivo.name,
       fileData,
-      alunoId,
+      alunoId: aluno.id,
+      alunoMatricula: aluno.matricula,
     }),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Erro desconhecido" }));
-    throw new Error(error.message || `Erro HTTP: ${response.status}`);
+    const error = await response.json().catch(() => ({} as Record<string, unknown>));
+    const message =
+      (error as any).message ||
+      (error as any).error ||
+      `Erro HTTP: ${response.status}`;
+    throw new Error(typeof message === "string" && message.trim() ? message : `Erro HTTP: ${response.status}`);
   }
 
   return response.json();

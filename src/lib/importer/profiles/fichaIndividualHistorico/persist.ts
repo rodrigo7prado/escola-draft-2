@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import type { ParseResult } from "@/lib/parsers/tipos";
+import { ImportValidationError } from "@/lib/importer/errors";
 
 function toStringSafe(v: unknown) {
   if (v === undefined || v === null) return undefined;
@@ -15,6 +16,20 @@ function isLinhaSituacaoFinal(texto?: string | null) {
   return normalized.includes("A VISTA DOS RESULTADOS OBTIDOS O(A) ALUNO(A) FOI CONSIDERADO(A)");
 }
 
+function normalizarNome(nome?: string | null) {
+  return (nome ?? "")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^A-Za-z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+}
+
+function nomesConferem(a?: string | null, b?: string | null) {
+  return normalizarNome(a) === normalizarNome(b);
+}
+
 export async function persistSeriesHistorico(
   tx: Prisma.TransactionClient,
   params: { parsed: ParseResult; alunoId?: string }
@@ -25,6 +40,20 @@ export async function persistSeriesHistorico(
 
   const aluno = await tx.aluno.findUnique({ where: { id: alunoId } });
   if (!aluno) return { persistido: false, motivo: "aluno não encontrado" };
+
+  const nomeArquivo = toStringSafe((parsed as any)?.aluno?.nome);
+  const nomeAluno = toStringSafe(aluno.nome);
+  if (!nomeArquivo || !nomeAluno) {
+    throw new ImportValidationError(
+      "Não foi possível validar o nome do aluno. Verifique se o arquivo e o cadastro possuem o nome preenchido."
+    );
+  }
+
+  if (!nomesConferem(nomeArquivo, nomeAluno)) {
+    throw new ImportValidationError(
+      `O nome no arquivo (${nomeArquivo}) não corresponde ao aluno de matrícula ${aluno.matricula} (${nomeAluno}).`
+    );
+  }
 
   const seriesNaoEncontradas: Array<{
     anoLetivo?: string;

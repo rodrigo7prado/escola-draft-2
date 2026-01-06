@@ -2,6 +2,18 @@
 
 Sumário organizado das documentações de DRY e IDD para refletir o estado atual dos componentes e processos. A estrutura obedece à organização vigente no diretório docs/dry/.
 
+## Documentação e Ferramentas
+
+- **[GUIDELINES.md](GUIDELINES.md)** - Guia de decisão: quando usar DRY vs criar novo componente
+- **[WORKFLOW-INTEGRACAO-IDD.md](WORKFLOW-INTEGRACAO-IDD.md)** - Integração entre DRY e metodologia IDD
+- **[templates/](templates/)** - Templates para criar novos componentes DRY
+- **Ferramentas CLI:**
+  - `pnpm search:dry <termo>` - Buscar componentes DRY por ID ou fragmento
+  - `pnpm summary:dry` - Gerar/atualizar este arquivo automaticamente
+  - `pnpm validate:dry` - Validar documentação DRY
+
+---
+
 ## Macro
 1. [DRY.CONCEPT:PAINEL_MIGRACAO](ui/ui-macro.md#1-dryconceptpainel_migracao)
 2. [DRY.CONCEPT:PAINEL_GESTAO_ALUNOS](ui/ui-macro.md#2-dryconceptpainel_gestao_alunos)

@@ -19,7 +19,8 @@
     "restore-db": "bash scripts/restore-db.sh",
     "validate:dry": "node scripts/validate-dry.js",
     "summary:dry": "node scripts/generate-dry-summary.js",
-    "search:dry": "node scripts/search-dry.js"
+    "search:dry": "node scripts/search-dry.js",
+    "dry:dup": "node scripts/dry-detect-dup.js"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",

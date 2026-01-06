@@ -14,8 +14,14 @@
 **Metodologia seguida**: IDD [`IDD`](./IDD.md) (Importante: se ainda não leu, por favor leia antes de prosseguir)
 
 # CHECKPOINTS DE SESSÕES DE TRABALHO
+
 Sessão 1 (implemetanção de Colagem de Dados Pessoais) - Feature: Importação por Colagem de Dados Pessoais
 
+## Componentes DRY Usados
+- Nenhum componente DRY foi usado nesta sessão inicial
+- (componentes serão adicionados conforme o desenvolvimento progride)
+
+## Checkpoints
 [x] CP1: Implementação da estrutura de UI com os botões "Copiar matrícula" e "Ativar colagem";
 [x] CP2: Implementação do endpoint para salvar os dados pessoais colados no backend;
   [x] CPP2.1: Definição dos campos a serem salvos no banco de dados (nome, data de nascimento, sexo, etc);

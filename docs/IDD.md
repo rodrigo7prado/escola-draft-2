@@ -45,6 +45,13 @@ F2. [Título do item de fluxo]
 
 # Formato de CHECKPOINTS
 Sessão 1 (implemetanção de Fluxos F1, F2) - Feature: [NOME_DA_FEATURE]
+
+## Componentes DRY Usados
+- [DRY.UI:COMPONENTE_1] - Breve descrição do uso
+- [DRY.OBJECT:TIPO_1] - Breve descrição do uso
+- [DRY.BACKEND:SERVICO_1] - Breve descrição do uso
+
+## Checkpoints
 [ ] CP1: Implementação do recurso X
   [ ] CPP1.1: Subtarefa A do recurso X
     [ ] TEC1.1.1: Eventual detalhe técnico contextual 1 da Subtarefa A
@@ -90,7 +97,19 @@ Ao final de cada sessão de trabalho:
   *Para uso das IAs*
 
   # CHECKPOINTS DE SESSÕES DE TRABALHO
-  [Conteúdo conforme o formato do arquivo de CHECKPOINTS acima]
+
+  Sessão 1 (implementação de Fluxos F1, F2) - Feature: [NOME_DA_FEATURE]
+
+  ## Componentes DRY Usados
+  - [DRY.UI:COMPONENTE_1] - Breve descrição do uso
+  - [DRY.OBJECT:TIPO_1] - Breve descrição do uso
+  - (adicionar conforme necessário)
+
+  ## Checkpoints
+  [ ] CP1: Implementação do recurso X
+    [ ] CP1.1: Subtarefa A do recurso X
+  [ ] CP2: Implementação do recurso Y
+  ...
   ```
 ## Template de arquivo de TECNICO
   ```

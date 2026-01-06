@@ -2,18 +2,6 @@
 
 Sumário organizado das documentações de DRY e IDD para refletir o estado atual dos componentes e processos. A estrutura obedece à organização vigente no diretório docs/dry/.
 
-## Documentação e Ferramentas
-
-- **[GUIDELINES.md](GUIDELINES.md)** - Guia de decisão: quando usar DRY vs criar novo componente
-- **[WORKFLOW-INTEGRACAO-IDD.md](WORKFLOW-INTEGRACAO-IDD.md)** - Integração entre DRY e metodologia IDD
-- **[templates/](templates/)** - Templates para criar novos componentes DRY
-- **Ferramentas CLI:**
-  - `pnpm search:dry <termo>` - Buscar componentes DRY por ID ou fragmento
-  - `pnpm summary:dry` - Gerar/atualizar este arquivo automaticamente
-  - `pnpm validate:dry` - Validar documentação DRY
-
----
-
 ## Macro
 1. [DRY.CONCEPT:PAINEL_MIGRACAO](ui/ui-macro.md#1-dryconceptpainel_migracao)
 2. [DRY.CONCEPT:PAINEL_GESTAO_ALUNOS](ui/ui-macro.md#2-dryconceptpainel_gestao_alunos)
@@ -35,11 +23,14 @@ Sumário organizado das documentações de DRY e IDD para refletir o estado atua
 2. [DRY.UI:MODAL_INFO_UPLOAD](ui/ui-components.dry.md#2-modal-info-upload) - Modal de progresso de upload
 3. [DRY.UI:ICONE_PERSONALIZADO_STATUS](ui/ui-components.dry.md#3-icone-personalizado-status) - Ícone de status com tooltip
 4. [DRY.UI:AGREGADOR_ICONES_STATUS](ui/ui-components.dry.md#4-agregador-icones-status) - Coleção de ícones de status
-5. [DRY.BASE-UI:BARRA_PROGRESSO_ASINCRONA](ui/ui-components.dry.md#5-barra-progresso-assincrona) - Barra de progresso assíncrona
+5. [DRY.BASE-UI:TABS](ui/ui-components.dry.md#5-tabs-base) - Sistema de abas genérico
+6. [DRY.BASE-UI:BARRA_PROGRESSO_ASINCRONA](ui/ui-components.dry.md#6-barra-progresso-assincrona) - Barra de progresso assíncrona
+7. [DRY.UI:ICONE_STATUS_FASE](ui/ui-components.dry.md#7-icone-status-fase) - Ícone de status por fase (dados do aluno)
+8. [DRY.UI:AGREGADOR_ICONES_FASES](ui/ui-components.dry.md#8-agregador-icones-fases) - Coleção de ícones das fases do aluno
 
 ### Componentes Especializados
-6. [DRY.UI:CONFIRMACAO_POR_DIGITACAO](ui/ui-components.dry.md#6-confirmacao-por-digitacao) - Confirmação com digitação
-7. [DRY.UI:ANALISE_COMPLETUDE_DE_DADOS](ui/ui-components.dry.md#7-analise-completude-de-dados) - Análise de completude
+9. [DRY.UI:CONFIRMACAO_POR_DIGITACAO](ui/ui-components.dry.md#9-confirmacao-por-digitacao) - Confirmação com digitação
+10. [DRY.UI:ANALISE_COMPLETUDE_DE_DADOS](ui/ui-components.dry.md#10-analise-completude-de-dados) - Análise de completude
 
 ## Objetos e Tipos
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useFiltrosCertificacao } from "@/hooks/useFiltrosCertificacao";
 import { useAlunoSelecionado } from "@/hooks/useAlunoSelecionado";
 import { useModoColagem } from "@/hooks/useModoColagem";
@@ -9,11 +9,15 @@ import { FiltrosCertificacao } from "./FiltrosCertificacao";
 import { ListaAlunosCertificacao } from "./ListaAlunosCertificacao";
 import { DadosAlunoEditavel } from "./DadosAlunoEditavel";
 import { DadosAlunoEscolares } from "./DadosAlunoEscolares";
+import { DadosAlunoHistorico } from "./DadosAlunoHistorico";
+import { DadosAlunoEmissao } from "./DadosAlunoEmissao";
 import { AreaColagemDados } from "./AreaColagemDados";
 import { ModalConfirmacaoDados } from "./ModalConfirmacaoDados";
 import { ModalConfirmacaoDadosEscolares } from "./ModalConfirmacaoDadosEscolares";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/Tabs";
 import type { AlunoCertificacao } from "@/hooks/useAlunosCertificacao";
+import { PHASES_CONFIG, type AbaId } from "@/lib/core/data/gestao-alunos/phases";
+import { PHASES, type Phase } from "@/lib/core/data/gestao-alunos/phases.types";
 
 export function FluxoCertificacao() {
   const {
@@ -88,9 +92,55 @@ export function FluxoCertificacao() {
     onDadosConfirmados: handleDadosConfirmados,
   });
 
-  const [abaAtiva, setAbaAtiva] = useState<"pessoais" | "escolares">(
-    "pessoais"
+  const fasesOrdenadas = useMemo<Phase[]>(
+    () =>
+      [...PHASES].sort(
+        (faseA, faseB) => PHASES_CONFIG[faseA].ordem - PHASES_CONFIG[faseB].ordem
+      ),
+    []
   );
+  const abaInicial = PHASES_CONFIG[fasesOrdenadas[0]].abaId;
+  const [abaAtiva, setAbaAtiva] = useState<AbaId>(abaInicial);
+
+  const renderConteudoFase = (fase: Phase) => {
+    if (fase === "FASE:DADOS_PESSOAIS") {
+      return (
+        <DadosAlunoEditavel
+          aluno={alunoDetalhes}
+          dadosOriginais={dadosOriginais}
+          isLoading={isLoadingDetalhes}
+          isAtualizando={isAtualizandoDetalhes}
+          erro={erroDetalhes}
+        />
+      );
+    }
+    if (fase === "FASE:DADOS_ESCOLARES") {
+      return (
+        <DadosAlunoEscolares
+          aluno={alunoDetalhes}
+          series={seriesCursadas}
+          isLoading={isLoadingDetalhes}
+          erro={erroDetalhes}
+        />
+      );
+    }
+    if (fase === "FASE:HISTORICO_ESCOLAR") {
+      return (
+        <DadosAlunoHistorico
+          aluno={alunoDetalhes}
+          isLoading={isLoadingDetalhes}
+          erro={erroDetalhes}
+        />
+      );
+    }
+    return (
+      <DadosAlunoEmissao
+        aluno={alunoDetalhes}
+        isLoading={isLoadingDetalhes}
+        erro={erroDetalhes}
+      />
+    );
+  };
 
   return (
     <>
@@ -144,30 +194,28 @@ export function FluxoCertificacao() {
                 key={abaAtiva}
               >
                 <TabsList className="px-2 bg-neutral-50" variant="secondary">
-                  <TabsTrigger value="pessoais" onClick={() => setAbaAtiva("pessoais")} variant="secondary">
-                    Dados pessoais
-                  </TabsTrigger>
-                  <TabsTrigger value="escolares" onClick={() => setAbaAtiva("escolares")} variant="secondary">
-                    Dados escolares
-                  </TabsTrigger>
+                  {fasesOrdenadas.map((fase) => {
+                    const abaId = PHASES_CONFIG[fase].abaId;
+                    return (
+                      <TabsTrigger
+                        key={fase}
+                        value={abaId}
+                        onClick={() => setAbaAtiva(abaId)}
+                        variant="secondary"
+                      >
+                        {PHASES_CONFIG[fase].titulo}
+                      </TabsTrigger>
+                    );
+                  })}
                 </TabsList>
-                <TabsContent value="pessoais" className="flex-1 min-h-0">
-                  <DadosAlunoEditavel
-                    aluno={alunoDetalhes}
-                    dadosOriginais={dadosOriginais}
-                    isLoading={isLoadingDetalhes}
-                    isAtualizando={isAtualizandoDetalhes}
-                    erro={erroDetalhes}
-                  />
-                </TabsContent>
-                <TabsContent value="escolares" className="flex-1 min-h-0">
-                  <DadosAlunoEscolares
-                    aluno={alunoDetalhes}
-                    series={seriesCursadas}
-                    isLoading={isLoadingDetalhes}
-                    erro={erroDetalhes}
-                  />
-                </TabsContent>
+                {fasesOrdenadas.map((fase) => {
+                  const abaId = PHASES_CONFIG[fase].abaId;
+                  return (
+                    <TabsContent key={fase} value={abaId} className="flex-1 min-h-0">
+                      {renderConteudoFase(fase)}
+                    </TabsContent>
+                  );
+                })}
               </Tabs>
             </div>
           </div>

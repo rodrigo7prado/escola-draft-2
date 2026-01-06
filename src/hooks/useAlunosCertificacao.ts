@@ -5,6 +5,7 @@ import {
   ResumoDadosPessoais,
   ValoresDadosPessoais,
 } from "@/lib/importacao/dadosPessoaisMetadata";
+import type { PhaseStatus } from "@/lib/core/data/gestao-alunos/phases.types";
 
 type EnturmacaoResumo = {
   anoLetivo: string;
@@ -24,12 +25,13 @@ type AlunoApiResponse = ValoresDadosPessoais & {
   enturmacoes?: EnturmacaoResumo[];
   situacaoEscolar?: string | null;
   motivoEncerramento?: string | null;
-  seriesCursadas?: { segmento?: string | null; anoLetivo?: string | null }[];
+  seriesCursadas?: SerieCursadaResumo[];
 };
 
 export type AlunoCertificacao = AlunoApiResponse & {
   progressoDadosPessoais: ResumoDadosPessoais;
   progressoDadosEscolares: ResumoDadosEscolares;
+  progressoHistoricoEscolar: ResumoHistoricoEscolar;
 };
 
 type FiltrosParams = {
@@ -49,7 +51,19 @@ export type ResumoDadosEscolares = {
   slotsPreenchidos: number;
   percentual: number;
   completo: boolean;
-  status: "completo" | "incompleto" | "ausente";
+  status: PhaseStatus;
+};
+
+export type ResumoHistoricoEscolar = {
+  totalRegistros: number;
+  status: PhaseStatus;
+  completo: boolean;
+};
+
+type SerieCursadaResumo = {
+  segmento?: string | null;
+  anoLetivo?: string | null;
+  _count?: { historicos: number };
 };
 
 export function useAlunosCertificacao(filtros: FiltrosParams) {
@@ -136,6 +150,7 @@ async function obterAlunosCertificacao(filtros: FiltrosParams) {
     ...aluno,
     progressoDadosPessoais: calcularResumoDadosPessoais(aluno),
     progressoDadosEscolares: calcularResumoDadosEscolares(aluno),
+    progressoHistoricoEscolar: calcularResumoHistoricoEscolar(aluno.seriesCursadas),
   }));
 }
 
@@ -165,9 +180,22 @@ function calcularResumoDadosEscolares(aluno: AlunoApiResponse): ResumoDadosEscol
   };
 }
 
-function possuiTriplaSerieMedio(
-  series?: { segmento?: string | null; anoLetivo?: string | null }[]
-): boolean {
+function calcularResumoHistoricoEscolar(
+  series?: SerieCursadaResumo[]
+): ResumoHistoricoEscolar {
+  const totalRegistros =
+    series?.reduce((total, serie) => total + (serie._count?.historicos ?? 0), 0) ?? 0;
+
+  const status: PhaseStatus = totalRegistros > 0 ? "completo" : "ausente";
+
+  return {
+    totalRegistros,
+    status,
+    completo: status === "completo",
+  };
+}
+
+function possuiTriplaSerieMedio(series?: SerieCursadaResumo[]): boolean {
   if (!series || series.length < 3) return false;
 
   const seriesOrdenadas = [...series].sort((a, b) =>

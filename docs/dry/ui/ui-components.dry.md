@@ -13,11 +13,14 @@ Documentação de todos os componentes UI do sistema, incluindo componentes base
 2. [DRY.UI:MODAL_INFO_UPLOAD] - Modal de progresso de upload
 3. [DRY.UI:ICONE_PERSONALIZADO_STATUS] - Ícone de status com tooltip
 4. [DRY.UI:AGREGADOR_ICONES_STATUS] - Coleção de ícones de status
-5. [DRY.BASE-UI:BARRA_PROGRESSO_ASINCRONA] - Barra de progresso assíncrona
+5. [DRY.BASE-UI:TABS] - Sistema de abas genérico
+6. [DRY.BASE-UI:BARRA_PROGRESSO_ASINCRONA] - Barra de progresso assíncrona
+7. [DRY.UI:ICONE_STATUS_FASE] - Ícone de status por fase (dados do aluno)
+8. [DRY.UI:AGREGADOR_ICONES_FASES] - Coleção de ícones das fases do aluno
 
 ### Componentes Especializados
-6. [DRY.UI:CONFIRMACAO_POR_DIGITACAO] - Confirmação com digitação
-7. [DRY.UI:ANALISE_COMPLETUDE_DE_DADOS] - Análise de completude
+9. [DRY.UI:CONFIRMACAO_POR_DIGITACAO] - Confirmação com digitação
+10. [DRY.UI:ANALISE_COMPLETUDE_DE_DADOS] - Análise de completude
 
 ---
 
@@ -110,9 +113,39 @@ Documentação de todos os componentes UI do sistema, incluindo componentes base
 
 ---
 
-### 5. Barra Progresso Assíncrona
+### 5. Tabs (Base)
 
-#### [ ] 5. *`DRY.BASE-UI:BARRA_PROGRESSO_ASINCRONA`*
+#### [x] 5. *`DRY.BASE-UI:TABS`*
+  - **Localização:** `/src/components/ui/Tabs.tsx`
+  - **Descrição:** Sistema de abas controladas via contexto interno, com triggers e conteúdos associados.
+
+  **API:**
+  - `Tabs`:
+    - Props: `defaultValue` (string, obrigatório), `variant` (`"default" | "secondary" | "tertiary"`, opcional, padrão `"default"`), `children`.
+    - Mantém `activeTab` em estado interno e provê contexto para triggers e contents.
+  - `TabsList`:
+    - Props: `children`, `className?`, `variant?` (mesmas opções).
+    - Layout horizontal com espaçamento e borda inferior; variantes ajustam espaçamento vertical.
+  - `TabsTrigger`:
+    - Props: `value` (string), `children`, `variant?`, `onClick?`.
+    - Renderiza botão ghost com borda inferior indicando aba ativa; dispara `setActiveTab(value)` e `onClick`.
+  - `TabsContent`:
+    - Props: `value` (string), `children`, `className?`.
+    - Exibe conteúdo apenas quando `value === activeTab`; usa layout flex preenchendo altura.
+
+  **Comportamento:**
+  - Contexto interno garante sincronização entre triggers e conteúdos.
+  - Suporta três variantes de densidade pré-configuradas.
+  - Componentes lançam erro se usados fora de `<Tabs>`.
+
+  **Referências Cruzadas:**
+  - Uso atual: `src/components/FluxoCertificacao.tsx` (abas do painel do aluno).
+
+---
+
+### 6. Barra Progresso Assíncrona
+
+#### [ ] 6. *`DRY.BASE-UI:BARRA_PROGRESSO_ASINCRONA`*
   - **Descrição:** Componente de barra de progresso que pode ser usado para indicar o andamento de operações assíncronas longas, como importação de arquivos.
 
   **Propriedades:**
@@ -131,11 +164,56 @@ Documentação de todos os componentes UI do sistema, incluindo componentes base
 
 ---
 
+### 7. Ícone Status Fase
+
+#### [x] 7. *`DRY.UI:ICONE_STATUS_FASE`*
+  - **Localização:** `/src/components/ui/IconeStatusFase.tsx`
+  - **Descrição:** Ícone individual para exibir o status de uma fase do painel de dados do aluno.
+  - **Dependências:** [DRY.OBJECT:PHASES] (usa `PHASES_CONFIG` para ícone e título)
+
+  **Propriedades:**
+  - `phase` (`Phase`): identificador da fase (ex.: `FASE:DADOS_PESSOAIS`).
+  - `status` (`PhaseStatus`): estado da fase (`completo` | `incompleto` | `ausente`).
+  - `label` (string): texto curto exibido abaixo do ícone (ex.: `12/20` ou `65%`).
+  - `title` (string): tooltip com resumo do status.
+
+  **Comportamento:**
+  - Seleciona dinamicamente o ícone Lucide definido em `PHASES_CONFIG[phase].icone`.
+  - Aplica cores conforme o status: verde (completo), amarelo (incompleto), vermelho (ausente).
+  - Mantém largura mínima para alinhamento consistente em agregadores.
+
+  **Referências Cruzadas:**
+  - Usado por [DRY.UI:AGREGADOR_ICONES_FASES].
+  - Usa configuração única de fases em `src/lib/core/data/gestao-alunos/phases.ts`.
+
+---
+
+### 8. Agregador Ícones Fases
+
+#### [x] 8. *`DRY.UI:AGREGADOR_ICONES_FASES`*
+  - **Localização:** `/src/components/ui/AgregadorIconesFases.tsx`
+  - **Descrição:** Agrega os quatro ícones de fase (pessoais, escolares, histórico, emissão) respeitando a ordem definida em `PHASES_CONFIG`.
+  - **Dependências:** [DRY.UI:ICONE_STATUS_FASE], [DRY.OBJECT:PHASES]
+
+  **Propriedades:**
+  - `statusPorFase` (`Record<Phase, { status: PhaseStatus; label: string; title: string }>`): mapa completo de status para cada fase.
+
+  **Comportamento:**
+  - Ordena as fases por `PHASES_CONFIG[fase].ordem` e renderiza um `IconeStatusFase` para cada uma.
+  - Usa rótulos/títulos recebidos para exibir tooltips e valores consolidados por fase.
+  - Aplica layout horizontal compacto (`flex` + `gap-2`) para uso em listas de alunos.
+
+  **Referências Cruzadas:**
+  - Consumido em `src/components/ListaAlunosCertificacao.tsx`.
+  - Fonte única de configuração: `PHASES_CONFIG` em `phases.ts`.
+
+---
+
 ## Componentes Especializados
 
-### 6. Confirmação por Digitação
+### 9. Confirmação por Digitação
 
-#### [ ] 6. *`DRY.UI:CONFIRMACAO_POR_DIGITACAO`*
+#### [ ] 9. *`DRY.UI:CONFIRMACAO_POR_DIGITACAO`*
   - **Descrição:** Componente de confirmação que exige digitação de texto específico para confirmar ações críticas.
 
   **Procedimento:** ABSTRAIR DRY.UI.1.1 e o restante utilizando este modelo.
@@ -146,9 +224,9 @@ Documentação de todos os componentes UI do sistema, incluindo componentes base
 
 ---
 
-### 7. Análise Completude de Dados
+### 10. Análise Completude de Dados
 
-#### [ ] 7. *`DRY.UI:ANALISE_COMPLETUDE_DE_DADOS`*
+#### [ ] 10. *`DRY.UI:ANALISE_COMPLETUDE_DE_DADOS`*
   - **Descrição:** Componente UI que analisa e apresenta a completude dos dados importados em relação aos dados existentes no sistema, destacando discrepâncias e pendências.
 
   **Objetos TypeScript relacionados:**

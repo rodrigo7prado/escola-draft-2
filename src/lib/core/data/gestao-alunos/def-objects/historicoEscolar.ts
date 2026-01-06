@@ -1,4 +1,4 @@
-import { PhaseSchema } from "./abstract";
+import { PhaseSchema } from "../phases.types";
 
 const historicoEscolar: PhaseSchema<"FASE:HISTORICO_ESCOLAR"> = {
   SerieCursada: {

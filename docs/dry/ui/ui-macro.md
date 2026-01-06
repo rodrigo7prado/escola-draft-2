@@ -11,9 +11,16 @@
    Barra de Resumo de Alunos
 #### [ ] 2.1.2 *`DRY.CONCEPT:ITEM_ALUNO`*
    Item de Aluno
-   Através do [DRY.UI:AGREGADOR_ICONES_STATUS], exibir múltiplos ícones de status para cada aluno na lista, indicando completude ou pendências de determinada categoria.
+   Através do [DRY.UI:AGREGADOR_ICONES_FASES], exibe 4 ícones de status (Dados Pessoais, Dados Escolares, Histórico Escolar, Emissão) para cada aluno na lista, indicando completude de cada fase.
+   Configuração das fases vem de [DRY.OBJECT:PHASES].
 #### [ ] 2.2 *`DRY.CONCEPT:DADOS_DO_ALUNO`*
    Dados do Aluno
+   Painel com sistema de abas ([DRY.BASE-UI:TABS]) exibindo as 4 fases de gestão:
+   - Aba "Dados Pessoais" (DadosAlunoEditavel)
+   - Aba "Dados Escolares" (DadosAlunoEscolares)
+   - Aba "Histórico Escolar" (DadosAlunoHistorico)
+   - Aba "Emissão de Documentos" (DadosAlunoEmissao)
+   Abas renderizadas dinamicamente a partir de [DRY.OBJECT:PHASES] (PHASES_CONFIG)
 #### [ ] 3. *`DRY.CONCEPT:PAINEL_IMPRESSAO`*
    Painel de Impressão
    [A desenvolver]
@@ -30,7 +37,7 @@ Ainda dentro da lista, acima dos itens, em [DRY.CONCEPT:BARRA_RESUMO_ALUNOS], o 
 
 Ao lado da lista, o usuário pode acessar detalhes específicos de cada aluno através do componente [`DRY.CONCEPT:DADOS_DO_ALUNO`], que apresenta informações detalhadas e opções de edição.
 
-Em [DRY.CONCEPT:ITEM_ALUNO], cada aluno listado exibe múltiplos ícones de status utilizando o componente [DRY.UI:AGREGADOR_ICONES_STATUS]. Esses ícones indicam diferentes aspectos do status do aluno, como completude ou pendências de dados.
+Em [DRY.CONCEPT:ITEM_ALUNO], cada aluno listado exibe 4 ícones de status (um para cada fase) utilizando o componente [DRY.UI:AGREGADOR_ICONES_FASES]. Esses ícones indicam visualmente a completude de cada fase de gestão do aluno (Dados Pessoais, Dados Escolares, Histórico Escolar, Emissão de Documentos).
 
 ## ESTRUTURA HIERÁRQUICA DE CONCEITOS
 [DRY.CONCEPT:PAINEL_MIGRACAO]

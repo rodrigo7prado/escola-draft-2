@@ -108,7 +108,12 @@ export async function GET(request: NextRequest) {
         seriesCursadas: {
           select: {
             segmento: true,
-            anoLetivo: true
+            anoLetivo: true,
+            _count: {
+              select: {
+                historicos: true
+              }
+            }
           }
         }
       }

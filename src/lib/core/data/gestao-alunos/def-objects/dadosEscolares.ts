@@ -1,4 +1,4 @@
-import { PhaseSchema } from "./abstract";
+import { PhaseSchema } from "../phases.types";
 
 const dadosEscolares: PhaseSchema<"FASE:DADOS_ESCOLARES"> = {
   Aluno: {

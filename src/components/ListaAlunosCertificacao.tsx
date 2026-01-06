@@ -8,11 +8,16 @@ import type {
 } from "@/hooks/useAlunosCertificacao";
 import type { FiltrosCertificacaoState } from "@/hooks/useFiltrosCertificacao";
 import { Button } from "@/components/ui/Button";
+import {
+  AgregadorIconesFases,
+  type StatusPorFase,
+} from "@/components/ui/AgregadorIconesFases";
 import { BotaoColagemAluno } from "./BotaoColagemAluno";
 import { OverflowMenu } from "@/components/ui/OverflowMenu";
 import { ModalInfoUpload } from "@/components/ui/ModalInfoUpload";
 import { useImportacaoHistoricoEscolar } from "@/hooks/useImportacaoHistoricoEscolar";
-import { GraduationCap, UserCheck } from "lucide-react";
+import { PHASES_CONFIG } from "@/lib/core/data/gestao-alunos/phases";
+import type { PhaseStatus } from "@/lib/core/data/gestao-alunos/phases.types";
 
 type ListaAlunosCertificacaoProps = {
   filtros: FiltrosCertificacaoState;
@@ -179,10 +184,7 @@ export function ListaAlunosCertificacao({
                           resumoEscolares={aluno.progressoDadosEscolares}
                         />
                       </div>
-                      <IndicadoresDadosAluno
-                        resumoPessoais={aluno.progressoDadosPessoais}
-                        resumoEscolares={aluno.progressoDadosEscolares}
-                      />
+                      <IndicadoresDadosAluno aluno={aluno} />
                     </div>
                     {aluno.fonteAusente && (
                       <div className="text-[9px] text-yellow-600 mt-0.5">
@@ -274,63 +276,48 @@ function BarraProgressoDadosPessoais({
   );
 }
 
-function IndicadoresDadosAluno({
-  resumoPessoais,
-  resumoEscolares,
-}: {
-  resumoPessoais: AlunoCertificacao["progressoDadosPessoais"];
-  resumoEscolares: ResumoDadosEscolares;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <StatusIcone
-        icon={UserCheck}
-        status={mapearStatusPessoais(resumoPessoais)}
-        label={`${resumoPessoais.camposPreenchidos}/${resumoPessoais.totalCampos}`}
-        title={`Dados pessoais: ${resumoPessoais.camposPreenchidos}/${resumoPessoais.totalCampos}`}
-      />
-      <StatusIcone
-        icon={GraduationCap}
-        status={resumoEscolares.status}
-        label={`${resumoEscolares.percentual}%`}
-        title={`Dados escolares: ${resumoEscolares.percentual}% (${resumoEscolares.slotsPreenchidos}/${resumoEscolares.totalSlots})`}
-      />
-    </div>
-  );
+function IndicadoresDadosAluno({ aluno }: { aluno: AlunoCertificacao }) {
+  const statusPorFase = montarStatusPorFase(aluno);
+
+  return <AgregadorIconesFases statusPorFase={statusPorFase} />;
 }
 
-type Status = "completo" | "incompleto" | "ausente";
+function montarStatusPorFase(aluno: AlunoCertificacao): StatusPorFase {
+  const fasePessoais = PHASES_CONFIG["FASE:DADOS_PESSOAIS"];
+  const faseEscolares = PHASES_CONFIG["FASE:DADOS_ESCOLARES"];
+  const faseHistorico = PHASES_CONFIG["FASE:HISTORICO_ESCOLAR"];
+  const faseEmissao = PHASES_CONFIG["FASE:EMISSAO_DOCUMENTOS"];
+
+  const historicos = aluno.progressoHistoricoEscolar.totalRegistros;
+
+  return {
+    "FASE:DADOS_PESSOAIS": {
+      status: mapearStatusPessoais(aluno.progressoDadosPessoais),
+      label: `${aluno.progressoDadosPessoais.camposPreenchidos}/${aluno.progressoDadosPessoais.totalCampos}`,
+      title: `${fasePessoais.titulo}: ${aluno.progressoDadosPessoais.camposPreenchidos}/${aluno.progressoDadosPessoais.totalCampos}`,
+    },
+    "FASE:DADOS_ESCOLARES": {
+      status: aluno.progressoDadosEscolares.status,
+      label: `${aluno.progressoDadosEscolares.percentual}%`,
+      title: `${faseEscolares.titulo}: ${aluno.progressoDadosEscolares.percentual}% (${aluno.progressoDadosEscolares.slotsPreenchidos}/${aluno.progressoDadosEscolares.totalSlots})`,
+    },
+    "FASE:HISTORICO_ESCOLAR": {
+      status: aluno.progressoHistoricoEscolar.status,
+      label: `${historicos} registro${historicos === 1 ? "" : "s"}`,
+      title: `${faseHistorico.titulo}: ${historicos} registro${historicos === 1 ? "" : "s"}`,
+    },
+    "FASE:EMISSAO_DOCUMENTOS": {
+      status: "ausente",
+      label: "--",
+      title: `${faseEmissao.titulo}: pendente`,
+    },
+  };
+}
 
 function mapearStatusPessoais(
   resumo: AlunoCertificacao["progressoDadosPessoais"]
-): Status {
+): PhaseStatus {
   if (resumo.completo) return "completo";
   if (resumo.camposPreenchidos === 0) return "ausente";
   return "incompleto";
-}
-
-function StatusIcone({
-  icon: Icon,
-  status,
-  label,
-  title,
-}: {
-  icon: typeof UserCheck;
-  status: Status;
-  label: string;
-  title: string;
-}) {
-  const cor = corPorStatus(status);
-  return (
-    <div className="flex flex-col items-center text-[10px] font-semibold leading-tight min-w-[42px]">
-      <Icon className={`h-4 w-4 ${cor}`} />
-      <span className={`${cor}`}>{label}</span>
-    </div>
-  );
-}
-
-function corPorStatus(status: Status): string {
-  if (status === "completo") return "text-green-700";
-  if (status === "ausente") return "text-red-600";
-  return "text-yellow-600";
 }

@@ -15,9 +15,10 @@ Cada sessão de trabalho terá como foco a implementação de uma feature espec�
 
 # SUMÁRIO DE FEATURES
 - [Importação por colagem](features/importacao-por-colagem/FLUXO.md);
-- [Importação de Ficha Individual - Histórico](features/importacao-ficha-individual-historico/FLUXO.md);  <---
+- [Importação de Ficha Individual - Histórico](features/importacao-ficha-individual-historico/FLUXO.md);
+- [Sistema de Fases de Gestão de Alunos](features/sistema-fases-gestao-alunos/FLUXO.md);  <---
 
-**FEATURE ATUAL**: `Importação de Ficha Individual - Histórico`
+**FEATURE ATUAL**: `Sistema de Fases de Gestão de Alunos`
 
 # WORKFLOW GERAL PARA IMPLEMENTAÇÃO DE FEATURES
 - IDENTIFICAR a feature a ser implementada em FEATURE ATUAL acima;

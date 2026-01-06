@@ -12,7 +12,7 @@ Fase 2: Documentar objetos e estruturas de dados
 Fase 3: Melhorar navegabilidade
  [x] Criar ferramenta que gera summary.md automaticamente
  [x] Adicionar busca por ID DRY (CLI tool)
- [ ] Criar templates para novos componentes DRY
+ [x] Criar templates para novos componentes DRY
 Fase 4: Integração com workflow IDD
  [ ] Criar guidelines de quando usar DRY vs quando criar novo
  [ ] Adicionar seção "Componentes DRY usados" nos CHECKPOINTs

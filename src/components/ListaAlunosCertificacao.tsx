@@ -289,6 +289,7 @@ function montarStatusPorFase(aluno: AlunoCertificacao): StatusPorFase {
   const faseEmissao = PHASES_CONFIG["FASE:EMISSAO_DOCUMENTOS"];
 
   const historicos = aluno.progressoHistoricoEscolar.totalRegistros;
+  const seriesHistorico = aluno.progressoHistoricoEscolar.totalSeries;
 
   return {
     "FASE:DADOS_PESSOAIS": {
@@ -303,8 +304,8 @@ function montarStatusPorFase(aluno: AlunoCertificacao): StatusPorFase {
     },
     "FASE:HISTORICO_ESCOLAR": {
       status: aluno.progressoHistoricoEscolar.status,
-      label: `${historicos} registro${historicos === 1 ? "" : "s"}`,
-      title: `${faseHistorico.titulo}: ${historicos} registro${historicos === 1 ? "" : "s"}`,
+      label: `${seriesHistorico} (${historicos})`,
+      title: `${faseHistorico.titulo}: ${seriesHistorico} série${seriesHistorico === 1 ? "" : "s"} (${historicos} registro${historicos === 1 ? "" : "s"})`,
     },
     "FASE:EMISSAO_DOCUMENTOS": {
       status: "ausente",

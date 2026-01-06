@@ -56,6 +56,7 @@ export type ResumoDadosEscolares = {
 
 export type ResumoHistoricoEscolar = {
   totalRegistros: number;
+  totalSeries: number;
   status: PhaseStatus;
   completo: boolean;
 };
@@ -63,6 +64,7 @@ export type ResumoHistoricoEscolar = {
 type SerieCursadaResumo = {
   segmento?: string | null;
   anoLetivo?: string | null;
+  historicos?: { id: string }[];
   _count?: { historicos: number };
 };
 
@@ -184,12 +186,21 @@ function calcularResumoHistoricoEscolar(
   series?: SerieCursadaResumo[]
 ): ResumoHistoricoEscolar {
   const totalRegistros =
-    series?.reduce((total, serie) => total + (serie._count?.historicos ?? 0), 0) ?? 0;
+    series?.reduce((total, serie) => {
+      const count = serie._count?.historicos ?? serie.historicos?.length ?? 0;
+      return total + count;
+    }, 0) ?? 0;
+  const totalSeries =
+    series?.filter((serie) => {
+      const count = serie._count?.historicos ?? serie.historicos?.length ?? 0;
+      return count > 0;
+    }).length ?? 0;
 
-  const status: PhaseStatus = totalRegistros > 0 ? "completo" : "ausente";
+  const status: PhaseStatus = totalSeries === 3 ? "completo" : "ausente";
 
   return {
     totalRegistros,
+    totalSeries,
     status,
     completo: status === "completo",
   };

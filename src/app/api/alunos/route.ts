@@ -28,7 +28,18 @@ export async function GET(request: NextRequest) {
             orderBy: [
               { anoLetivo: 'asc' },
               { periodoLetivo: 'asc' }
-            ]
+            ],
+            include: {
+              historicos: {
+                select: {
+                  id: true,
+                  componenteCurricular: true,
+                  totalPontos: true,
+                  cargaHoraria: true,
+                },
+                orderBy: { componenteCurricular: 'asc' },
+              }
+            }
           },
           enturmacoes: {
             orderBy: { anoLetivo: 'desc' }

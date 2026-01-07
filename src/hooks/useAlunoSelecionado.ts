@@ -44,6 +44,13 @@ export type SerieCursadaResumo = {
   tipoVaga?: string | null;
   ensinoReligioso?: boolean | null;
   linguaEstrangeira?: boolean | null;
+  cargaHorariaTotal?: number | null;
+  historicos?: Array<{
+    id: string;
+    componenteCurricular: string | null;
+    totalPontos?: number | null;
+    cargaHoraria?: number | null;
+  }>;
 };
 
 export function useAlunoSelecionado() {

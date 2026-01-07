@@ -128,6 +128,7 @@ export function FluxoCertificacao() {
       return (
         <DadosAlunoHistorico
           aluno={alunoDetalhes}
+          series={seriesCursadas}
           isLoading={isLoadingDetalhes}
           erro={erroDetalhes}
         />

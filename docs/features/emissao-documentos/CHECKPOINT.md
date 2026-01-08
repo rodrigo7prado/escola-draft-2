@@ -175,3 +175,199 @@ Esta sessão cria código específico da feature (configuração de metadados e 
   [x] CP12.1: Botão "Imprimir" para cada documento
   [x] CP12.2: Botão "Imprimir Todos os Documentos"
   [x] CP12.3: Cada documento poderá ser visualizado através do modal já abstraído em components/ui.
+
+---
+
+## Sessão 3 (Análise de Completude e Integração com Ícones de Status) - Feature: Emissão de Documentos
+
+### Contexto
+Esta sessão implementa o sistema de análise de completude de dados por documento, integrando com os ícones de status de fases existentes. O objetivo é que o status da fase `FASE:EMISSAO_DOCUMENTOS` reflita dinamicamente se os dados do aluno estão prontos para emitir cada tipo de documento, baseando-se nos mapeamentos definidos nos def-objects.
+
+### Componentes DRY Usados
+- [DRY.UI:ICONE_STATUS_FASE] - Ícone de status por fase (já existe, será consumido)
+- [DRY.UI:AGREGADOR_ICONES_FASES] - Agregador de ícones de fases (já existe, será consumido)
+- [DRY.OBJECT:PHASES] - Configuração de fases (já existe, referência em `phases.ts`)
+
+### Referências de Código Existente
+- `/src/lib/core/data/gestao-alunos/def-objects/` - Objetos que definem campos por documento
+- `/src/components/ListaAlunosCertificacao.tsx` - Função `montarStatusPorFase` (linha 285-316)
+- `/src/hooks/useAlunosCertificacao.ts` - Hook que calcula progresso de dados
+- `/src/lib/core/data/gestao-alunos/phases.ts` - Configuração das fases
+- `/src/lib/core/data/gestao-alunos/phases.types.ts` - Tipos e schemas de fases
+
+### Checkpoints
+
+[ ] CP13: Criar função utilitária de análise de completude por documento
+  [ ] CP13.1: Criar arquivo de utilitários
+    [ ] TEC13.1.1: Localização: `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts`
+    [ ] TEC13.1.2: Exportar tipo `CompletudeDocumento` com campos:
+      - `documento: DocEmissao` - tipo do documento
+      - `status: PhaseStatus` - status calculado (completo/incompleto/ausente)
+      - `percentual: number` - percentual de completude (0-100)
+      - `camposPreenchidos: number` - quantidade de campos preenchidos
+      - `totalCampos: number` - quantidade total de campos obrigatórios
+      - `camposFaltantes: CampoFaltante[]` - array de campos faltantes
+    [ ] TEC13.1.3: Exportar tipo `CampoFaltante` com campos:
+      - `campo: string` - nome técnico do campo
+      - `label: string` - nome legível do campo
+      - `tabela: string` - tabela de origem (Aluno, SerieCursada, HistoricoEscolar)
+      - `fase: Phase` - fase a que pertence o campo
+    [ ] TEC13.1.4: Exportar tipo `ResumoCompletudeEmissao` com campos:
+      - `statusGeral: PhaseStatus` - status consolidado de todos os documentos
+      - `documentosProntos: number` - quantidade de documentos com status "completo"
+      - `totalDocumentos: number` - sempre 4 (Certidão, Certificado, Diploma, Histórico)
+      - `porDocumento: Record<DocEmissao, CompletudeDocumento>` - detalhes por documento
+
+  [ ] CP13.2: Implementar função `calcularCompletudeDocumento`
+    [ ] TEC13.2.1: Assinatura: `function calcularCompletudeDocumento(documento: DocEmissao, dadosAluno: DadosAlunoCompleto): CompletudeDocumento`
+    [ ] TEC13.2.2: Parâmetro `DadosAlunoCompleto` deve incluir:
+      - Campos de `Aluno` (tabela principal)
+      - Array de `SerieCursada[]` com históricos
+      - Campos derivados necessários
+    [ ] TEC13.2.3: Lógica da função:
+      1. Importar os 3 def-objects (dadosPessoais, dadosEscolares, historicoEscolar)
+      2. Para cada def-object, iterar sobre suas tabelas (ex: `dadosPessoais.Aluno`)
+      3. Para cada campo da tabela, verificar se o array de documentos inclui o `documento` solicitado
+      4. Se sim, verificar se o valor do campo no `dadosAluno` está preenchido (não null/undefined/empty)
+      5. Acumular contador de campos obrigatórios e campos preenchidos
+      6. Montar array de `camposFaltantes` com informações sobre campos não preenchidos
+      7. Calcular percentual: `(camposPreenchidos / totalCampos) * 100`
+      8. Determinar status:
+         - `completo`: percentual === 100
+         - `ausente`: percentual === 0
+         - `incompleto`: 0 < percentual < 100
+    [ ] TEC13.2.4: Tratamento especial para campos de arrays (SerieCursada, HistoricoEscolar):
+      - Se o documento exige campos de SerieCursada, verificar se existe ao menos 1 registro
+      - Se o documento exige campos de HistoricoEscolar, verificar se existem registros vinculados
+      - Para Histórico Escolar especificamente, validar que existam componentes curriculares
+
+  [ ] CP13.3: Implementar função `calcularCompletudeEmissao`
+    [ ] TEC13.3.1: Assinatura: `function calcularCompletudeEmissao(dadosAluno: DadosAlunoCompleto): ResumoCompletudeEmissao`
+    [ ] TEC13.3.2: Lógica da função:
+      1. Chamar `calcularCompletudeDocumento` para cada um dos 4 tipos de documento
+      2. Montar objeto `porDocumento` com resultado de cada documento
+      3. Contar quantos documentos têm `status === "completo"`
+      4. Determinar `statusGeral`:
+         - `completo`: se todos os 4 documentos estão completos
+         - `ausente`: se todos os 4 documentos estão ausentes
+         - `incompleto`: casos intermediários
+      5. Retornar `ResumoCompletudeEmissao` completo
+    [ ] TEC13.3.3: Adicionar testes unitários básicos para esta função
+
+[ ] CP14: Integrar cálculo de completude no hook useAlunosCertificacao
+  [ ] CP14.1: Atualizar tipo `AlunoCertificacao`
+    [ ] TEC14.1.1: Localização: `/src/hooks/useAlunosCertificacao.ts`
+    [ ] TEC14.1.2: Adicionar campo: `progressoEmissaoDocumentos: ResumoCompletudeEmissao`
+
+  [ ] CP14.2: Modificar função `obterAlunosCertificacao`
+    [ ] TEC14.2.1: Após buscar alunos do banco, para cada aluno:
+      1. Montar objeto `DadosAlunoCompleto` com dados necessários
+      2. Chamar `calcularCompletudeEmissao(dadosAluno)`
+      3. Adicionar resultado ao campo `progressoEmissaoDocumentos`
+    [ ] TEC14.2.2: Garantir que a query Prisma inclui todos os campos necessários:
+      - Todos os campos de `Aluno` usados nos def-objects
+      - Incluir `seriesCursadas` com seus campos
+      - Incluir `historicos` dentro de `seriesCursadas`
+
+  [ ] CP14.3: Atualizar função `montarStatusPorFase` no componente ListaAlunosCertificacao
+    [ ] TEC14.3.1: Localização: `/src/components/ListaAlunosCertificacao.tsx` (linha 285)
+    [ ] TEC14.3.2: Substituir status fixo de `FASE:EMISSAO_DOCUMENTOS`:
+      ```typescript
+      // ANTES (linha 310-314):
+      "FASE:EMISSAO_DOCUMENTOS": {
+        status: "ausente",
+        label: "--",
+        title: `${faseEmissao.titulo}: pendente`,
+      },
+
+      // DEPOIS:
+      "FASE:EMISSAO_DOCUMENTOS": {
+        status: aluno.progressoEmissaoDocumentos.statusGeral,
+        label: `${aluno.progressoEmissaoDocumentos.documentosProntos}/${aluno.progressoEmissaoDocumentos.totalDocumentos}`,
+        title: `${faseEmissao.titulo}: ${aluno.progressoEmissaoDocumentos.documentosProntos} de ${aluno.progressoEmissaoDocumentos.totalDocumentos} documentos prontos`,
+      },
+      ```
+
+[ ] CP15: Criar componente de detalhamento de completude por documento
+  [ ] CP15.1: Criar componente `CompletudeDocumentos`
+    [ ] TEC15.1.1: Localização: `/src/components/CompletudeDocumentos.tsx`
+    [ ] TEC15.1.2: Props:
+      - `completude: ResumoCompletudeEmissao` - dados de completude
+      - `onNavigateToAba?: (abaId: string) => void` - callback para navegar para aba com campo faltante
+    [ ] TEC15.1.3: UI deve exibir:
+      - Card para cada um dos 4 tipos de documento
+      - Ícone de status (verde/amarelo/vermelho) por documento
+      - Título do documento (ex: "Certidão de Conclusão")
+      - Percentual de completude (ex: "85%")
+      - Botão "Ver detalhes" que expande lista de campos faltantes
+      - Lista de campos faltantes agrupada por fase/aba
+      - Link clicável em cada campo faltante que chama `onNavigateToAba`
+    [ ] TEC15.1.4: Estilo deve seguir padrão existente do sistema (usar classes Tailwind consistentes)
+
+  [ ] CP15.2: Integrar componente na aba de Emissão
+    [ ] TEC15.2.1: Localização: `/src/components/DadosAlunoEmissao.tsx`
+    [ ] TEC15.2.2: Substituir placeholder atual por:
+      1. Componente `CompletudeDocumentos` no topo da aba
+      2. Manter botões de impressão/preview existentes
+      3. Desabilitar botões de impressão se documento não estiver completo
+      4. Adicionar tooltip explicativo nos botões desabilitados
+
+[ ] CP16: Adicionar feedback visual aprimorado
+  [ ] CP16.1: Criar indicadores de completude na lista de alunos
+    [ ] TEC16.1.1: No componente `IndicadoresDadosAluno` (linha 279 de ListaAlunosCertificacao.tsx):
+      - Ícone de `FASE:EMISSAO_DOCUMENTOS` agora mostrará status dinâmico
+      - Tooltip mostrará "X/4 documentos prontos"
+
+  [ ] CP16.2: Adicionar badge de "pronto para emitir" quando aplicável
+    [ ] TEC16.2.1: Se `statusGeral === "completo"`, exibir badge verde discreto
+    [ ] TEC16.2.2: Badge pode aparecer ao lado do nome do aluno ou no card de emissão
+
+[ ] CP17: Criar testes para o sistema de completude
+  [ ] CP17.1: Testes unitários para `calcularCompletudeDocumento`
+    [ ] TEC17.1.1: Localização: `/tests/lib/calcularCompletude.test.ts`
+    [ ] TEC17.1.2: Casos de teste:
+      - Aluno sem nenhum dado: percentual 0, status "ausente"
+      - Aluno com dados completos: percentual 100, status "completo"
+      - Aluno com dados parciais: percentual intermediário, status "incompleto"
+      - Validar array de camposFaltantes está correto
+      - Testar cada tipo de documento (Certidão, Certificado, Diploma, Histórico)
+
+  [ ] CP17.2: Testes de integração para hook atualizado
+    [ ] TEC17.2.1: Verificar que `useAlunosCertificacao` retorna `progressoEmissaoDocumentos`
+    [ ] TEC17.2.2: Verificar que status dinâmico aparece no componente de lista
+
+[ ] CP18: Documentar decisões técnicas
+  [ ] CP18.1: Atualizar arquivo TECNICO.md
+    [ ] TEC18.1.1: Documentar motivação: garantir consistência entre def-objects e status visual
+    [ ] TEC18.1.2: Documentar arquitetura: função pura + integração via hook
+    [ ] TEC18.1.3: Documentar critérios de completude (100% dos campos obrigatórios)
+
+  [ ] CP18.2: Atualizar DRY se necessário
+    [ ] TEC18.2.1: Se componente `CompletudeDocumentos` for genérico o suficiente, documentar em `/docs/dry/`
+    [ ] TEC18.2.2: Se função `calcularCompletude` for reutilizável para outras features, documentar
+
+---
+
+### Observações Técnicas da Sessão 3
+
+#### Fonte Única da Verdade
+Os def-objects (`dadosPessoais.ts`, `dadosEscolares.ts`, `historicoEscolar.ts`) são a **única fonte da verdade** para determinar quais campos são obrigatórios para cada documento. Qualquer mudança nos requisitos de um documento deve ser feita atualizando esses arquivos.
+
+#### Critério de Completude
+Inicialmente, usaremos critério de **100% de completude** - todos os campos marcados no def-object para aquele documento devem estar preenchidos. No futuro, podemos implementar:
+- Campos "críticos" vs "opcionais"
+- Percentual configurável para liberação
+- Validação condicional (ex: alguns campos só obrigatórios para determinadas modalidades)
+
+#### Performance
+A função `calcularCompletudeEmissao` será executada para cada aluno ao carregar a lista. Considerações:
+- Manter lógica eficiente (evitar loops desnecessários)
+- Aproveitar dados já carregados pelo hook (não fazer queries adicionais)
+- Se necessário, implementar memoização no futuro
+
+#### Expansibilidade
+A estrutura permite expansão futura para:
+- Adicionar novos tipos de documentos
+- Implementar validações personalizadas por documento
+- Criar relatórios de completude da turma
+- Filtrar alunos por documentos prontos

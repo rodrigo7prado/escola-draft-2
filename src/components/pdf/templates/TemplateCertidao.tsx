@@ -11,7 +11,7 @@ export type TemplateCertidaoProps = {
   dados: DadosCertidao;
 };
 
-export function TemplateCertidao({ dados }: TemplateCertidaoProps) {
+export function CertidaoPage({ dados }: TemplateCertidaoProps) {
   const layout = MAPEAMENTO_LAYOUT_DOCUMENTOS.CERTIDAO;
   const styles = criarEstilosDocumento(layout);
 
@@ -55,24 +55,30 @@ export function TemplateCertidao({ dados }: TemplateCertidaoProps) {
     `do livro nº ${livro} desta U.E.`;
 
   return (
+    <Page
+      size={[layout.pagina.larguraPt, layout.pagina.alturaPt]}
+      style={styles.page}
+    >
+      <PdfHeader metadados={metadados} styles={styles} />
+
+      <Text style={styles.title}>CERTIDÃO</Text>
+      <Text style={styles.paragraph}>{corpo}</Text>
+      <Text style={styles.paragraph}>{registro}</Text>
+      <Text style={styles.paragraphBold}>OBSERVAÇÃO: {observacao}</Text>
+      <Text style={styles.paragraphRight}>
+        {localEmissao}, {dataEmissao}.
+      </Text>
+
+      <PdfAssinaturas metadados={metadados} styles={styles} />
+      <PdfFooterCoordenadoria metadados={metadados} styles={styles} />
+    </Page>
+  );
+}
+
+export function TemplateCertidao({ dados }: TemplateCertidaoProps) {
+  return (
     <Document>
-      <Page
-        size={[layout.pagina.larguraPt, layout.pagina.alturaPt]}
-        style={styles.page}
-      >
-        <PdfHeader metadados={metadados} styles={styles} />
-
-        <Text style={styles.title}>CERTIDÃO</Text>
-        <Text style={styles.paragraph}>{corpo}</Text>
-        <Text style={styles.paragraph}>{registro}</Text>
-        <Text style={styles.paragraphBold}>OBSERVAÇÃO: {observacao}</Text>
-        <Text style={styles.paragraphRight}>
-          {localEmissao}, {dataEmissao}.
-        </Text>
-
-        <PdfAssinaturas metadados={metadados} styles={styles} />
-        <PdfFooterCoordenadoria metadados={metadados} styles={styles} />
-      </Page>
+      <CertidaoPage dados={dados} />
     </Document>
   );
 }

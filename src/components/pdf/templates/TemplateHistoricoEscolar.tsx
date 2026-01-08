@@ -12,7 +12,7 @@ export type TemplateHistoricoEscolarProps = {
 
 type SerieLike = Record<string, unknown> & { id?: string | number };
 
-export function TemplateHistoricoEscolar({ dados }: TemplateHistoricoEscolarProps) {
+export function HistoricoEscolarPage({ dados }: TemplateHistoricoEscolarProps) {
   const layout = MAPEAMENTO_LAYOUT_DOCUMENTOS.HISTORICO;
   const styles = criarEstilosDocumento(layout);
   const tableStyles = criarEstilosTabela();
@@ -49,101 +49,107 @@ export function TemplateHistoricoEscolar({ dados }: TemplateHistoricoEscolarProp
   }
 
   return (
-    <Document>
-      <Page
-        size={[layout.pagina.larguraPt, layout.pagina.alturaPt]}
-        style={styles.page}
-      >
-        <PdfHeader metadados={metadados} styles={styles} />
+    <Page
+      size={[layout.pagina.larguraPt, layout.pagina.alturaPt]}
+      style={styles.page}
+    >
+      <PdfHeader metadados={metadados} styles={styles} />
 
-        <Text style={styles.title}>HISTÓRICO ESCOLAR</Text>
+      <Text style={styles.title}>HISTÓRICO ESCOLAR</Text>
 
-        <View style={tableStyles.infoBox}>
-          {alunoResumo.map((item) => (
-            <View key={item.label} style={tableStyles.infoItem}>
-              <Text style={tableStyles.infoLabel}>{item.label}</Text>
-              <Text style={tableStyles.infoValue}>{item.valor}</Text>
-            </View>
-          ))}
-        </View>
+      <View style={tableStyles.infoBox}>
+        {alunoResumo.map((item) => (
+          <View key={item.label} style={tableStyles.infoItem}>
+            <Text style={tableStyles.infoLabel}>{item.label}</Text>
+            <Text style={tableStyles.infoValue}>{item.valor}</Text>
+          </View>
+        ))}
+      </View>
 
-        {series.map((serie) => {
-          const serieId = String(serie.id ?? "");
-          const historicosSerie = historicosPorSerie.get(serieId) ?? [];
-          const segmento = getCampoTexto(serie, "segmento", "");
-          const serieNome = getCampoTexto(serie, "serie", "");
-          const anoLetivo = getCampoTexto(serie, "anoLetivo", "");
-          const periodo = getCampoTexto(serie, "periodoLetivo", "");
-          const cargaHoraria = formatarNumero(serie["cargaHorariaTotal"] as number | string | null, "-");
+      {series.map((serie) => {
+        const serieId = String(serie.id ?? "");
+        const historicosSerie = historicosPorSerie.get(serieId) ?? [];
+        const segmento = getCampoTexto(serie, "segmento", "");
+        const serieNome = getCampoTexto(serie, "serie", "");
+        const anoLetivo = getCampoTexto(serie, "anoLetivo", "");
+        const periodo = getCampoTexto(serie, "periodoLetivo", "");
+        const cargaHoraria = formatarNumero(serie["cargaHorariaTotal"] as number | string | null, "-");
 
-          const tituloSerie = [segmento, serieNome].filter(Boolean).join(" · ");
+        const tituloSerie = [segmento, serieNome].filter(Boolean).join(" · ");
 
-          return (
-            <View key={serieId} style={tableStyles.section}>
-              <Text style={tableStyles.sectionTitle}>{tituloSerie || "Série"}</Text>
-              <Text style={tableStyles.sectionSubtitle}>
-                Ano letivo: {anoLetivo} · Período: {periodo} · CH total: {cargaHoraria}
-              </Text>
+        return (
+          <View key={serieId} style={tableStyles.section}>
+            <Text style={tableStyles.sectionTitle}>{tituloSerie || "Série"}</Text>
+            <Text style={tableStyles.sectionSubtitle}>
+              Ano letivo: {anoLetivo} · Período: {periodo} · CH total: {cargaHoraria}
+            </Text>
 
-              <View style={tableStyles.table}>
-                <View style={tableStyles.rowHeader}>
-                  <Text style={tableStyles.cellDisciplina}>Disciplina</Text>
-                  <Text style={tableStyles.cellNota}>Pontos</Text>
-                  <Text style={tableStyles.cellNota}>CH</Text>
-                </View>
-                {historicosSerie.map((item, index) => {
-                  const disciplina = getCampoTexto(item, "componenteCurricular", "-");
-                  const pontos = formatarNumero(item["totalPontos"] as number | string | null, "-");
-                  const ch = formatarNumero(item["cargaHoraria"] as number | string | null, "-");
-                  const linhaStyle = index % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd;
-
-                  return (
-                    <View key={`${serieId}-${index}`} style={[tableStyles.row, linhaStyle]}>
-                      <Text style={tableStyles.cellDisciplina}>{disciplina}</Text>
-                      <Text style={tableStyles.cellNota}>{pontos}</Text>
-                      <Text style={tableStyles.cellNota}>{ch}</Text>
-                    </View>
-                  );
-                })}
-                {historicosSerie.length === 0 && (
-                  <View style={tableStyles.rowEmpty}>
-                    <Text style={tableStyles.cellEmpty}>Sem disciplinas registradas.</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          );
-        })}
-
-        {historicosSemSerie.length > 0 && (
-          <View style={tableStyles.section}>
-            <Text style={tableStyles.sectionTitle}>Disciplinas (sem série vinculada)</Text>
             <View style={tableStyles.table}>
               <View style={tableStyles.rowHeader}>
                 <Text style={tableStyles.cellDisciplina}>Disciplina</Text>
                 <Text style={tableStyles.cellNota}>Pontos</Text>
                 <Text style={tableStyles.cellNota}>CH</Text>
               </View>
-              {historicosSemSerie.map((item, index) => {
+              {historicosSerie.map((item, index) => {
                 const disciplina = getCampoTexto(item, "componenteCurricular", "-");
                 const pontos = formatarNumero(item["totalPontos"] as number | string | null, "-");
                 const ch = formatarNumero(item["cargaHoraria"] as number | string | null, "-");
                 const linhaStyle = index % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd;
 
                 return (
-                  <View key={`sem-serie-${index}`} style={[tableStyles.row, linhaStyle]}>
+                  <View key={`${serieId}-${index}`} style={[tableStyles.row, linhaStyle]}>
                     <Text style={tableStyles.cellDisciplina}>{disciplina}</Text>
                     <Text style={tableStyles.cellNota}>{pontos}</Text>
                     <Text style={tableStyles.cellNota}>{ch}</Text>
                   </View>
                 );
               })}
+              {historicosSerie.length === 0 && (
+                <View style={tableStyles.rowEmpty}>
+                  <Text style={tableStyles.cellEmpty}>Sem disciplinas registradas.</Text>
+                </View>
+              )}
             </View>
           </View>
-        )}
+        );
+      })}
 
-        <PdfFooterCoordenadoria metadados={metadados} styles={styles} />
-      </Page>
+      {historicosSemSerie.length > 0 && (
+        <View style={tableStyles.section}>
+          <Text style={tableStyles.sectionTitle}>Disciplinas (sem série vinculada)</Text>
+          <View style={tableStyles.table}>
+            <View style={tableStyles.rowHeader}>
+              <Text style={tableStyles.cellDisciplina}>Disciplina</Text>
+              <Text style={tableStyles.cellNota}>Pontos</Text>
+              <Text style={tableStyles.cellNota}>CH</Text>
+            </View>
+            {historicosSemSerie.map((item, index) => {
+              const disciplina = getCampoTexto(item, "componenteCurricular", "-");
+              const pontos = formatarNumero(item["totalPontos"] as number | string | null, "-");
+              const ch = formatarNumero(item["cargaHoraria"] as number | string | null, "-");
+              const linhaStyle = index % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd;
+
+              return (
+                <View key={`sem-serie-${index}`} style={[tableStyles.row, linhaStyle]}>
+                  <Text style={tableStyles.cellDisciplina}>{disciplina}</Text>
+                  <Text style={tableStyles.cellNota}>{pontos}</Text>
+                  <Text style={tableStyles.cellNota}>{ch}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      )}
+
+      <PdfFooterCoordenadoria metadados={metadados} styles={styles} />
+    </Page>
+  );
+}
+
+export function TemplateHistoricoEscolar({ dados }: TemplateHistoricoEscolarProps) {
+  return (
+    <Document>
+      <HistoricoEscolarPage dados={dados} />
     </Document>
   );
 }

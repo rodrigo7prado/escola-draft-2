@@ -15,7 +15,7 @@ export type TemplateDiplomaProps = {
   dados: DadosDiploma;
 };
 
-export function TemplateDiploma({ dados }: TemplateDiplomaProps) {
+export function DiplomaPage({ dados }: TemplateDiplomaProps) {
   const layout = MAPEAMENTO_LAYOUT_DOCUMENTOS.DIPLOMA;
   const styles = criarEstilosDocumento(layout);
 
@@ -61,24 +61,30 @@ export function TemplateDiploma({ dados }: TemplateDiplomaProps) {
     `do livro nº ${livro} desta U.E.`;
 
   return (
+    <Page
+      size={[layout.pagina.larguraPt, layout.pagina.alturaPt]}
+      style={styles.page}
+    >
+      <PdfHeader metadados={metadados} styles={styles} />
+
+      <Text style={styles.title}>DIPLOMA</Text>
+      <Text style={styles.paragraph}>{corpo}</Text>
+      <Text style={styles.paragraph}>{registro}</Text>
+      <Text style={styles.paragraphBold}>OBSERVAÇÃO: {observacao}</Text>
+      <Text style={styles.paragraphRight}>
+        {localEmissao}, {dataEmissao}
+      </Text>
+
+      <PdfAssinaturas metadados={metadados} styles={styles} />
+      <PdfFooterCoordenadoria metadados={metadados} styles={styles} />
+    </Page>
+  );
+}
+
+export function TemplateDiploma({ dados }: TemplateDiplomaProps) {
+  return (
     <Document>
-      <Page
-        size={[layout.pagina.larguraPt, layout.pagina.alturaPt]}
-        style={styles.page}
-      >
-        <PdfHeader metadados={metadados} styles={styles} />
-
-        <Text style={styles.title}>DIPLOMA</Text>
-        <Text style={styles.paragraph}>{corpo}</Text>
-        <Text style={styles.paragraph}>{registro}</Text>
-        <Text style={styles.paragraphBold}>OBSERVAÇÃO: {observacao}</Text>
-        <Text style={styles.paragraphRight}>
-          {localEmissao}, {dataEmissao}
-        </Text>
-
-        <PdfAssinaturas metadados={metadados} styles={styles} />
-        <PdfFooterCoordenadoria metadados={metadados} styles={styles} />
-      </Page>
+      <DiplomaPage dados={dados} />
     </Document>
   );
 }

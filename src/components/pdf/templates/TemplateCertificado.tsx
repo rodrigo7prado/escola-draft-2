@@ -15,7 +15,7 @@ export type TemplateCertificadoProps = {
   dados: DadosCertificado;
 };
 
-export function TemplateCertificado({ dados }: TemplateCertificadoProps) {
+export function CertificadoPage({ dados }: TemplateCertificadoProps) {
   const layout = MAPEAMENTO_LAYOUT_DOCUMENTOS.CERTIFICADO;
   const styles = criarEstilosDocumento(layout);
 
@@ -61,24 +61,30 @@ export function TemplateCertificado({ dados }: TemplateCertificadoProps) {
     `do livro nº ${livro} desta U.E.`;
 
   return (
+    <Page
+      size={[layout.pagina.larguraPt, layout.pagina.alturaPt]}
+      style={styles.page}
+    >
+      <PdfHeader metadados={metadados} styles={styles} />
+
+      <Text style={styles.title}>CERTIFICADO</Text>
+      <Text style={styles.paragraph}>{corpo}</Text>
+      <Text style={styles.paragraph}>{registro}</Text>
+      <Text style={styles.paragraphBold}>OBSERVAÇÃO: {observacao}</Text>
+      <Text style={styles.paragraphRight}>
+        {localEmissao}, {dataEmissao}.
+      </Text>
+
+      <PdfAssinaturas metadados={metadados} styles={styles} />
+      <PdfFooterCoordenadoria metadados={metadados} styles={styles} />
+    </Page>
+  );
+}
+
+export function TemplateCertificado({ dados }: TemplateCertificadoProps) {
+  return (
     <Document>
-      <Page
-        size={[layout.pagina.larguraPt, layout.pagina.alturaPt]}
-        style={styles.page}
-      >
-        <PdfHeader metadados={metadados} styles={styles} />
-
-        <Text style={styles.title}>CERTIFICADO</Text>
-        <Text style={styles.paragraph}>{corpo}</Text>
-        <Text style={styles.paragraph}>{registro}</Text>
-        <Text style={styles.paragraphBold}>OBSERVAÇÃO: {observacao}</Text>
-        <Text style={styles.paragraphRight}>
-          {localEmissao}, {dataEmissao}.
-        </Text>
-
-        <PdfAssinaturas metadados={metadados} styles={styles} />
-        <PdfFooterCoordenadoria metadados={metadados} styles={styles} />
-      </Page>
+      <CertificadoPage dados={dados} />
     </Document>
   );
 }

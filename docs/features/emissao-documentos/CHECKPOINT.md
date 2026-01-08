@@ -171,7 +171,7 @@ Esta sessão cria código específico da feature (configuração de metadados e 
 
 ---
 
-[ ] CP12: Implementar a UI da emissão de documentos na aba de documentos do aluno
-  [ ] CP12.1: Botão "Imprimir" para cada documento
-  [ ] CP12.2: Botão "Imprimir Todos os Documentos"
-  [ ] CP12.3: Cada documento poderá ser visualizado através do modal já abstraído em components/ui.
+[x] CP12: Implementar a UI da emissão de documentos na aba de documentos do aluno
+  [x] CP12.1: Botão "Imprimir" para cada documento
+  [x] CP12.2: Botão "Imprimir Todos os Documentos"
+  [x] CP12.3: Cada documento poderá ser visualizado através do modal já abstraído em components/ui.

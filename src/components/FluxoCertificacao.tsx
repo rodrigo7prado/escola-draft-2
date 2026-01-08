@@ -137,6 +137,7 @@ export function FluxoCertificacao() {
     return (
       <DadosAlunoEmissao
         aluno={alunoDetalhes}
+        series={seriesCursadas}
         isLoading={isLoadingDetalhes}
         erro={erroDetalhes}
       />

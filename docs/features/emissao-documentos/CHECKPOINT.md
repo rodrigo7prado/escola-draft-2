@@ -90,19 +90,20 @@ Esta sessão cria código específico da feature (configuração de metadados e 
 
 ### Checkpoints para def-objects dos Documentos: Certidão, Certificado, Diploma e Histórico Escolar
 
-[ ] TEC4: Para o caso do Histórico Escolar, adaptar os checkpoints conforme necessário
+[x] TEC4: Para o caso do Histórico Escolar, adaptar os checkpoints conforme necessário (baseado em DadosAlunoHistorico.tsx)
 
-[ ] CP4: Analisar modelos PDF (ou componente React) e mapear campos para def-objects
-  [ ] CP4.1: Atualizar def-objects com campos do Documento em questão
+[x] CP4: Analisar modelos PDF (ou componente React) e mapear campos para def-objects
+  [x] CP4.1: Registrar mapeamento dos campos do documento para def-objects
 
-[ ] CP5: Procedimento detalhado para cada documento:
-  [ ] TEC5.1: Abrir e estudar modelo oficial
-  [ ] TEC5.2: Identificar TODOS os campos variáveis (marcados como XXXXXXXXXX, similar ou análogo)
-  [ ] TEC5.3: Criar objeto de associação entre esses campos e os de Def-objects;
-  [ ] TEC5.4: Verificar alinhamento com def-objects
-    [ ] TEC5.4.1: Para CADA campo mapeado, verificar se existe no def-object correspondente
-    [ ] TEC5.4.2: Se campo NÃO existe, documentar discrepância (pode indicar necessidade de atualização do schema)
-    [ ] TEC5.4.3: Preparar lista final de campos que serão atualizados
+[x] CP5: Procedimento detalhado para cada documento:
+  [x] TEC5.1: Abrir e estudar modelo oficial
+  [x] TEC5.2: Identificar TODOS os campos variáveis (marcados como XXXXXXXXXX, similar ou análogo)
+  [x] TEC5.3: Criar objeto de associação entre esses campos e os de Def-objects
+    [x] TEC5.3.1: Mapeamento registrado em `docs/features/emissao-documentos/MAPEAMENTO.md`
+  [x] TEC5.4: Verificar alinhamento com def-objects
+    [x] TEC5.4.1: Para CADA campo mapeado, verificar se existe no def-object correspondente
+    [x] TEC5.4.2: Se campo NAO existe, documentar discrepancia (pode indicar necessidade de atualizacao do schema)
+    [x] TEC5.4.3: Preparar lista final de campos que serao atualizados
 
 [ ] CP6: Atualizar def-objects com campos de Documento em questão
   [ ] CP6.1: Atualizar dadosPessoais.ts

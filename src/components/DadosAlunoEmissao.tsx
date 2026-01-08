@@ -44,6 +44,7 @@ type DocumentoSelecionado = TipoDocumento | "TODOS";
 
 const ALTURA_PREVIEW = "70vh";
 
+// [FEAT:emissao-documentos_TEC1] Modal com PDFViewer para prévia de documentos
 export function DadosAlunoEmissao({
   aluno,
   series,
@@ -78,6 +79,7 @@ export function DadosAlunoEmissao({
     return resultado;
   }, [seriesOrdenadas]);
 
+  // [FEAT:emissao-documentos_TEC1.3] Dados combinam aluno, série e metadados institucionais
   const dadosCertidao = useMemo<DadosCertidao>(
     () => ({
       aluno: alunoDados,
@@ -160,6 +162,7 @@ export function DadosAlunoEmissao({
         ? `Prévia · ${documentoAtivo.titulo}`
         : "Prévia";
 
+  // [FEAT:emissao-documentos_TEC1.2] Document combinado com múltiplas páginas para impressão em lote
   const documentoLote = useMemo(
     () => (
       <Document>

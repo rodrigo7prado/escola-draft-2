@@ -55,21 +55,42 @@ Sessão 1 (implemetanção de Fluxos F1, F2) - Feature: [NOME_DA_FEATURE]
 
 ## Checkpoints
 [ ] CP1: Implementação do recurso X
-  [ ] CPP1.1: Subtarefa A do recurso X
-    [ ] T1.1.1: Eventual detalhe técnico contextual 1 da Subtarefa A
-    [ ] T1.1.2: Eventual detalhe técnico contextual 2 da Subtarefa A
+  [ ] CP1.1: Subtarefa A do recurso X
+    [ ] T1.1.1: Eventual detalhe técnico de implementação 1 da Subtarefa A
+    [ ] T1.1.2: Eventual detalhe técnico de implementação 2 da Subtarefa A
   [ ] CP1.2: Subtarefa B do recurso X
     [ ] CP1.2.1: Bifurcação 1 da Subtarefa B
     [ ] CP1.2.2: Bifurcação 2 da Subtarefa B
-      [ ] T1.2.2.1: Eventual detalhe técnico contextual da Bifurcação 2
+      [ ] T1.2.2.1: Eventual detalhe técnico de implementação da Bifurcação 2
+      [ ] → TEC1.2: Referência a decisão técnica documentada (ver TECNICO.md)
 [ ] CP2: Implementação do recurso Y
 ...
 
+**IMPORTANTE - Convenção de Nomenclatura:**
+- **T*** (em CHECKPOINT.md) = detalhes técnicos de **implementação** (o que/como fazer)
+- **TEC*** (em TECNICO.md + código) = **decisões técnicas** documentadas com rastreabilidade
+- Use `→ TEC1.2` em checkpoints para indicar que há decisão técnica documentada
+
 # Formato de modelo TECNICO
-T1. Resumo da motivação técnica por trás da decisão 1
-  T1.1 Resumo em subitem
-  ...
-T2. Resumo da motivação técnica por trás da decisão 2
+
+## TEC1: Título da decisão técnica 1
+
+**Motivação:**
+Por que esta decisão foi tomada (contexto de negócio, requisitos, limitações)
+
+**Alternativas Consideradas:**
+- ❌ Alternativa A: Por que não foi escolhida
+- ❌ Alternativa B: Por que não foi escolhida
+- ✅ Solução escolhida: Por que foi a melhor opção
+
+**Referências no Código:**
+- `caminho/arquivo.ts:linha` - Descrição breve da implementação
+- `caminho/outro.tsx:linha` - Descrição breve da implementação
+
+### TEC1.1: Subitem da decisão técnica (se necessário)
+Detalhamento específico de aspecto da decisão principal
+
+## TEC2: Título da decisão técnica 2
 ...
 
 # WORKFLOW
@@ -88,10 +109,43 @@ Ao final de cada sessão de trabalho:
 3 - Também será o momento de se discutir as próximas etapas da feature, criando novos checkpoints para a próxima sessão de trabalho.
 
 ## WORKFLOW TÉCNICO
-1 - O arquivo TECNICO da feature terá por objetivo **resumir** as *motivações* das decisões técnicas tomadas para a implementação dos checkpoints.
-2 - O principal objetivo do arquivo TECNICO é permitir que a IA compreenda a MOTIVAÇÃO técnica por trás das decisões tomadas, para que possa auxiliar em futuras refatorações.
-3 - Na finalização de uma sessão de trabalho que será continuada posteriormente, o arquivo TECNICO deve ser atualizado com um resumo enxuto das tais motivações técnicas.
-4 - O arquivo TECNICO não deve ser um manual de implementação detalhado, mas sim um resumo das decisões técnicas tomadas.
+
+### Propósito do TECNICO.md
+1 - O arquivo TECNICO.md documenta **decisões técnicas não-óbvias** com suas motivações, alternativas consideradas e referências ao código implementado.
+2 - Cada decisão técnica recebe um identificador **TEC*** que será referenciado diretamente no código através de comentários.
+3 - O objetivo é criar **rastreabilidade bidirecional**: do código para a documentação e vice-versa.
+
+### Sistema de Referências Cruzadas
+1 - No código, decisões técnicas são marcadas com comentários no formato:
+   ```typescript
+   // [FEAT:nome-feature_TEC1.2] Resumo breve (1 linha) da decisão
+   ```
+
+2 - No TECNICO.md, cada entrada TEC*** inclui:
+   - **Motivação**: Por que esta decisão foi tomada
+   - **Alternativas Consideradas**: O que não foi feito e por quê
+   - **Referências no Código**: Onde está implementado (arquivo:linha)
+
+3 - No CHECKPOINT.md, use `→ TEC1.2` para indicar que checkpoint tem decisão técnica documentada
+
+### Quando Criar uma Entrada TEC
+**SIM** - Criar entrada TEC para:
+- Escolhas arquiteturais (padrões, bibliotecas, estruturas)
+- Trade-offs significativos (performance vs legibilidade, etc)
+- Soluções não-óbvias para problemas complexos
+- Decisões que precisarão ser revisitadas ou explicadas no futuro
+
+**NÃO** - Não criar TEC para:
+- Convenções padrão da linguagem/framework
+- Código autoexplicativo
+- Decisões triviais ou óbvias
+
+### Workflow de Atualização
+Ao final de cada sessão de trabalho:
+1 - Identificar decisões técnicas não-óbvias implementadas
+2 - Para cada decisão, adicionar entrada TEC*** no TECNICO.md com formato completo
+3 - Adicionar comentários `[FEAT:*_TEC*]` no código implementado
+4 - Garantir referências cruzadas (código → doc e doc → código)
 
 # TEMPLATE DOS ARQUIVOS
 ## Template de arquivo de CHECKPOINT

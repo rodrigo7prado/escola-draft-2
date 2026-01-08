@@ -1,10 +1,14 @@
+// [FEAT:emissao-documentos_TEC2] Uso de @react-pdf/renderer para geração de PDFs
 import { Document, Page, Text } from "@react-pdf/renderer";
 import type { DadosCertidao } from "@/lib/core/data/gestao-alunos/documentos/types";
+// [FEAT:emissao-documentos_TEC4] Layout centralizado em MAPEAMENTO_LAYOUT_DOCUMENTOS
 import { MAPEAMENTO_LAYOUT_DOCUMENTOS } from "@/lib/core/data/gestao-alunos/documentos/layout";
+// [FEAT:emissao-documentos_TEC5] Componentes PDF comuns reutilizados
 import { PdfAssinaturas } from "@/components/pdf/common/PdfAssinaturas";
 import { PdfFooterCoordenadoria } from "@/components/pdf/common/PdfFooterCoordenadoria";
 import { PdfHeader } from "@/components/pdf/common/PdfHeader";
 import { criarEstilosDocumento } from "@/components/pdf/common/styles";
+// [FEAT:emissao-documentos_TEC6] Formatters centralizados para consistência
 import { formatarData, getCampoTexto } from "@/components/pdf/common/formatters";
 
 export type TemplateCertidaoProps = {

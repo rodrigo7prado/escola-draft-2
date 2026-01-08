@@ -108,9 +108,9 @@ export type ModelosPrismaFluxo =
 
 ```typescript
 type DocEmissao =
-  | "Certificado/Certidão"
-  | "Apenas Certificado"
-  | "Apenas Certidão"
+  | "Certidão"
+  | "Certificado"
+  | "Diploma"
   | "Histórico Escolar";
 ```
 
@@ -153,12 +153,12 @@ type DocEmissao =
 **Campos principais:**
 
 **Aluno:**
-- matricula: ["Certificado/Certidão"]
-- nome: ["Certificado/Certidão", "Histórico Escolar"]
-- sexo: ["Certificado/Certidão", "Histórico Escolar"]
-- dataNascimento: ["Certificado/Certidão", "Histórico Escolar"]
-- nacionalidade: ["Certificado/Certidão"]
-- naturalidade: ["Certificado/Certidão"]
+- matricula: ["Certidão", "Certificado"]
+- nome: ["Certidão", "Certificado", "Diploma", "Histórico Escolar"]
+- sexo: ["Certidão", "Certificado", "Diploma", "Histórico Escolar"]
+- dataNascimento: ["Certidão", "Certificado", "Diploma", "Histórico Escolar"]
+- nacionalidade: ["Certidão", "Certificado", "Diploma"]
+- naturalidade: ["Certidão", "Certificado", "Diploma"]
 
 **SerieCursada:**
 - anoLetivo, modalidade, serie, turno, periodoLetivo

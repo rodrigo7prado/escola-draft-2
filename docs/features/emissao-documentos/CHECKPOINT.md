@@ -105,31 +105,32 @@ Esta sessão cria código específico da feature (configuração de metadados e 
     [x] TEC5.4.2: Se campo NAO existe, documentar discrepancia (pode indicar necessidade de atualizacao do schema)
     [x] TEC5.4.3: Preparar lista final de campos que serao atualizados
 
-[ ] CP6: Atualizar def-objects com campos de Documento em questão
-  [ ] CP6.1: Atualizar dadosPessoais.ts
-    [ ] TEC6.1.1: Para CADA campo do Aluno identificado no CP5.2, adicionar "Certidão" ao array existente
-    [ ] TEC6.1.2: Exemplo: `nome: [...arrayAtual, "Certidão"]`
-    [ ] TEC6.1.3: Exemplo: `rg: [...arrayAtual, "Certidão"]`
-    [ ] TEC6.1.4: IMPORTANTE: Não remover valores existentes, apenas adicionar "Certidão", ou o outro documento em questão
-  [ ] CP6.2: E assim fazer para atualizar dadosEscolares.ts e historicoEscolar.ts se necessário
+[x] CP6: Atualizar def-objects com campos de Documento em questão
+  [x] CP6.1: Atualizar dadosPessoais.ts
+    [x] TEC6.1.1: Para CADA campo do Aluno identificado no CP5.2, adicionar "Certidão" ao array existente
+    [x] TEC6.1.2: Exemplo: `nome: [...arrayAtual, "Certidão"]`
+    [x] TEC6.1.3: Exemplo: `rg: [...arrayAtual, "Certidão"]`
+    [x] TEC6.1.4: IMPORTANTE: Não remover valores existentes, apenas adicionar "Certidão", ou o outro documento em questão
+  [x] CP6.2: E assim fazer para atualizar dadosEscolares.ts e historicoEscolar.ts se necessário
 
-[ ] CP7: Repetir o processo para os outros documentos (Certificado e Diploma)
-  [ ] TEC7.1: Seguir o mesmo procedimento detalhado no CP5
-  [ ] TEC7.2: Atualizar def-objects conforme necessário
-  [ ] TEC7.3: Check nos quatro documentos:
-    [ ] TEC7.3.1: Certidão
-    [ ] TEC7.3.2: Certificado
-    [ ] TEC7.3.3: Diploma
-    [ ] TEC7.3.4: Histórico Escolar
+[x] CP7: Repetir o processo para os outros documentos (Certificado e Diploma)
+  [x] TEC7.1: Seguir o mesmo procedimento detalhado no CP5
+  [x] TEC7.2: Atualizar def-objects conforme necessário
+  [x] TEC7.3: Check nos quatro documentos:
+    [x] TEC7.3.1: Certidão
+    [x] TEC7.3.2: Certificado
+    [x] TEC7.3.3: Diploma
+    [x] TEC7.3.4: Histórico Escolar
 
 ### Checkpoints para DEFINIÇÃO DE LAYOUT dos Documentos
 
-[ ] CP8: Criar um objeto com os quatro documentos para DEFINIÇÃO DE LAYOUT:
-  [ ] TEC8.1: Avaliar cuidadosamente o Modelo PDF de cada documento
-  [ ] TEC8.2: Identificar os campos variáveis em cada modelo
-  [ ] TEC8.3: Mapear esses campos para os campos existentes nos def-objects
-  [ ] TEC8.4: Documentar o mapeamento no objeto TypeScript
-    [ ] TEC8.4.1: Estrutura sugerida:
+[x] CP8: Criar um objeto com os quatro documentos para DEFINIÇÃO DE LAYOUT:
+  [x] TEC8.1: Avaliar cuidadosamente o Modelo PDF de cada documento
+  [x] TEC8.2: Identificar os campos variáveis em cada modelo
+  [x] TEC8.3: Mapear esses campos para os campos existentes nos def-objects
+  [x] TEC8.4: Documentar o mapeamento no objeto TypeScript
+    [x] TEC8.4.1: Arquivo criado em `src/lib/core/data/gestao-alunos/documentos/layout.ts`
+    [x] TEC8.4.2: Estrutura sugerida (referencia):
       ```typescript
       interface MapeamentoLayoutDocumento {
         [tipoDocumento: string]: {
@@ -151,14 +152,14 @@ Esta sessão cria código específico da feature (configuração de metadados e 
       };
       ```
 
-[ ] CP9: Definir diretivas de layout específicas para cada documento
-  [ ] TEC9.1: Para cada documento, definir:
-    [ ] TEC9.1.1: Margens (superior, inferior, lateral)
-    [ ] TEC9.1.2: Espaçamento entre linhas
-    [ ] TEC9.1.3: Tamanhos de fonte para títulos, subtítulos, corpo do texto
-    [ ] TEC9.1.4: Alinhamento de texto (justificado, centralizado, etc.)
-    [ ] TEC9.1.5: Estilos de cabeçalho e rodapé (incluir brasões, informações institucionais)
-  [ ] TEC9.2: Documentar essas diretivas no objeto MAPEAMENTO_LAYOUT_DOCUMENTOS
+[x] CP9: Definir diretivas de layout específicas para cada documento
+  [x] TEC9.1: Para cada documento, definir:
+    [x] TEC9.1.1: Margens (superior, inferior, lateral)
+    [x] TEC9.1.2: Espaçamento entre linhas
+    [x] TEC9.1.3: Tamanhos de fonte para títulos, subtítulos, corpo do texto
+    [x] TEC9.1.4: Alinhamento de texto (justificado, centralizado, etc.)
+    [x] TEC9.1.5: Estilos de cabeçalho e rodapé (incluir brasões, informações institucionais)
+  [x] TEC9.2: Documentar essas diretivas no objeto MAPEAMENTO_LAYOUT_DOCUMENTOS
 
 [ ] CP10: Criar estrutura de pastas para componentes PDF e aplicar componentização segundo as diretivas de layout
   [ ] TEC10.1: Criar pastas

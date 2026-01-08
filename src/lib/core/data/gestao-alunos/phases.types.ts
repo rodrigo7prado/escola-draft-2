@@ -43,9 +43,9 @@ export const phaseSchema = {
 >
 
 export type DocEmissao =
-  | "Certificado/Certidão"
-  | "Apenas Certificado"
-  | "Apenas Certidão"
+  | "Certidão"
+  | "Certificado"
+  | "Diploma"
   | "Histórico Escolar"
 
 export type PhaseSchema<T extends Phase> = {

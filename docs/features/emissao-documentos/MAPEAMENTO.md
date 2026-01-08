@@ -6,6 +6,7 @@
 - historicoEscolar.SerieCursada.*
 - historicoEscolar.HistoricoEscolar.*
 - INSTITUICAO_CONFIG.*
+- Modalidades consideradas: NOVO ENSINO MEDIO, ENSINO MEDIO REGULAR (NEJA e outras nao consideradas)
 
 ## CERTIDAO (EMR)
 
@@ -18,7 +19,7 @@
 - aluno.naturalidade -> dadosPessoais.Aluno.naturalidade
 - aluno.dataNascimento -> dadosPessoais.Aluno.dataNascimento
 - aluno.dataConclusaoEnsinoMedio -> dadosPessoais.Aluno.dataConclusaoEnsinoMedio
-- documento.cursoSegmento (MERGEFIELD F15) -> dadosEscolares.SerieCursada.segmento (ou curso)
+- documento.cursoSegmento (MERGEFIELD F15) -> dadosEscolares.SerieCursada.segmento (valores: NOVO ENSINO MEDIO | ENSINO MEDIO REGULAR)
 - documento.decreto (MERGEFIELD F18) -> INSTITUICAO_CONFIG.legislacao.decretos.EMR
 - documento.observacao (MERGEFIELD F25) -> dadosPessoais.Aluno.observacoes
 - documento.secretariaEscolar (MERGEFIELD F27) -> INSTITUICAO_CONFIG.secretariaEscolar
@@ -26,6 +27,7 @@
 - documento.livroNumero -> INSTITUICAO_CONFIG.livros.CERTIDAO
 
 ### Discrepancias (sem fonte em def-objects)
+- TODO: definir fonte dos campos de registro e emissao
 - documento.registroNumero
 - documento.registroFolha
 - documento.dataEmissao
@@ -42,7 +44,7 @@
 - aluno.naturalidade -> dadosPessoais.Aluno.naturalidade
 - aluno.dataNascimento -> dadosPessoais.Aluno.dataNascimento
 - aluno.dataConclusaoEnsinoMedio -> dadosPessoais.Aluno.dataConclusaoEnsinoMedio
-- documento.cursoSegmento (MERGEFIELD F12) -> dadosEscolares.SerieCursada.segmento (ou curso)
+- documento.cursoSegmento (MERGEFIELD F12) -> dadosEscolares.SerieCursada.segmento (valores: NOVO ENSINO MEDIO | ENSINO MEDIO REGULAR)
 - documento.decreto (MERGEFIELD F18) -> INSTITUICAO_CONFIG.legislacao.decretos.EMR
 - documento.cargaHorariaTotalHorasAula -> dadosEscolares.SerieCursada.cargaHorariaTotal
 - documento.cargaHorariaTotalHoras -> derivado de cargaHorariaTotal
@@ -52,10 +54,12 @@
 - documento.livroNumero -> INSTITUICAO_CONFIG.livros.CERTIFICADO
 
 ### Discrepancias (sem fonte em def-objects)
+- TODO: definir fonte dos campos de registro e emissao
 - documento.registroNumero
 - documento.registroFolha
 - documento.dataEmissao
 - documento.localEmissao (ex: Rio de Janeiro)
+- TODO: definir conversao para horas (hoje so existe horas/aula)
 - documento.cargaHorariaTotalHoras (nao ha campo dedicado)
 
 ## DIPLOMA
@@ -70,7 +74,7 @@
 - aluno.naturalidade -> dadosPessoais.Aluno.naturalidade
 - aluno.dataNascimento -> dadosPessoais.Aluno.dataNascimento
 - aluno.dataConclusaoEnsinoMedio -> dadosPessoais.Aluno.dataConclusaoEnsinoMedio
-- documento.cursoSegmento (MERGEFIELD F12) -> dadosEscolares.SerieCursada.segmento (ou curso)
+- documento.cursoSegmento (MERGEFIELD F12) -> dadosEscolares.SerieCursada.segmento (valores: NOVO ENSINO MEDIO | ENSINO MEDIO REGULAR)
 - documento.decreto (MERGEFIELD F18) -> INSTITUICAO_CONFIG.legislacao.decretos.DIPLOMA
 - documento.cargaHorariaTotalHorasAula -> dadosEscolares.SerieCursada.cargaHorariaTotal
 - documento.cargaHorariaTotalHoras -> derivado de cargaHorariaTotal
@@ -80,10 +84,12 @@
 - documento.diretor (MERGEFIELD F35) -> INSTITUICAO_CONFIG.diretor
 
 ### Discrepancias (sem fonte em def-objects)
+- TODO: definir fonte dos campos de registro e emissao
 - documento.registroNumero
 - documento.registroFolha
 - documento.dataEmissao
 - documento.localEmissao (ex: Rio de Janeiro)
+- TODO: definir conversao para horas (hoje so existe horas/aula)
 - documento.cargaHorariaTotalHoras (nao ha campo dedicado)
 
 ## HISTORICO ESCOLAR (baseado em DadosAlunoHistorico.tsx)
@@ -105,4 +111,5 @@
 - historico.cargaHoraria -> historicoEscolar.HistoricoEscolar.cargaHoraria
 
 ### Discrepancias (sem fonte em def-objects)
+- TODO: decidir se historicoEscolar deve conter Aluno ou se usa dadosPessoais
 - historicoEscolar nao contem secao Aluno; usar dadosPessoais ou adicionar Aluno em historicoEscolar

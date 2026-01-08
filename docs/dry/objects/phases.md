@@ -80,9 +80,9 @@ export type Phase = (typeof PHASES)[number];
 - **Modelos envolvidos:** (nenhum - fase de processamento)
 
 **Modos de emissão:**
-1. Certificado/Certidão
-2. Apenas Certificado
-3. Apenas Certidão
+1. Certidão
+2. Certificado
+3. Diploma
 4. Histórico Escolar
 
 ## Estrutura de Dados
@@ -124,9 +124,9 @@ export type PhaseSchema<T extends Phase> = {
 ```typescript
 const dadosEscolares: PhaseSchema<"FASE:DADOS_ESCOLARES"> = {
   Aluno: {
-    nome: ["Certificado/Certidão", "Histórico Escolar"],
-    sexo: ["Certificado/Certidão", "Histórico Escolar"],
-    dataNascimento: ["Certificado/Certidão", "Histórico Escolar"],
+    nome: ["Certidão", "Certificado", "Diploma", "Histórico Escolar"],
+    sexo: ["Certidão", "Certificado", "Diploma", "Histórico Escolar"],
+    dataNascimento: ["Certidão", "Certificado", "Diploma", "Histórico Escolar"],
     // ...
   },
   SerieCursada: {
@@ -151,9 +151,9 @@ Tipos de documentos que podem ser emitidos:
 
 ```typescript
 type DocEmissao =
-  | "Certificado/Certidão"
-  | "Apenas Certificado"
-  | "Apenas Certidão"
+  | "Certidão"
+  | "Certificado"
+  | "Diploma"
   | "Histórico Escolar";
 ```
 

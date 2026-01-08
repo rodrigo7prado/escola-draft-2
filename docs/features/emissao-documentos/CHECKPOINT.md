@@ -167,7 +167,7 @@ Esta sessão cria código específico da feature (configuração de metadados e 
     [x] TEC10.1.2: `/src/components/pdf/common/` (componentes comuns)
     [x] TEC10.1.3: `/src/components/pdf/templates/` (templates de documentos)
 
-[ ] CP11: Enfim construir os templates de cada documento
+[x] CP11: Enfim construir os templates de cada documento
 
 ---
 

@@ -119,6 +119,7 @@ export function DadosAlunoEmissao({
     [alunoDados, seriesOrdenadas, historicosPorSerie]
   );
 
+  // [FEAT:emissao-documentos_TEC1.1] Lista de documentos para impressão individual
   const documentos = useMemo(
     () => [
       {

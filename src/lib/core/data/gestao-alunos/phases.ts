@@ -1,3 +1,4 @@
+// [FEAT:emissao-documentos_TEC3] def-objects como fonte única da verdade para campos de documentos
 import dadosEscolares from "./def-objects/dadosEscolares"
 import dadosPessoais from "./def-objects/dadosPessoais"
 import historicoEscolar from "./def-objects/historicoEscolar"

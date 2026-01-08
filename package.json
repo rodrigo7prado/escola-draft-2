@@ -18,6 +18,7 @@
     "backup-db": "bash scripts/backup-db.sh",
     "restore-db": "bash scripts/restore-db.sh",
     "validate:dry": "node scripts/validate-dry.js",
+    "validate:tec": "bash scripts/validate-tec.sh",
     "summary:dry": "node scripts/generate-dry-summary.js",
     "search:dry": "node scripts/search-dry.js",
     "dry:dup": "node scripts/dry-detect-dup.js"

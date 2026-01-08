@@ -112,8 +112,8 @@ Realizamos uma **auditoria completa** da implementação de dados escolares vers
   [!] IMPLEMENTADO MAS COM GAP-5: Endpoint existe mas não usa o parser
 
 [ ] CP2.2: Definição dos campos escolares
-  [x] TEC2.1.1: DTO criado (`SerieCursadaDTO`)
-  [x] TEC2.1.2: Modelo Prisma criado (`SerieCursada`)
+  [x] T2.1.1: DTO criado (`SerieCursadaDTO`)
+  [x] T2.1.2: Modelo Prisma criado (`SerieCursada`)
 
 [ ] CP3: Implementação do processamento de parsers
   [ ] CP3.1: Expansão de `detectarTipoPagina` (NÃO implementado)
@@ -124,8 +124,8 @@ Realizamos uma **auditoria completa** da implementação de dados escolares vers
       [ ] REFACT3.2.3: Extrair outras funções compartilhadas
 
 [ ] CP4: Testes do parser (PARCIAL)
-  [~] TEC4.1: Testes básicos existem, falta teste com template completo
-  [ ] TEC4.2: Testes de integração E2E não existem
+  [~] T4.1: Testes básicos existem, falta teste com template completo
+  [ ] T4.2: Testes de integração E2E não existem
 
 [ ] CP5: Modal de confirmação (NÃO IMPLEMENTADO - GAP-10)
 

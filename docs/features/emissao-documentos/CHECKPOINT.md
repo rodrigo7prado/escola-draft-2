@@ -16,60 +16,60 @@ Esta sessão cria código específico da feature (configuração de metadados e 
 
 [ ] CP1: Instalar e configurar bibliotecas necessárias
   [x] CP1.1: Instalar biblioteca de geração de PDF
-    [x] TEC1.1.1: Executar `pnpm add @react-pdf/renderer`
-    [x] TEC1.1.2: `@react-pdf/renderer` já inclui tipos (`index.d.ts`), sem necessidade de `@types/react-pdf`
-    [x] TEC1.1.3: Peer dependency suporta React 19 (compatível com Next.js 16)
+    [x] T1.1.1: Executar `pnpm add @react-pdf/renderer`
+    [x] T1.1.2: `@react-pdf/renderer` já inclui tipos (`index.d.ts`), sem necessidade de `@types/react-pdf`
+    [x] T1.1.3: Peer dependency suporta React 19 (compatível com Next.js 16)
   [x] CP1.2: Instalar biblioteca de geração de DOCX
-    [x] TEC1.2.1: Pesquisar biblioteca adequada (sugestão: `docx`)
-    [x] TEC1.2.2: Executar `pnpm add docx`
-    [x] TEC1.2.3: README confirma uso em React/Node com exemplos
+    [x] T1.2.1: Pesquisar biblioteca adequada (sugestão: `docx`)
+    [x] T1.2.2: Executar `pnpm add docx`
+    [x] T1.2.3: README confirma uso em React/Node com exemplos
   [ ] CP1.3: Instalar bibliotecas auxiliares se necessário
-    [ ] TEC1.3.1: Para merge de PDFs: `pnpm add pdf-lib` (se necessário)
-    [ ] TEC1.3.2: Para manipulação de imagens: verificar se precisa de biblioteca adicional
+    [ ] T1.3.1: Para merge de PDFs: `pnpm add pdf-lib` (se necessário)
+    [ ] T1.3.2: Para manipulação de imagens: verificar se precisa de biblioteca adicional
 
 [x] CP2: Criar arquivo de configuração de metadados institucionais
   [x] CP2.1: Criar arquivo de configuração
-    [x] TEC2.1.1: Localização: `/src/config/instituicao.ts`
-    [x] TEC2.1.2: Exportar constante `INSTITUICAO_CONFIG`
-    [x] TEC2.1.3: Incluir campos: nome, governo, secretaria, diretor, secretariaEscolar, coordenadoria, regional, cnpj, endereco
+    [x] T2.1.1: Localização: `/src/config/instituicao.ts`
+    [x] T2.1.2: Exportar constante `INSTITUICAO_CONFIG`
+    [x] T2.1.3: Incluir campos: nome, governo, secretaria, diretor, secretariaEscolar, coordenadoria, regional, cnpj, endereco
   [x] CP2.2: Definir tipo TypeScript para metadados
-    [x] TEC2.2.1: Criar tipo `MetadadosInstituicao` com todos os campos
-    [x] TEC2.2.2: Incluir tipo `Legislacao` com: leiLDB, resolucaoSEEDUC, decretos (objeto com chaves por modalidade)
-    [x] TEC2.2.3: Incluir tipo `Brasoes` com caminhos para imagens
+    [x] T2.2.1: Criar tipo `MetadadosInstituicao` com todos os campos
+    [x] T2.2.2: Incluir tipo `Legislacao` com: leiLDB, resolucaoSEEDUC, decretos (objeto com chaves por modalidade)
+    [x] T2.2.3: Incluir tipo `Brasoes` com caminhos para imagens
   [x] CP2.3: Preencher dados de exemplo (conforme modelo PDF)
-    [x] TEC2.3.1: `governo: "Governo do Estado do Rio de Janeiro"`
-    [x] TEC2.3.2: `secretaria: "Secretaria de Estado de Educação"`
-    [x] TEC2.3.3: `nome: "COLÉGIO ESTADUAL SENOR ABRAVANEL"`
-    [x] TEC2.3.4: `coordenadoria: "Coordenadoria de Inspeção Escolar"`
-    [x] TEC2.3.5: `regional: "Regional Metropolitana VI"`
-    [x] TEC2.3.6: Legislação:
+    [x] T2.3.1: `governo: "Governo do Estado do Rio de Janeiro"`
+    [x] T2.3.2: `secretaria: "Secretaria de Estado de Educação"`
+    [x] T2.3.3: `nome: "COLÉGIO ESTADUAL SENOR ABRAVANEL"`
+    [x] T2.3.4: `coordenadoria: "Coordenadoria de Inspeção Escolar"`
+    [x] T2.3.5: `regional: "Regional Metropolitana VI"`
+    [x] T2.3.6: Legislação:
       - `leiLDB: "Lei Federal nº 9.394/1996"`
       - `resolucaoSEEDUC: "Resolução SEEDUC nº 6.346/2025"`
       - `decretos.EMR: "Decreto nº 804 de 15 de julho de 1976"`
       - `decretos.NEJA: "Decreto nº 43.723/2012"`
       - `decretos.DIPLOMA: "Decreto nº 43.723/2012"`
-    [x] TEC2.3.7: Livros de registro:
+    [x] T2.3.7: Livros de registro:
       - `livros.CERTIDAO: "1-A"`
       - `livros.CERTIFICADO: "57-A"`
       - `livros.DIPLOMA: "25"`
   [x] CP2.4: Configurar caminhos para imagens
-    [x] TEC2.4.1: `brasoes.brasil: "/documentos-emissao/brasoes/brasao-brasil.jpg"`
-    [x] TEC2.4.2: `brasoes.rj: "/documentos-emissao/brasoes/brasao-rj.jpg"`
-    [x] TEC2.4.3: Imagens movidas para `/public/documentos-emissao/brasoes`
+    [x] T2.4.1: `brasoes.brasil: "/documentos-emissao/brasoes/brasao-brasil.jpg"`
+    [x] T2.4.2: `brasoes.rj: "/documentos-emissao/brasoes/brasao-rj.jpg"`
+    [x] T2.4.3: Imagens movidas para `/public/documentos-emissao/brasoes`
 
 [x] CP3: Criar estrutura de tipos TypeScript para documentos
   [x] CP3.1: Criar arquivo de tipos
-    [x] TEC3.1.1: Localização: `/src/lib/core/data/gestao-alunos/documentos/types.ts`
-    [x] TEC3.1.2: Exportar `type TipoDocumento = "CERTIDAO" | "CERTIFICADO" | "HISTORICO" | "DIPLOMA"`
-    [x] TEC3.1.3: Exportar `type StatusDisponibilidade = "disponivel" | "indisponivel" | "parcial"`
+    [x] T3.1.1: Localização: `/src/lib/core/data/gestao-alunos/documentos/types.ts`
+    [x] T3.1.2: Exportar `type TipoDocumento = "CERTIDAO" | "CERTIFICADO" | "HISTORICO" | "DIPLOMA"`
+    [x] T3.1.3: Exportar `type StatusDisponibilidade = "disponivel" | "indisponivel" | "parcial"`
   [x] CP3.2: Definir tipos para dados de cada documento
-    [x] TEC3.2.1: Criar `interface DadosCertidao` com campos: aluno (dados básicos), serie (dados da série cursada), metadados (instituição)
-    [x] TEC3.2.2: Criar `interface DadosCertificado` estendendo DadosCertidao + campos de conclusão
-    [x] TEC3.2.3: Criar `interface DadosDiploma` similar a DadosCertificado
-    [x] TEC3.2.4: Criar `interface DadosHistoricoEscolar` com: aluno, series[], historicosPorSerie[], metadados
+    [x] T3.2.1: Criar `interface DadosCertidao` com campos: aluno (dados básicos), serie (dados da série cursada), metadados (instituição)
+    [x] T3.2.2: Criar `interface DadosCertificado` estendendo DadosCertidao + campos de conclusão
+    [x] T3.2.3: Criar `interface DadosDiploma` similar a DadosCertificado
+    [x] T3.2.4: Criar `interface DadosHistoricoEscolar` com: aluno, series[], historicosPorSerie[], metadados
   [x] CP3.3: Definir tipo para resultado de validação
-    [x] TEC3.3.1: Criar `interface ResultadoValidacao` com: disponivel, percentual, camposFaltantes[]
-    [x] TEC3.3.2: Criar `interface CampoFaltante` com: campo, label, categoria, abaId
+    [x] T3.3.1: Criar `interface ResultadoValidacao` com: disponivel, percentual, camposFaltantes[]
+    [x] T3.3.2: Criar `interface CampoFaltante` com: campo, label, categoria, abaId
 
 ---
 
@@ -90,47 +90,47 @@ Esta sessão cria código específico da feature (configuração de metadados e 
 
 ### Checkpoints para def-objects dos Documentos: Certidão, Certificado, Diploma e Histórico Escolar
 
-[x] TEC4: Para o caso do Histórico Escolar, adaptar os checkpoints conforme necessário (baseado em DadosAlunoHistorico.tsx)
+[x] T4: Para o caso do Histórico Escolar, adaptar os checkpoints conforme necessário (baseado em DadosAlunoHistorico.tsx)
 
 [x] CP4: Analisar modelos PDF (ou componente React) e mapear campos para def-objects
   [x] CP4.1: Registrar mapeamento dos campos do documento para def-objects
 
 [x] CP5: Procedimento detalhado para cada documento:
-  [x] TEC5.1: Abrir e estudar modelo oficial
-  [x] TEC5.2: Identificar TODOS os campos variáveis (marcados como XXXXXXXXXX, similar ou análogo)
-  [x] TEC5.3: Criar objeto de associação entre esses campos e os de Def-objects
-    [x] TEC5.3.1: Mapeamento registrado em `docs/features/emissao-documentos/MAPEAMENTO.md`
-  [x] TEC5.4: Verificar alinhamento com def-objects
-    [x] TEC5.4.1: Para CADA campo mapeado, verificar se existe no def-object correspondente
-    [x] TEC5.4.2: Se campo NAO existe, documentar discrepancia (pode indicar necessidade de atualizacao do schema)
-    [x] TEC5.4.3: Preparar lista final de campos que serao atualizados
+  [x] T5.1: Abrir e estudar modelo oficial
+  [x] T5.2: Identificar TODOS os campos variáveis (marcados como XXXXXXXXXX, similar ou análogo)
+  [x] T5.3: Criar objeto de associação entre esses campos e os de Def-objects
+    [x] T5.3.1: Mapeamento registrado em `docs/features/emissao-documentos/MAPEAMENTO.md`
+  [x] T5.4: Verificar alinhamento com def-objects
+    [x] T5.4.1: Para CADA campo mapeado, verificar se existe no def-object correspondente
+    [x] T5.4.2: Se campo NAO existe, documentar discrepancia (pode indicar necessidade de atualizacao do schema)
+    [x] T5.4.3: Preparar lista final de campos que serao atualizados
 
 [x] CP6: Atualizar def-objects com campos de Documento em questão
   [x] CP6.1: Atualizar dadosPessoais.ts
-    [x] TEC6.1.1: Para CADA campo do Aluno identificado no CP5.2, adicionar "Certidão" ao array existente
-    [x] TEC6.1.2: Exemplo: `nome: [...arrayAtual, "Certidão"]`
-    [x] TEC6.1.3: Exemplo: `rg: [...arrayAtual, "Certidão"]`
-    [x] TEC6.1.4: IMPORTANTE: Não remover valores existentes, apenas adicionar "Certidão", ou o outro documento em questão
+    [x] T6.1.1: Para CADA campo do Aluno identificado no CP5.2, adicionar "Certidão" ao array existente
+    [x] T6.1.2: Exemplo: `nome: [...arrayAtual, "Certidão"]`
+    [x] T6.1.3: Exemplo: `rg: [...arrayAtual, "Certidão"]`
+    [x] T6.1.4: IMPORTANTE: Não remover valores existentes, apenas adicionar "Certidão", ou o outro documento em questão
   [x] CP6.2: E assim fazer para atualizar dadosEscolares.ts e historicoEscolar.ts se necessário
 
 [x] CP7: Repetir o processo para os outros documentos (Certificado e Diploma)
-  [x] TEC7.1: Seguir o mesmo procedimento detalhado no CP5
-  [x] TEC7.2: Atualizar def-objects conforme necessário
-  [x] TEC7.3: Check nos quatro documentos:
-    [x] TEC7.3.1: Certidão
-    [x] TEC7.3.2: Certificado
-    [x] TEC7.3.3: Diploma
-    [x] TEC7.3.4: Histórico Escolar
+  [x] T7.1: Seguir o mesmo procedimento detalhado no CP5
+  [x] T7.2: Atualizar def-objects conforme necessário
+  [x] T7.3: Check nos quatro documentos:
+    [x] T7.3.1: Certidão
+    [x] T7.3.2: Certificado
+    [x] T7.3.3: Diploma
+    [x] T7.3.4: Histórico Escolar
 
 ### Checkpoints para DEFINIÇÃO DE LAYOUT dos Documentos
 
 [x] CP8: Criar um objeto com os quatro documentos para DEFINIÇÃO DE LAYOUT:
-  [x] TEC8.1: Avaliar cuidadosamente o Modelo PDF de cada documento
-  [x] TEC8.2: Identificar os campos variáveis em cada modelo
-  [x] TEC8.3: Mapear esses campos para os campos existentes nos def-objects
-  [x] TEC8.4: Documentar o mapeamento no objeto TypeScript
-    [x] TEC8.4.1: Arquivo criado em `src/lib/core/data/gestao-alunos/documentos/layout.ts`
-    [x] TEC8.4.2: Estrutura sugerida (referencia):
+  [x] T8.1: Avaliar cuidadosamente o Modelo PDF de cada documento
+  [x] T8.2: Identificar os campos variáveis em cada modelo
+  [x] T8.3: Mapear esses campos para os campos existentes nos def-objects
+  [x] T8.4: Documentar o mapeamento no objeto TypeScript
+    [x] T8.4.1: Arquivo criado em `src/lib/core/data/gestao-alunos/documentos/layout.ts`
+    [x] T8.4.2: Estrutura sugerida (referencia):
       ```typescript
       interface MapeamentoLayoutDocumento {
         [tipoDocumento: string]: {
@@ -153,19 +153,19 @@ Esta sessão cria código específico da feature (configuração de metadados e 
       ```
 
 [x] CP9: Definir diretivas de layout específicas para cada documento
-  [x] TEC9.1: Para cada documento, definir:
-    [x] TEC9.1.1: Margens (superior, inferior, lateral)
-    [x] TEC9.1.2: Espaçamento entre linhas
-    [x] TEC9.1.3: Tamanhos de fonte para títulos, subtítulos, corpo do texto
-    [x] TEC9.1.4: Alinhamento de texto (justificado, centralizado, etc.)
-    [x] TEC9.1.5: Estilos de cabeçalho e rodapé (incluir brasões, informações institucionais)
-  [x] TEC9.2: Documentar essas diretivas no objeto MAPEAMENTO_LAYOUT_DOCUMENTOS
+  [x] T9.1: Para cada documento, definir:
+    [x] T9.1.1: Margens (superior, inferior, lateral)
+    [x] T9.1.2: Espaçamento entre linhas
+    [x] T9.1.3: Tamanhos de fonte para títulos, subtítulos, corpo do texto
+    [x] T9.1.4: Alinhamento de texto (justificado, centralizado, etc.)
+    [x] T9.1.5: Estilos de cabeçalho e rodapé (incluir brasões, informações institucionais)
+  [x] T9.2: Documentar essas diretivas no objeto MAPEAMENTO_LAYOUT_DOCUMENTOS
 
 [x] CP10: Criar estrutura de pastas para componentes PDF e aplicar componentização segundo as diretivas de layout
-  [x] TEC10.1: Criar pastas
-    [x] TEC10.1.1: `/src/components/pdf/` (pasta raiz)
-    [x] TEC10.1.2: `/src/components/pdf/common/` (componentes comuns)
-    [x] TEC10.1.3: `/src/components/pdf/templates/` (templates de documentos)
+  [x] T10.1: Criar pastas
+    [x] T10.1.1: `/src/components/pdf/` (pasta raiz)
+    [x] T10.1.2: `/src/components/pdf/common/` (componentes comuns)
+    [x] T10.1.3: `/src/components/pdf/templates/` (templates de documentos)
 
 [x] CP11: Enfim construir os templates de cada documento
 
@@ -199,32 +199,32 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
 
 [ ] CP13: Criar função utilitária de análise de completude por documento
   [ ] CP13.1: Criar arquivo de utilitários
-    [ ] TEC13.1.1: Localização: `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts`
-    [ ] TEC13.1.2: Exportar tipo `CompletudeDocumento` com campos:
+    [ ] T13.1.1: Localização: `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts`
+    [ ] T13.1.2: Exportar tipo `CompletudeDocumento` com campos:
       - `documento: DocEmissao` - tipo do documento
       - `status: PhaseStatus` - status calculado (completo/incompleto/ausente)
       - `percentual: number` - percentual de completude (0-100)
       - `camposPreenchidos: number` - quantidade de campos preenchidos
       - `totalCampos: number` - quantidade total de campos obrigatórios
       - `camposFaltantes: CampoFaltante[]` - array de campos faltantes
-    [ ] TEC13.1.3: Exportar tipo `CampoFaltante` com campos:
+    [ ] T13.1.3: Exportar tipo `CampoFaltante` com campos:
       - `campo: string` - nome técnico do campo
       - `label: string` - nome legível do campo
       - `tabela: string` - tabela de origem (Aluno, SerieCursada, HistoricoEscolar)
       - `fase: Phase` - fase a que pertence o campo
-    [ ] TEC13.1.4: Exportar tipo `ResumoCompletudeEmissao` com campos:
+    [ ] T13.1.4: Exportar tipo `ResumoCompletudeEmissao` com campos:
       - `statusGeral: PhaseStatus` - status consolidado de todos os documentos
       - `documentosProntos: number` - quantidade de documentos com status "completo"
       - `totalDocumentos: number` - sempre 4 (Certidão, Certificado, Diploma, Histórico)
       - `porDocumento: Record<DocEmissao, CompletudeDocumento>` - detalhes por documento
 
   [ ] CP13.2: Implementar função `calcularCompletudeDocumento`
-    [ ] TEC13.2.1: Assinatura: `function calcularCompletudeDocumento(documento: DocEmissao, dadosAluno: DadosAlunoCompleto): CompletudeDocumento`
-    [ ] TEC13.2.2: Parâmetro `DadosAlunoCompleto` deve incluir:
+    [ ] T13.2.1: Assinatura: `function calcularCompletudeDocumento(documento: DocEmissao, dadosAluno: DadosAlunoCompleto): CompletudeDocumento`
+    [ ] T13.2.2: Parâmetro `DadosAlunoCompleto` deve incluir:
       - Campos de `Aluno` (tabela principal)
       - Array de `SerieCursada[]` com históricos
       - Campos derivados necessários
-    [ ] TEC13.2.3: Lógica da função:
+    [ ] T13.2.3: Lógica da função:
       1. Importar os 3 def-objects (dadosPessoais, dadosEscolares, historicoEscolar)
       2. Para cada def-object, iterar sobre suas tabelas (ex: `dadosPessoais.Aluno`)
       3. Para cada campo da tabela, verificar se o array de documentos inclui o `documento` solicitado
@@ -236,14 +236,14 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
          - `completo`: percentual === 100
          - `ausente`: percentual === 0
          - `incompleto`: 0 < percentual < 100
-    [ ] TEC13.2.4: Tratamento especial para campos de arrays (SerieCursada, HistoricoEscolar):
+    [ ] T13.2.4: Tratamento especial para campos de arrays (SerieCursada, HistoricoEscolar):
       - Se o documento exige campos de SerieCursada, verificar se existe ao menos 1 registro
       - Se o documento exige campos de HistoricoEscolar, verificar se existem registros vinculados
       - Para Histórico Escolar especificamente, validar que existam componentes curriculares
 
   [ ] CP13.3: Implementar função `calcularCompletudeEmissao`
-    [ ] TEC13.3.1: Assinatura: `function calcularCompletudeEmissao(dadosAluno: DadosAlunoCompleto): ResumoCompletudeEmissao`
-    [ ] TEC13.3.2: Lógica da função:
+    [ ] T13.3.1: Assinatura: `function calcularCompletudeEmissao(dadosAluno: DadosAlunoCompleto): ResumoCompletudeEmissao`
+    [ ] T13.3.2: Lógica da função:
       1. Chamar `calcularCompletudeDocumento` para cada um dos 4 tipos de documento
       2. Montar objeto `porDocumento` com resultado de cada documento
       3. Contar quantos documentos têm `status === "completo"`
@@ -252,26 +252,26 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
          - `ausente`: se todos os 4 documentos estão ausentes
          - `incompleto`: casos intermediários
       5. Retornar `ResumoCompletudeEmissao` completo
-    [ ] TEC13.3.3: Adicionar testes unitários básicos para esta função
+    [ ] T13.3.3: Adicionar testes unitários básicos para esta função
 
 [ ] CP14: Integrar cálculo de completude no hook useAlunosCertificacao
   [ ] CP14.1: Atualizar tipo `AlunoCertificacao`
-    [ ] TEC14.1.1: Localização: `/src/hooks/useAlunosCertificacao.ts`
-    [ ] TEC14.1.2: Adicionar campo: `progressoEmissaoDocumentos: ResumoCompletudeEmissao`
+    [ ] T14.1.1: Localização: `/src/hooks/useAlunosCertificacao.ts`
+    [ ] T14.1.2: Adicionar campo: `progressoEmissaoDocumentos: ResumoCompletudeEmissao`
 
   [ ] CP14.2: Modificar função `obterAlunosCertificacao`
-    [ ] TEC14.2.1: Após buscar alunos do banco, para cada aluno:
+    [ ] T14.2.1: Após buscar alunos do banco, para cada aluno:
       1. Montar objeto `DadosAlunoCompleto` com dados necessários
       2. Chamar `calcularCompletudeEmissao(dadosAluno)`
       3. Adicionar resultado ao campo `progressoEmissaoDocumentos`
-    [ ] TEC14.2.2: Garantir que a query Prisma inclui todos os campos necessários:
+    [ ] T14.2.2: Garantir que a query Prisma inclui todos os campos necessários:
       - Todos os campos de `Aluno` usados nos def-objects
       - Incluir `seriesCursadas` com seus campos
       - Incluir `historicos` dentro de `seriesCursadas`
 
   [ ] CP14.3: Atualizar função `montarStatusPorFase` no componente ListaAlunosCertificacao
-    [ ] TEC14.3.1: Localização: `/src/components/ListaAlunosCertificacao.tsx` (linha 285)
-    [ ] TEC14.3.2: Substituir status fixo de `FASE:EMISSAO_DOCUMENTOS`:
+    [ ] T14.3.1: Localização: `/src/components/ListaAlunosCertificacao.tsx` (linha 285)
+    [ ] T14.3.2: Substituir status fixo de `FASE:EMISSAO_DOCUMENTOS`:
       ```typescript
       // ANTES (linha 310-314):
       "FASE:EMISSAO_DOCUMENTOS": {
@@ -290,11 +290,11 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
 
 [ ] CP15: Criar componente de detalhamento de completude por documento
   [ ] CP15.1: Criar componente `CompletudeDocumentos`
-    [ ] TEC15.1.1: Localização: `/src/components/CompletudeDocumentos.tsx`
-    [ ] TEC15.1.2: Props:
+    [ ] T15.1.1: Localização: `/src/components/CompletudeDocumentos.tsx`
+    [ ] T15.1.2: Props:
       - `completude: ResumoCompletudeEmissao` - dados de completude
       - `onNavigateToAba?: (abaId: string) => void` - callback para navegar para aba com campo faltante
-    [ ] TEC15.1.3: UI deve exibir:
+    [ ] T15.1.3: UI deve exibir:
       - Card para cada um dos 4 tipos de documento
       - Ícone de status (verde/amarelo/vermelho) por documento
       - Título do documento (ex: "Certidão de Conclusão")
@@ -302,11 +302,11 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
       - Botão "Ver detalhes" que expande lista de campos faltantes
       - Lista de campos faltantes agrupada por fase/aba
       - Link clicável em cada campo faltante que chama `onNavigateToAba`
-    [ ] TEC15.1.4: Estilo deve seguir padrão existente do sistema (usar classes Tailwind consistentes)
+    [ ] T15.1.4: Estilo deve seguir padrão existente do sistema (usar classes Tailwind consistentes)
 
   [ ] CP15.2: Integrar componente na aba de Emissão
-    [ ] TEC15.2.1: Localização: `/src/components/DadosAlunoEmissao.tsx`
-    [ ] TEC15.2.2: Substituir placeholder atual por:
+    [ ] T15.2.1: Localização: `/src/components/DadosAlunoEmissao.tsx`
+    [ ] T15.2.2: Substituir placeholder atual por:
       1. Componente `CompletudeDocumentos` no topo da aba
       2. Manter botões de impressão/preview existentes
       3. Desabilitar botões de impressão se documento não estiver completo
@@ -314,18 +314,18 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
 
 [ ] CP16: Adicionar feedback visual aprimorado
   [ ] CP16.1: Criar indicadores de completude na lista de alunos
-    [ ] TEC16.1.1: No componente `IndicadoresDadosAluno` (linha 279 de ListaAlunosCertificacao.tsx):
+    [ ] T16.1.1: No componente `IndicadoresDadosAluno` (linha 279 de ListaAlunosCertificacao.tsx):
       - Ícone de `FASE:EMISSAO_DOCUMENTOS` agora mostrará status dinâmico
       - Tooltip mostrará "X/4 documentos prontos"
 
   [ ] CP16.2: Adicionar badge de "pronto para emitir" quando aplicável
-    [ ] TEC16.2.1: Se `statusGeral === "completo"`, exibir badge verde discreto
-    [ ] TEC16.2.2: Badge pode aparecer ao lado do nome do aluno ou no card de emissão
+    [ ] T16.2.1: Se `statusGeral === "completo"`, exibir badge verde discreto
+    [ ] T16.2.2: Badge pode aparecer ao lado do nome do aluno ou no card de emissão
 
 [ ] CP17: Criar testes para o sistema de completude
   [ ] CP17.1: Testes unitários para `calcularCompletudeDocumento`
-    [ ] TEC17.1.1: Localização: `/tests/lib/calcularCompletude.test.ts`
-    [ ] TEC17.1.2: Casos de teste:
+    [ ] T17.1.1: Localização: `/tests/lib/calcularCompletude.test.ts`
+    [ ] T17.1.2: Casos de teste:
       - Aluno sem nenhum dado: percentual 0, status "ausente"
       - Aluno com dados completos: percentual 100, status "completo"
       - Aluno com dados parciais: percentual intermediário, status "incompleto"
@@ -333,18 +333,18 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
       - Testar cada tipo de documento (Certidão, Certificado, Diploma, Histórico)
 
   [ ] CP17.2: Testes de integração para hook atualizado
-    [ ] TEC17.2.1: Verificar que `useAlunosCertificacao` retorna `progressoEmissaoDocumentos`
-    [ ] TEC17.2.2: Verificar que status dinâmico aparece no componente de lista
+    [ ] T17.2.1: Verificar que `useAlunosCertificacao` retorna `progressoEmissaoDocumentos`
+    [ ] T17.2.2: Verificar que status dinâmico aparece no componente de lista
 
 [ ] CP18: Documentar decisões técnicas
   [ ] CP18.1: Atualizar arquivo TECNICO.md
-    [ ] TEC18.1.1: Documentar motivação: garantir consistência entre def-objects e status visual
-    [ ] TEC18.1.2: Documentar arquitetura: função pura + integração via hook
-    [ ] TEC18.1.3: Documentar critérios de completude (100% dos campos obrigatórios)
+    [ ] T18.1.1: Documentar motivação: garantir consistência entre def-objects e status visual
+    [ ] T18.1.2: Documentar arquitetura: função pura + integração via hook
+    [ ] T18.1.3: Documentar critérios de completude (100% dos campos obrigatórios)
 
   [ ] CP18.2: Atualizar DRY se necessário
-    [ ] TEC18.2.1: Se componente `CompletudeDocumentos` for genérico o suficiente, documentar em `/docs/dry/`
-    [ ] TEC18.2.2: Se função `calcularCompletude` for reutilizável para outras features, documentar
+    [ ] T18.2.1: Se componente `CompletudeDocumentos` for genérico o suficiente, documentar em `/docs/dry/`
+    [ ] T18.2.2: Se função `calcularCompletude` for reutilizável para outras features, documentar
 
 ---
 

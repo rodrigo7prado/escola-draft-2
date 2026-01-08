@@ -56,12 +56,12 @@ Sessão 1 (implemetanção de Fluxos F1, F2) - Feature: [NOME_DA_FEATURE]
 ## Checkpoints
 [ ] CP1: Implementação do recurso X
   [ ] CPP1.1: Subtarefa A do recurso X
-    [ ] TEC1.1.1: Eventual detalhe técnico contextual 1 da Subtarefa A
-    [ ] TEC1.1.2: Eventual detalhe técnico contextual 2 da Subtarefa A
+    [ ] T1.1.1: Eventual detalhe técnico contextual 1 da Subtarefa A
+    [ ] T1.1.2: Eventual detalhe técnico contextual 2 da Subtarefa A
   [ ] CP1.2: Subtarefa B do recurso X
     [ ] CP1.2.1: Bifurcação 1 da Subtarefa B
     [ ] CP1.2.2: Bifurcação 2 da Subtarefa B
-      [ ] TEC1.2.2.1: Eventual detalhe técnico contextual da Bifurcação 2
+      [ ] T1.2.2.1: Eventual detalhe técnico contextual da Bifurcação 2
 [ ] CP2: Implementação do recurso Y
 ...
 

@@ -76,8 +76,8 @@ No início de cada sessão, liste os componentes DRY que planeja usar:
 3. **Documentar no checkpoint a decisão técnica**
    ```markdown
    [x] CP3: Implementar menu de ações do aluno
-     [x] TEC3.1: Usar [DRY.UI:OVERFLOW_MENU] para menu kebab
-     [x] TEC3.2: Props customizadas: items=[editar, deletar, histórico]
+     [x] T3.1: Usar [DRY.UI:OVERFLOW_MENU] para menu kebab
+     [x] T3.2: Props customizadas: items=[editar, deletar, histórico]
    ```
 
 ### Quando Criar Novo Componente DRY
@@ -97,10 +97,10 @@ Se identificar que precisa criar um novo componente DRY:
 3. **Documentar no checkpoint**
    ```markdown
    [x] CP5: Criar componente de filtro dropdown
-     [x] TEC5.1: 2º uso de filtro dropdown (1º: filtro turmas)
-     [x] TEC5.2: Criar [DRY.UI:FILTRO_DROPDOWN] genérico
-     [x] TEC5.3: Documentado em docs/dry/ui/ui-components.dry.md
-     [x] TEC5.4: Refatorar filtro turmas para usar novo componente
+     [x] T5.1: 2º uso de filtro dropdown (1º: filtro turmas)
+     [x] T5.2: Criar [DRY.UI:FILTRO_DROPDOWN] genérico
+     [x] T5.3: Documentado em docs/dry/ui/ui-components.dry.md
+     [x] T5.4: Refatorar filtro turmas para usar novo componente
    ```
 
 4. **Adicionar à seção "Componentes DRY Usados"**
@@ -155,8 +155,8 @@ Sessão 3 - Feature: Gestão de Alunos
 
 ## Checkpoints
 [x] CP1: Adicionar menu de ações em cada item de aluno
-  [x] TEC1.1: Usar [DRY.UI:OVERFLOW_MENU] com items customizados
-  [x] TEC1.2: Ações: editar, deletar, ver histórico
+  [x] T1.1: Usar [DRY.UI:OVERFLOW_MENU] com items customizados
+  [x] T1.2: Ações: editar, deletar, ver histórico
 ```
 
 **TECNICO.md:**
@@ -182,12 +182,12 @@ Sessão 5 - Feature: Gestão de Alunos
 
 ## Checkpoints
 [x] CP3: Implementar confirmação de exclusão de aluno
-  [x] TEC3.1: 2º uso de modal de confirmação (1º: deletar turma)
-  [x] TEC3.2: Criar [DRY.UI:MODAL_CONFIRMACAO] genérico
-  [x] TEC3.3: Props: title, message, confirmText, onConfirm, variant
-  [x] TEC3.4: Documentado em docs/dry/ui/ui-components.dry.md
-  [x] TEC3.5: Refatorar modal de deletar turma para usar componente
-  [x] TEC3.6: Executado pnpm summary:dry
+  [x] T3.1: 2º uso de modal de confirmação (1º: deletar turma)
+  [x] T3.2: Criar [DRY.UI:MODAL_CONFIRMACAO] genérico
+  [x] T3.3: Props: title, message, confirmText, onConfirm, variant
+  [x] T3.4: Documentado em docs/dry/ui/ui-components.dry.md
+  [x] T3.5: Refatorar modal de deletar turma para usar componente
+  [x] T3.6: Executado pnpm summary:dry
 ```
 
 **TECNICO.md:**
@@ -216,9 +216,9 @@ Sessão 2 - Feature: Importação de Alunos
 
 ## Checkpoints
 [x] CP4: Validar formato de matrícula
-  [x] TEC4.1: Lógica específica do sistema (ano + sequencial + dígito)
-  [x] TEC4.2: Não generalizar (regras de negócio específicas)
-  [x] TEC4.3: Implementar função validateMatricula() no módulo
+  [x] T4.1: Lógica específica do sistema (ano + sequencial + dígito)
+  [x] T4.2: Não generalizar (regras de negócio específicas)
+  [x] T4.3: Implementar função validateMatricula() no módulo
 ```
 
 **TECNICO.md:**
@@ -240,12 +240,12 @@ Use colchetes para referenciar IDs DRY:
 
 ```markdown
 ✅ CORRETO:
-[x] TEC2.1: Usar [DRY.UI:OVERFLOW_MENU] para menu de ações
-[x] TEC3.2: Aplicar [DRY.OBJECT:PHASES] para validação
+[x] T2.1: Usar [DRY.UI:OVERFLOW_MENU] para menu de ações
+[x] T3.2: Aplicar [DRY.OBJECT:PHASES] para validação
 
 ❌ INCORRETO:
-[x] TEC2.1: Usar componente OverflowMenu
-[x] TEC3.2: Usar objeto PHASES
+[x] T2.1: Usar componente OverflowMenu
+[x] T3.2: Usar objeto PHASES
 ```
 
 ### Documentando Criação de DRY
@@ -254,11 +254,11 @@ Quando criar novo componente DRY:
 
 ```markdown
 [x] CP5: Criar filtro de dropdown genérico
-  [x] TEC5.1: Identificado padrão (2º uso)
-  [x] TEC5.2: Criar [DRY.UI:FILTRO_DROPDOWN]
-  [x] TEC5.3: Documentar em docs/dry/ui/ui-components.dry.md
-  [x] TEC5.4: Atualizar summary: pnpm summary:dry
-  [x] TEC5.5: Refatorar 1º uso (filtro turmas)
+  [x] T5.1: Identificado padrão (2º uso)
+  [x] T5.2: Criar [DRY.UI:FILTRO_DROPDOWN]
+  [x] T5.3: Documentar em docs/dry/ui/ui-components.dry.md
+  [x] T5.4: Atualizar summary: pnpm summary:dry
+  [x] T5.5: Refatorar 1º uso (filtro turmas)
 ```
 
 ### Documentando Decisão de NÃO Usar DRY
@@ -267,9 +267,9 @@ Quando decidir criar código específico:
 
 ```markdown
 [x] CP7: Implementar cálculo de média escolar
-  [x] TEC7.1: Lógica específica (regras do sistema de notas)
-  [x] TEC7.2: Não criar DRY (1º uso, regras de domínio)
-  [x] TEC7.3: Documentar: considerar DRY se repetir em outras features
+  [x] T7.1: Lógica específica (regras do sistema de notas)
+  [x] T7.2: Não criar DRY (1º uso, regras de domínio)
+  [x] T7.3: Documentar: considerar DRY se repetir em outras features
 ```
 
 ---

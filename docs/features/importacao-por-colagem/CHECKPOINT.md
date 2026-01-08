@@ -25,8 +25,8 @@ Sessão 1 (implemetanção de Colagem de Dados Pessoais) - Feature: Importação
 [x] CP1: Implementação da estrutura de UI com os botões "Copiar matrícula" e "Ativar colagem";
 [x] CP2: Implementação do endpoint para salvar os dados pessoais colados no backend;
   [x] CPP2.1: Definição dos campos a serem salvos no banco de dados (nome, data de nascimento, sexo, etc);
-    [x] TEC2.1.1: Criação de objeto reutilizável para representar os campos de dados pessoais colados;
-    [x] TEC2.1.2: Implementação dos modelos de dados no Prisma e criação das migrações necessárias para ambos os ambientes (desenvolvimento e teste) com `migrate:all`;
+    [x] T2.1.1: Criação de objeto reutilizável para representar os campos de dados pessoais colados;
+    [x] T2.1.2: Implementação dos modelos de dados no Prisma e criação das migrações necessárias para ambos os ambientes (desenvolvimento e teste) com `migrate:all`;
 [x] CP3: Implementação do parser `parseDadosPessoais` para processar os dados colados, de acordo com as orientações em [`REUSO.md`](REUSO.md);
 [x] CP4: Implementação do pré-processamento
   [x] CP4.1: Remoção de cabeçalhos, rodapés e menus do texto colado;
@@ -40,14 +40,14 @@ Sessão 1 (implemetanção de Colagem de Dados Pessoais) - Feature: Importação
 Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importação por Colagem de Dados Escolares
 
 [x] CP1: Implementação do parser `parseDadosEscolares` para processar os dados escolares colados, reutilizando a lógica do parser de dados pessoais conforme as orientações em [`REUSO.md`](REUSO.md);
-  [x] TEC_1.1: Dada a complexidade do parse de dados escolares, foi necessário criar uma subfeature específica para o pré-processamento em um checkpoint separado, constando em [](./parse-dados-escolares/WORKFLOW.md);
+  [x] T_1.1: Dada a complexidade do parse de dados escolares, foi necessário criar uma subfeature específica para o pré-processamento em um checkpoint separado, constando em [](./parse-dados-escolares/WORKFLOW.md);
 [x] CP2: Extensão do endpoint existente para salvar os dados escolares colados no backend;
-  [x] TEC2.1: Questão: Como será a extensão do endpoint para suportar tanto dados pessoais quanto escolares? Será um endpoint único com lógica condicional ou endpoints separados?
+  [x] T2.1: Questão: Como será a extensão do endpoint para suportar tanto dados pessoais quanto escolares? Será um endpoint único com lógica condicional ou endpoints separados?
   [x] CP2.2: Definição dos campos escolares a serem salvos no banco de dados;
-    [x] TEC2.1.1: Criação de objeto reutilizável para representar os campos de dados escolares colados;
-      [x] TEC2.1.1.1: Criar o objeto de dados escolares colados, reutilizando a estrutura do objeto de dados pessoais colados;
-      [x] TEC2.1.1.2: Definir quais campos escolares serão armazenados no sistema e quais serão ignorados;
-    [x] TEC2.1.2: Implementação dos modelos de dados no Prisma e criação das migrações necessárias para ambos os ambientes (desenvolvimento e teste) com `migrate:all`;
+    [x] T2.1.1: Criação de objeto reutilizável para representar os campos de dados escolares colados;
+      [x] T2.1.1.1: Criar o objeto de dados escolares colados, reutilizando a estrutura do objeto de dados pessoais colados;
+      [x] T2.1.1.2: Definir quais campos escolares serão armazenados no sistema e quais serão ignorados;
+    [x] T2.1.2: Implementação dos modelos de dados no Prisma e criação das migrações necessárias para ambos os ambientes (desenvolvimento e teste) com `migrate:all`;
 [x] CP3: Implementação do processamento de parsers;
   [x] CP3.1: Expansão do reconhecimento de páginas de dados escolares usando o parser `detectarTipoPagina`;
   [x] CP3.2: Implementação do parser `parseDadosEscolares`, reutilizando a lógica do parser de dados pessoais conforme as orientações em [`REUSO.md`](REUSO.md);
@@ -56,22 +56,22 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
       [x] REFACT3.2.2: Expandido `parsingUtils.ts` com `normalizarTextoParaComparacao()` configurável (uppercase/lowercase, remoção de caracteres customizável);
       [x] REFACT3.2.3: Refatorados `parseDadosPessoais.ts` e `parseDadosEscolares.ts` para importar funções de `parsingUtils.ts`;
       [x] REFACT3.2.4: Testes validados e passando após refatorações;
-    [x] TEC3.2.2: Analisar o pré-processamento existente para dados pessoais e identificar quais partes podem ser reaproveitadas;
-    [x] TEC3.2.3: Adaptar as funções de remoção de cabeçalhos, rodapés e menus para considerar os formatos específicos de páginas de dados escolares;
-    [x] TEC3.2.4: Garantir reaproveitamento da validacão de matrícula do aluno selecionado;
+    [x] T3.2.2: Analisar o pré-processamento existente para dados pessoais e identificar quais partes podem ser reaproveitadas;
+    [x] T3.2.3: Adaptar as funções de remoção de cabeçalhos, rodapés e menus para considerar os formatos específicos de páginas de dados escolares;
+    [x] T3.2.4: Garantir reaproveitamento da validacão de matrícula do aluno selecionado;
 [x] CP4: Implementação dos testes do parser de dados escolares;
-  [x] TEC4.1: Criar casos de teste unitários para o parser `parseDadosEscolares`, reutilizando a estrutura dos testes do parser de dados pessoais;
-  [x] TEC4.2: Implementar testes de integração para o fluxo completo de colagem de dados escolares, garantindo que os dados sejam processados e salvos corretamente no backend;
+  [x] T4.1: Criar casos de teste unitários para o parser `parseDadosEscolares`, reutilizando a estrutura dos testes do parser de dados pessoais;
+  [x] T4.2: Implementar testes de integração para o fluxo completo de colagem de dados escolares, garantindo que os dados sejam processados e salvos corretamente no backend;
 [x] CP5: Processamento da colagem de dados escolares na interface do usuário;
   [x] CP5.1: Adaptação da ação "Ativar colagem" para suportar a colagem de dados escolares, reutilizando a lógica existente para dados pessoais conforme as orientações em [`REUSO.md`](REUSO.md);
-    [x] TEC5.1: Reconhecimento automático do tipo de dados colados (pessoais ou escolares) através do parser `detectarTipoPagina`, reutilizando a lógica existente;
-    [x] TEC5.2: Garantir que a validação da matrícula do aluno selecionado funcione corretamente para dados escolares, reutilizando a lógica existente; Ou seja, se a matrícula colada não corresponder à do aluno selecionado, exibir mensagem de erro apropriada (ver se já está implementado);
+    [x] T5.1: Reconhecimento automático do tipo de dados colados (pessoais ou escolares) através do parser `detectarTipoPagina`, reutilizando a lógica existente;
+    [x] T5.2: Garantir que a validação da matrícula do aluno selecionado funcione corretamente para dados escolares, reutilizando a lógica existente; Ou seja, se a matrícula colada não corresponder à do aluno selecionado, exibir mensagem de erro apropriada (ver se já está implementado);
 [x] CP6: Extensão do modal de confirmação de dados escolares colados;
-  [x] TEC6.1: Analisar o modal existente para dados pessoais e identificar quais componentes podem ser reaproveitados;
-  [x] TEC6.2: Adaptar o modal para exibir os campos específicos de dados escolares, mantendo a consistência visual e funcional com o modal de dados pessoais;
-  [x] TEC6.4: Haverá necessidade de inputs manuais adicionais para dados escolares, similar ao campo Sexo em dados pessoais? Se sim, implementar conforme necessário, com o mesmo padrão de reutilização;
+  [x] T6.1: Analisar o modal existente para dados pessoais e identificar quais componentes podem ser reaproveitados;
+  [x] T6.2: Adaptar o modal para exibir os campos específicos de dados escolares, mantendo a consistência visual e funcional com o modal de dados pessoais;
+  [x] T6.4: Haverá necessidade de inputs manuais adicionais para dados escolares, similar ao campo Sexo em dados pessoais? Se sim, implementar conforme necessário, com o mesmo padrão de reutilização;
 [x] CP7: Tratamento da inconsistência dos modelos Aluno e SerieCursada quanto aos campos de dados escolares;
-  [x] TEC7.1: Os campos de dados escolares que irão para o modelo Aluno são:
+  [x] T7.1: Os campos de dados escolares que irão para o modelo Aluno são:
     a. tipoIngresso
     b. matrizCurricular
     c. dataInclusaoAluno
@@ -79,7 +79,7 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
     e. situacao
     f. recebeOutroEspaco
     g. causaEncerramento
-  [x] TEC7.2: Os campos de dados escolares que irão para o modelo SerieCursada são:
+  [x] T7.2: Os campos de dados escolares que irão para o modelo SerieCursada são:
     h. anoLetivo
     i. periodoLetivo
     j. codigoEscola
@@ -92,14 +92,14 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
     q. ensinoReligioso
     r. linguaEstrangeira
     s. tipoVaga
-  [x] TEC7.3: E assim será o mapeamento necessário dos campos parseados para o modelo SerieCursada:
+  [x] T7.3: E assim será o mapeamento necessário dos campos parseados para o modelo SerieCursada:
     a. anoIngresso será adicionado como Ano Letivo;
     b. periodoIngresso será adicionado como Período Letivo;
     c. o restante ficará mesmo em branco. Outras implementações farão a importação complementar;
 [x] CP8: Atualização de UI dados dos alunos com dados escolares. Atualmente, a interface do usuário exibe apenas os dados pessoais do aluno. Será necessário estender essa funcionalidade para incluir os dados escolares;
-  [x] TEC8.1: Criação de visualização em abas (com componente de abas reutilizável) para separar dados pessoais e escolares na interface do usuário;
-  [x] TEC8.2: Ao atualizar os dados escolares, garantir que a interface do usuário reflita imediatamente as mudanças, reutilizando a lógica existente para atualização automática de dados pessoais, inclusive avaliando a integração com o SWR já implementado;
-  [x] TEC8.3: Após confirmação bem sucedida dos dados escolares colados, ativar a aba de dados escolares automaticamente para o usuário visualizar as mudanças;
+  [x] T8.1: Criação de visualização em abas (com componente de abas reutilizável) para separar dados pessoais e escolares na interface do usuário;
+  [x] T8.2: Ao atualizar os dados escolares, garantir que a interface do usuário reflita imediatamente as mudanças, reutilizando a lógica existente para atualização automática de dados pessoais, inclusive avaliando a integração com o SWR já implementado;
+  [x] T8.3: Após confirmação bem sucedida dos dados escolares colados, ativar a aba de dados escolares automaticamente para o usuário visualizar as mudanças;
 [x] CP9: Atualização do item de lista e alunos na tela de listagem de alunos para refletir o status dos dados escolares (ex: "Dados escolares completos", "Dados escolares incompletos", etc);
   [x] UX9.1: Refatorações:
     [x] UX9.1.1: Atualmente, além de uma barra de progresso, a única informação de status é o percentual de dados pessoais preenchidos. E essa informação fica ao lado do nome/matrícula do aluno na listagem. MUDANÇA:
@@ -112,9 +112,9 @@ Sessão 2 (Implementação de Colagem de Dados Escolares) - Feature: Importaçã
         - na forma x/y campos de dados pessoais preenchidos;
         - na forma de percentual de dados escolares preenchidos.
     [x] UX9.1.2: O componente visual do status dos dados escolares deve ser consistente com o estilo já utilizado para dados pessoais;
-    [x] TEC9.1.3 Os dados que importarão para dados escolares são: 
+    [x] T9.1.3 Os dados que importarão para dados escolares são: 
       - (1) situacaoEscolar; 
       - (2) motivoEncerrament;o e 
       - (3) se o segmento for "MÉDIO", a quantidade de séries concluídas for TRÊS, contará como dado completo; se não, não contará para a completude da informação;
-  [x] TEC9.2: Implementar lógica para calcular e exibir o status dos dados escolares na listagem de alunos, reutilizando componentes visuais existentes para consistência;
+  [x] T9.2: Implementar lógica para calcular e exibir o status dos dados escolares na listagem de alunos, reutilizando componentes visuais existentes para consistência;
   

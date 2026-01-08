@@ -62,9 +62,9 @@ Com o disposto abaixo, vamos definir o necessário para um algoritmo robusto e e
 
 [x] CP_1: Os campos que importam estão nos modelos Prisma Aluno (os dados que não são pessoais) e SerieCursada;
 [x] CP_2: Formar um objeto com esses dados, que terá propriedades que  e outras operações;
-  [x] TEC_2.1: facilitarão o regex, segundo lógica especificada adiante;
-  [x] TEC_2.2: mapearão para os modelos Prisma;
-[x] TEC_3: Dentro da string colada, blocos, labels e valores seguem os seguintes padrões:
+  [x] T_2.1: facilitarão o regex, segundo lógica especificada adiante;
+  [x] T_2.2: mapearão para os modelos Prisma;
+[x] T_3: Dentro da string colada, blocos, labels e valores seguem os seguintes padrões:
   TEC_3.1: CAMPOS SIMPLES (fora de tabela):
     A. Blocos: 
       a. Em dados pessoais, os blocos são:
@@ -143,19 +143,19 @@ Com o disposto abaixo, vamos definir o necessário para um algoritmo robusto e e
       d.7. "Ensino Religioso": geralmente vazio, indicado por espaço extra;
       d.8. "Língua Estrangeira": geralmente vazio, indicado por espaço extra;
 [x] CP_4: da transferência dos dados extraídos para os modelos Prisma:
-  [x] TEC_4.1: Há uma particularidade na construção dos dados extraídos para o modelo SerieCursada:
-    [x] TEC_4.1.1. Para cada atualização de séries cursadas, criaremos uma instância dos dados de ingresso mais a instância de SerieCursada com os dados extraídos da linha da tabela. Essa totalidade de dados formará o objeto a ser salvo no banco de dados;
-    [x] TEC_4.1.2. Nos blocos Dados de Ingresso e Escolaridade, há campos que também devem ser atribuídos a cada instância de SerieCursada (aliás, este registro será o primeiro a ser incluído):
+  [x] T_4.1: Há uma particularidade na construção dos dados extraídos para o modelo SerieCursada:
+    [x] T_4.1.1. Para cada atualização de séries cursadas, criaremos uma instância dos dados de ingresso mais a instância de SerieCursada com os dados extraídos da linha da tabela. Essa totalidade de dados formará o objeto a ser salvo no banco de dados;
+    [x] T_4.1.2. Nos blocos Dados de Ingresso e Escolaridade, há campos que também devem ser atribuídos a cada instância de SerieCursada (aliás, este registro será o primeiro a ser incluído):
       a. Ano de ingresso será adicionado como Ano Letivo;
       b. Período de ingresso será adicionado como Período Letivo;
       c. Unidade de Ensino será adicionado como Unidade de Ensino;
       d. Turno em Escolaridade está por extenso, e deverá ser mapeado para o valor curto usado na tabela (ex: "MANHÃ" → "M");
       e. Na tabela, um campo inteiro (Modalidade / Segmento / Curso) será mapeado para três campos string separados no modelo SerieCursada: Modalidade, Segmento e Curso; no bloco Escolaridade, os campos estão separados: "Nível/Segmento" corresponde a Segmento.
-    [x] TEC_4.1.3. Cada linha da tabela de Renovação de Matrícula corresponde a uma instância do modelo SerieCursada, e serão os registros adicionados após o registro inicial do ingresso;
+    [x] T_4.1.3. Cada linha da tabela de Renovação de Matrícula corresponde a uma instância do modelo SerieCursada, e serão os registros adicionados após o registro inicial do ingresso;
       
 [x] CP_5: Testes unitários e de integração:
-  [x] TEC_5.1: Criar casos de teste unitários para o parser parseDadosEscolares, utilizando o modelo de colagem de dados escolares como base;
-  [x] TEC_5.2: Implementar testes de integração para garantir que os dados extraídos sejam corretamente salvos no banco de dados.
+  [x] T_5.1: Criar casos de teste unitários para o parser parseDadosEscolares, utilizando o modelo de colagem de dados escolares como base;
+  [x] T_5.2: Implementar testes de integração para garantir que os dados extraídos sejam corretamente salvos no banco de dados.
 
 # PASSOS A SEGUIR
 1. Testes

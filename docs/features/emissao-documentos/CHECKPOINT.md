@@ -161,11 +161,11 @@ Esta sessão cria código específico da feature (configuração de metadados e 
     [x] TEC9.1.5: Estilos de cabeçalho e rodapé (incluir brasões, informações institucionais)
   [x] TEC9.2: Documentar essas diretivas no objeto MAPEAMENTO_LAYOUT_DOCUMENTOS
 
-[ ] CP10: Criar estrutura de pastas para componentes PDF e aplicar componentização segundo as diretivas de layout
-  [ ] TEC10.1: Criar pastas
-    [ ] TEC10.1.1: `/src/components/pdf/` (pasta raiz)
-    [ ] TEC10.1.2: `/src/components/pdf/common/` (componentes comuns)
-    [ ] TEC10.1.3: `/src/components/pdf/templates/` (templates de documentos)
+[x] CP10: Criar estrutura de pastas para componentes PDF e aplicar componentização segundo as diretivas de layout
+  [x] TEC10.1: Criar pastas
+    [x] TEC10.1.1: `/src/components/pdf/` (pasta raiz)
+    [x] TEC10.1.2: `/src/components/pdf/common/` (componentes comuns)
+    [x] TEC10.1.3: `/src/components/pdf/templates/` (templates de documentos)
 
 [ ] CP11: Enfim construir os templates de cada documento
 

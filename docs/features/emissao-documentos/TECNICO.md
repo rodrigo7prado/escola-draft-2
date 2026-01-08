@@ -198,6 +198,34 @@ Este arquivo documenta decisões técnicas não-óbvias tomadas durante a implem
 
 ---
 
+## TEC7: Cálculo centralizado de completude por documento e integração com UI
+
+**Motivação:**
+- Evitar lógica duplicada entre lista de alunos e aba de emissão
+- Usar def-objects como fonte única da verdade para campos obrigatórios
+- Permitir status consistente da fase `FASE:EMISSAO_DOCUMENTOS`
+- Habilitar/ bloquear impressão com base em dados completos
+
+**Alternativas Consideradas:**
+- ❌ **Regras hardcoded na UI**: duplicação, difícil manutenção, risco de divergência
+- ❌ **Queries específicas por documento**: acoplamento ao backend e pouca flexibilidade
+- ✅ **Função pura + integração no hook**: centraliza regras e facilita reuso
+
+**Implementação:**
+- Funções `calcularCompletudeDocumento` e `calcularCompletudeEmissao` em arquivo dedicado
+- Hook `useAlunosCertificacao` calcula `progressoEmissaoDocumentos`
+- Lista usa status dinâmico na fase de emissão e badge de pronto
+- Aba de emissão exibe detalhe por documento e desabilita impressão quando incompleto
+
+**Referências no Código:**
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - Funções de completude
+- [src/hooks/useAlunosCertificacao.ts:88-105](../../src/hooks/useAlunosCertificacao.ts) - Integração no hook
+- [src/components/ListaAlunosCertificacao.tsx:170-210](../../src/components/ListaAlunosCertificacao.tsx) - Status dinâmico e badge
+- [src/components/CompletudeDocumentos.tsx](../../src/components/CompletudeDocumentos.tsx) - UI detalhada por documento
+- [src/components/DadosAlunoEmissao.tsx:120-195](../../src/components/DadosAlunoEmissao.tsx) - Uso na aba de emissão
+
+---
+
 ## OBSERVAÇÕES GERAIS
 
 ### Manutenção Futura

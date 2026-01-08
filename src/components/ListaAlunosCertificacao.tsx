@@ -173,6 +173,12 @@ export function ListaAlunosCertificacao({
                       <div className="text-xs font-medium truncate">
                         {aluno.nome || "Sem nome"}
                       </div>
+                      {aluno.progressoEmissaoDocumentos.statusGeral ===
+                        "completo" && (
+                        <span className="text-[9px] font-semibold uppercase tracking-wide bg-green-100 text-green-700 px-1.5 py-0.5 rounded-sm shrink-0">
+                          Pronto para emitir
+                        </span>
+                      )}
                     </div>
                     <div className="text-[10px] text-neutral-500 font-mono">
                       {aluno.matricula}
@@ -308,9 +314,9 @@ function montarStatusPorFase(aluno: AlunoCertificacao): StatusPorFase {
       title: `${faseHistorico.titulo}: ${seriesHistorico} série${seriesHistorico === 1 ? "" : "s"} (${historicos} registro${historicos === 1 ? "" : "s"})`,
     },
     "FASE:EMISSAO_DOCUMENTOS": {
-      status: "ausente",
-      label: "--",
-      title: `${faseEmissao.titulo}: pendente`,
+      status: aluno.progressoEmissaoDocumentos.statusGeral,
+      label: `${aluno.progressoEmissaoDocumentos.documentosProntos}/${aluno.progressoEmissaoDocumentos.totalDocumentos}`,
+      title: `${faseEmissao.titulo}: ${aluno.progressoEmissaoDocumentos.documentosProntos} de ${aluno.progressoEmissaoDocumentos.totalDocumentos} documentos prontos`,
     },
   };
 }

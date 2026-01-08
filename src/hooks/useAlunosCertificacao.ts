@@ -6,6 +6,10 @@ import {
   ValoresDadosPessoais,
 } from "@/lib/importacao/dadosPessoaisMetadata";
 import type { PhaseStatus } from "@/lib/core/data/gestao-alunos/phases.types";
+import {
+  calcularCompletudeEmissao,
+  type ResumoCompletudeEmissao,
+} from "@/lib/core/data/gestao-alunos/documentos/calcularCompletude";
 
 type EnturmacaoResumo = {
   anoLetivo: string;
@@ -32,6 +36,7 @@ export type AlunoCertificacao = AlunoApiResponse & {
   progressoDadosPessoais: ResumoDadosPessoais;
   progressoDadosEscolares: ResumoDadosEscolares;
   progressoHistoricoEscolar: ResumoHistoricoEscolar;
+  progressoEmissaoDocumentos: ResumoCompletudeEmissao;
 };
 
 type FiltrosParams = {
@@ -64,7 +69,17 @@ export type ResumoHistoricoEscolar = {
 type SerieCursadaResumo = {
   segmento?: string | null;
   anoLetivo?: string | null;
-  historicos?: { id: string }[];
+  periodoLetivo?: string | null;
+  serie?: string | null;
+  cargaHorariaTotal?: number | null;
+  historicos?: Array<{
+    id: string;
+    componenteCurricular?: string | null;
+    totalPontos?: number | null;
+    cargaHoraria?: number | null;
+    frequencia?: number | null;
+    faltasTotais?: number | null;
+  }>;
   _count?: { historicos: number };
 };
 
@@ -153,6 +168,11 @@ async function obterAlunosCertificacao(filtros: FiltrosParams) {
     progressoDadosPessoais: calcularResumoDadosPessoais(aluno),
     progressoDadosEscolares: calcularResumoDadosEscolares(aluno),
     progressoHistoricoEscolar: calcularResumoHistoricoEscolar(aluno.seriesCursadas),
+    // [FEAT:emissao-documentos_TEC7] Calcula completude da emissao usando def-objects.
+    progressoEmissaoDocumentos: calcularCompletudeEmissao({
+      ...aluno,
+      seriesCursadas: aluno.seriesCursadas ?? [],
+    }),
   }));
 }
 

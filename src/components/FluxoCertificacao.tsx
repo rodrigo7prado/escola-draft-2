@@ -140,6 +140,7 @@ export function FluxoCertificacao() {
         series={seriesCursadas}
         isLoading={isLoadingDetalhes}
         erro={erroDetalhes}
+        onNavigateToAba={setAbaAtiva}
       />
     );
   };

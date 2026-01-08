@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Document, PDFViewer } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/Button";
 import { Modal, ModalFooter } from "@/components/ui/Modal";
+import { CompletudeDocumentos } from "@/components/CompletudeDocumentos";
 import { INSTITUICAO_CONFIG } from "@/config/instituicao";
 import type {
   AlunoDetalhado,
@@ -16,6 +17,10 @@ import type {
   DadosHistoricoEscolar,
   TipoDocumento,
 } from "@/lib/core/data/gestao-alunos/documentos/types";
+import {
+  calcularCompletudeEmissao,
+} from "@/lib/core/data/gestao-alunos/documentos/calcularCompletude";
+import type { DocEmissao } from "@/lib/core/data/gestao-alunos/phases.types";
 import {
   CertidaoPage,
   TemplateCertidao,
@@ -38,11 +43,18 @@ type DadosAlunoEmissaoProps = {
   series: SerieCursadaResumo[];
   isLoading: boolean;
   erro?: string | null;
+  onNavigateToAba?: (abaId: string) => void;
 };
 
 type DocumentoSelecionado = TipoDocumento | "TODOS";
 
 const ALTURA_PREVIEW = "70vh";
+const DOC_EMISSAO_POR_TIPO: Record<TipoDocumento, DocEmissao> = {
+  CERTIDAO: "Certidão",
+  CERTIFICADO: "Certificado",
+  DIPLOMA: "Diploma",
+  HISTORICO: "Histórico Escolar",
+};
 
 // [FEAT:emissao-documentos_TEC1] Modal com PDFViewer para prévia de documentos
 export function DadosAlunoEmissao({
@@ -50,6 +62,7 @@ export function DadosAlunoEmissao({
   series,
   isLoading,
   erro,
+  onNavigateToAba,
 }: DadosAlunoEmissaoProps) {
   const [documentoSelecionado, setDocumentoSelecionado] =
     useState<DocumentoSelecionado | null>(null);
@@ -117,6 +130,18 @@ export function DadosAlunoEmissao({
       metadados: INSTITUICAO_CONFIG,
     }),
     [alunoDados, seriesOrdenadas, historicosPorSerie]
+  );
+
+  // [FEAT:emissao-documentos_TEC7.1] Calcula completude usando def-objects como fonte unica.
+  const completudeEmissao = useMemo(
+    () =>
+      aluno
+        ? calcularCompletudeEmissao({
+            ...aluno,
+            seriesCursadas: series,
+          })
+        : null,
+    [aluno, series]
   );
 
   // [FEAT:emissao-documentos_TEC1.1] Lista de documentos para impressão individual
@@ -216,40 +241,93 @@ export function DadosAlunoEmissao({
             Pré-visualize e imprima os documentos do aluno selecionado.
           </div>
         </div>
-        <Button size="sm" onClick={() => setDocumentoSelecionado("TODOS")}>
-          Imprimir todos
-        </Button>
+        {(() => {
+          const podeImprimirTodos =
+            completudeEmissao?.statusGeral === "completo";
+          const tooltipTodos = podeImprimirTodos
+            ? "Imprimir todos os documentos completos."
+            : "Complete todos os documentos para imprimir em lote.";
+          const botaoTodos = (
+            <Button
+              size="sm"
+              disabled={!podeImprimirTodos}
+              onClick={() => setDocumentoSelecionado("TODOS")}
+            >
+              Imprimir todos
+            </Button>
+          );
+
+          return podeImprimirTodos ? (
+            botaoTodos
+          ) : (
+            <span className="inline-flex" title={tooltipTodos}>
+              {botaoTodos}
+            </span>
+          );
+        })()}
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto p-4">
+        {completudeEmissao && (
+          <div className="mb-4">
+            <CompletudeDocumentos
+              completude={completudeEmissao}
+              onNavigateToAba={onNavigateToAba}
+            />
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {documentos.map((documento) => (
-            <div
-              key={documento.tipo}
-              className="border rounded-sm p-4 bg-white flex flex-col gap-3"
-            >
-              <div>
-                <div className="text-sm font-semibold text-neutral-800">
-                  {documento.titulo}
+          {documentos.map((documento) => {
+            const docEmissao = DOC_EMISSAO_POR_TIPO[documento.tipo];
+            const infoDocumento = completudeEmissao?.porDocumento[docEmissao];
+            const documentoCompleto = infoDocumento?.status === "completo";
+            const tooltipImpressao = documentoCompleto
+              ? "Documento completo para impressão."
+              : infoDocumento
+                ? `Faltam ${infoDocumento.camposFaltantes.length} campos para liberar.`
+                : "Complete os dados para liberar a impressão.";
+
+            const botaoImprimir = (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!documentoCompleto}
+                onClick={() => setDocumentoSelecionado(documento.tipo)}
+              >
+                Imprimir
+              </Button>
+            );
+
+            return (
+              <div
+                key={documento.tipo}
+                className="border rounded-sm p-4 bg-white flex flex-col gap-3"
+              >
+                <div>
+                  <div className="text-sm font-semibold text-neutral-800">
+                    {documento.titulo}
+                  </div>
+                  <div className="text-xs text-neutral-500">
+                    {documento.descricao}
+                  </div>
                 </div>
-                <div className="text-xs text-neutral-500">
-                  {documento.descricao}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] text-neutral-500">
+                    {infoDocumento
+                      ? `${infoDocumento.percentual}% completo`
+                      : "Prévia disponível"}
+                  </span>
+                  {documentoCompleto ? (
+                    botaoImprimir
+                  ) : (
+                    <span className="inline-flex" title={tooltipImpressao}>
+                      {botaoImprimir}
+                    </span>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] text-neutral-400">
-                  Prévia disponível
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDocumentoSelecionado(documento.tipo)}
-                >
-                  Imprimir
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

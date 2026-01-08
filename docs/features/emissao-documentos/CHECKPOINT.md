@@ -197,34 +197,34 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
 
 ### Checkpoints
 
-[ ] CP13: Criar função utilitária de análise de completude por documento
-  [ ] CP13.1: Criar arquivo de utilitários
-    [ ] T13.1.1: Localização: `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts`
-    [ ] T13.1.2: Exportar tipo `CompletudeDocumento` com campos:
+[x] CP13: Criar função utilitária de análise de completude por documento
+  [x] CP13.1: Criar arquivo de utilitários
+    [x] T13.1.1: Localização: `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts`
+    [x] T13.1.2: Exportar tipo `CompletudeDocumento` com campos:
       - `documento: DocEmissao` - tipo do documento
       - `status: PhaseStatus` - status calculado (completo/incompleto/ausente)
       - `percentual: number` - percentual de completude (0-100)
       - `camposPreenchidos: number` - quantidade de campos preenchidos
       - `totalCampos: number` - quantidade total de campos obrigatórios
       - `camposFaltantes: CampoFaltante[]` - array de campos faltantes
-    [ ] T13.1.3: Exportar tipo `CampoFaltante` com campos:
+    [x] T13.1.3: Exportar tipo `CampoFaltante` com campos:
       - `campo: string` - nome técnico do campo
       - `label: string` - nome legível do campo
       - `tabela: string` - tabela de origem (Aluno, SerieCursada, HistoricoEscolar)
       - `fase: Phase` - fase a que pertence o campo
-    [ ] T13.1.4: Exportar tipo `ResumoCompletudeEmissao` com campos:
+    [x] T13.1.4: Exportar tipo `ResumoCompletudeEmissao` com campos:
       - `statusGeral: PhaseStatus` - status consolidado de todos os documentos
       - `documentosProntos: number` - quantidade de documentos com status "completo"
       - `totalDocumentos: number` - sempre 4 (Certidão, Certificado, Diploma, Histórico)
       - `porDocumento: Record<DocEmissao, CompletudeDocumento>` - detalhes por documento
 
-  [ ] CP13.2: Implementar função `calcularCompletudeDocumento`
-    [ ] T13.2.1: Assinatura: `function calcularCompletudeDocumento(documento: DocEmissao, dadosAluno: DadosAlunoCompleto): CompletudeDocumento`
-    [ ] T13.2.2: Parâmetro `DadosAlunoCompleto` deve incluir:
+  [x] CP13.2: Implementar função `calcularCompletudeDocumento`
+    [x] T13.2.1: Assinatura: `function calcularCompletudeDocumento(documento: DocEmissao, dadosAluno: DadosAlunoCompleto): CompletudeDocumento`
+    [x] T13.2.2: Parâmetro `DadosAlunoCompleto` deve incluir:
       - Campos de `Aluno` (tabela principal)
       - Array de `SerieCursada[]` com históricos
       - Campos derivados necessários
-    [ ] T13.2.3: Lógica da função:
+    [x] T13.2.3: Lógica da função:
       1. Importar os 3 def-objects (dadosPessoais, dadosEscolares, historicoEscolar)
       2. Para cada def-object, iterar sobre suas tabelas (ex: `dadosPessoais.Aluno`)
       3. Para cada campo da tabela, verificar se o array de documentos inclui o `documento` solicitado
@@ -236,14 +236,14 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
          - `completo`: percentual === 100
          - `ausente`: percentual === 0
          - `incompleto`: 0 < percentual < 100
-    [ ] T13.2.4: Tratamento especial para campos de arrays (SerieCursada, HistoricoEscolar):
+    [x] T13.2.4: Tratamento especial para campos de arrays (SerieCursada, HistoricoEscolar):
       - Se o documento exige campos de SerieCursada, verificar se existe ao menos 1 registro
       - Se o documento exige campos de HistoricoEscolar, verificar se existem registros vinculados
       - Para Histórico Escolar especificamente, validar que existam componentes curriculares
 
-  [ ] CP13.3: Implementar função `calcularCompletudeEmissao`
-    [ ] T13.3.1: Assinatura: `function calcularCompletudeEmissao(dadosAluno: DadosAlunoCompleto): ResumoCompletudeEmissao`
-    [ ] T13.3.2: Lógica da função:
+  [x] CP13.3: Implementar função `calcularCompletudeEmissao`
+    [x] T13.3.1: Assinatura: `function calcularCompletudeEmissao(dadosAluno: DadosAlunoCompleto): ResumoCompletudeEmissao`
+    [x] T13.3.2: Lógica da função:
       1. Chamar `calcularCompletudeDocumento` para cada um dos 4 tipos de documento
       2. Montar objeto `porDocumento` com resultado de cada documento
       3. Contar quantos documentos têm `status === "completo"`
@@ -252,26 +252,26 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
          - `ausente`: se todos os 4 documentos estão ausentes
          - `incompleto`: casos intermediários
       5. Retornar `ResumoCompletudeEmissao` completo
-    [ ] T13.3.3: Adicionar testes unitários básicos para esta função
+    [x] T13.3.3: Adicionar testes unitários básicos para esta função
 
-[ ] CP14: Integrar cálculo de completude no hook useAlunosCertificacao
-  [ ] CP14.1: Atualizar tipo `AlunoCertificacao`
-    [ ] T14.1.1: Localização: `/src/hooks/useAlunosCertificacao.ts`
-    [ ] T14.1.2: Adicionar campo: `progressoEmissaoDocumentos: ResumoCompletudeEmissao`
+[x] CP14: Integrar cálculo de completude no hook useAlunosCertificacao
+  [x] CP14.1: Atualizar tipo `AlunoCertificacao`
+    [x] T14.1.1: Localização: `/src/hooks/useAlunosCertificacao.ts`
+    [x] T14.1.2: Adicionar campo: `progressoEmissaoDocumentos: ResumoCompletudeEmissao`
 
-  [ ] CP14.2: Modificar função `obterAlunosCertificacao`
-    [ ] T14.2.1: Após buscar alunos do banco, para cada aluno:
+  [x] CP14.2: Modificar função `obterAlunosCertificacao`
+    [x] T14.2.1: Após buscar alunos do banco, para cada aluno:
       1. Montar objeto `DadosAlunoCompleto` com dados necessários
       2. Chamar `calcularCompletudeEmissao(dadosAluno)`
       3. Adicionar resultado ao campo `progressoEmissaoDocumentos`
-    [ ] T14.2.2: Garantir que a query Prisma inclui todos os campos necessários:
+    [x] T14.2.2: Garantir que a query Prisma inclui todos os campos necessários:
       - Todos os campos de `Aluno` usados nos def-objects
       - Incluir `seriesCursadas` com seus campos
       - Incluir `historicos` dentro de `seriesCursadas`
 
-  [ ] CP14.3: Atualizar função `montarStatusPorFase` no componente ListaAlunosCertificacao
-    [ ] T14.3.1: Localização: `/src/components/ListaAlunosCertificacao.tsx` (linha 285)
-    [ ] T14.3.2: Substituir status fixo de `FASE:EMISSAO_DOCUMENTOS`:
+  [x] CP14.3: Atualizar função `montarStatusPorFase` no componente ListaAlunosCertificacao
+    [x] T14.3.1: Localização: `/src/components/ListaAlunosCertificacao.tsx` (linha 285)
+    [x] T14.3.2: Substituir status fixo de `FASE:EMISSAO_DOCUMENTOS`:
       ```typescript
       // ANTES (linha 310-314):
       "FASE:EMISSAO_DOCUMENTOS": {
@@ -288,13 +288,13 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
       },
       ```
 
-[ ] CP15: Criar componente de detalhamento de completude por documento
-  [ ] CP15.1: Criar componente `CompletudeDocumentos`
-    [ ] T15.1.1: Localização: `/src/components/CompletudeDocumentos.tsx`
-    [ ] T15.1.2: Props:
+[x] CP15: Criar componente de detalhamento de completude por documento
+  [x] CP15.1: Criar componente `CompletudeDocumentos`
+    [x] T15.1.1: Localização: `/src/components/CompletudeDocumentos.tsx`
+    [x] T15.1.2: Props:
       - `completude: ResumoCompletudeEmissao` - dados de completude
       - `onNavigateToAba?: (abaId: string) => void` - callback para navegar para aba com campo faltante
-    [ ] T15.1.3: UI deve exibir:
+    [x] T15.1.3: UI deve exibir:
       - Card para cada um dos 4 tipos de documento
       - Ícone de status (verde/amarelo/vermelho) por documento
       - Título do documento (ex: "Certidão de Conclusão")
@@ -302,49 +302,49 @@ Esta sessão implementa o sistema de análise de completude de dados por documen
       - Botão "Ver detalhes" que expande lista de campos faltantes
       - Lista de campos faltantes agrupada por fase/aba
       - Link clicável em cada campo faltante que chama `onNavigateToAba`
-    [ ] T15.1.4: Estilo deve seguir padrão existente do sistema (usar classes Tailwind consistentes)
+    [x] T15.1.4: Estilo deve seguir padrão existente do sistema (usar classes Tailwind consistentes)
 
-  [ ] CP15.2: Integrar componente na aba de Emissão
-    [ ] T15.2.1: Localização: `/src/components/DadosAlunoEmissao.tsx`
-    [ ] T15.2.2: Substituir placeholder atual por:
+  [x] CP15.2: Integrar componente na aba de Emissão
+    [x] T15.2.1: Localização: `/src/components/DadosAlunoEmissao.tsx`
+    [x] T15.2.2: Substituir placeholder atual por:
       1. Componente `CompletudeDocumentos` no topo da aba
       2. Manter botões de impressão/preview existentes
       3. Desabilitar botões de impressão se documento não estiver completo
       4. Adicionar tooltip explicativo nos botões desabilitados
 
-[ ] CP16: Adicionar feedback visual aprimorado
-  [ ] CP16.1: Criar indicadores de completude na lista de alunos
-    [ ] T16.1.1: No componente `IndicadoresDadosAluno` (linha 279 de ListaAlunosCertificacao.tsx):
+[x] CP16: Adicionar feedback visual aprimorado
+  [x] CP16.1: Criar indicadores de completude na lista de alunos
+    [x] T16.1.1: No componente `IndicadoresDadosAluno` (linha 279 de ListaAlunosCertificacao.tsx):
       - Ícone de `FASE:EMISSAO_DOCUMENTOS` agora mostrará status dinâmico
       - Tooltip mostrará "X/4 documentos prontos"
 
-  [ ] CP16.2: Adicionar badge de "pronto para emitir" quando aplicável
-    [ ] T16.2.1: Se `statusGeral === "completo"`, exibir badge verde discreto
-    [ ] T16.2.2: Badge pode aparecer ao lado do nome do aluno ou no card de emissão
+[x] CP16.2: Adicionar badge de "pronto para emitir" quando aplicável
+    [x] T16.2.1: Se `statusGeral === "completo"`, exibir badge verde discreto
+    [x] T16.2.2: Badge pode aparecer ao lado do nome do aluno ou no card de emissão
 
-[ ] CP17: Criar testes para o sistema de completude
-  [ ] CP17.1: Testes unitários para `calcularCompletudeDocumento`
-    [ ] T17.1.1: Localização: `/tests/lib/calcularCompletude.test.ts`
-    [ ] T17.1.2: Casos de teste:
+[x] CP17: Criar testes para o sistema de completude
+  [x] CP17.1: Testes unitários para `calcularCompletudeDocumento`
+    [x] T17.1.1: Localização: `/tests/lib/calcularCompletude.test.ts`
+    [x] T17.1.2: Casos de teste:
       - Aluno sem nenhum dado: percentual 0, status "ausente"
       - Aluno com dados completos: percentual 100, status "completo"
       - Aluno com dados parciais: percentual intermediário, status "incompleto"
       - Validar array de camposFaltantes está correto
       - Testar cada tipo de documento (Certidão, Certificado, Diploma, Histórico)
 
-  [ ] CP17.2: Testes de integração para hook atualizado
-    [ ] T17.2.1: Verificar que `useAlunosCertificacao` retorna `progressoEmissaoDocumentos`
-    [ ] T17.2.2: Verificar que status dinâmico aparece no componente de lista
+[x] CP17.2: Testes de integração para hook atualizado
+    [x] T17.2.1: Verificar que `useAlunosCertificacao` retorna `progressoEmissaoDocumentos`
+    [x] T17.2.2: Verificar que status dinâmico aparece no componente de lista
 
-[ ] CP18: Documentar decisões técnicas
-  [ ] CP18.1: Atualizar arquivo TECNICO.md
-    [ ] T18.1.1: Documentar motivação: garantir consistência entre def-objects e status visual
-    [ ] T18.1.2: Documentar arquitetura: função pura + integração via hook
-    [ ] T18.1.3: Documentar critérios de completude (100% dos campos obrigatórios)
+[x] CP18: Documentar decisões técnicas
+  [x] CP18.1: Atualizar arquivo TECNICO.md
+    [x] T18.1.1: Documentar motivação: garantir consistência entre def-objects e status visual
+    [x] T18.1.2: Documentar arquitetura: função pura + integração via hook
+    [x] T18.1.3: Documentar critérios de completude (100% dos campos obrigatórios)
 
-  [ ] CP18.2: Atualizar DRY se necessário
-    [ ] T18.2.1: Se componente `CompletudeDocumentos` for genérico o suficiente, documentar em `/docs/dry/`
-    [ ] T18.2.2: Se função `calcularCompletude` for reutilizável para outras features, documentar
+  [x] CP18.2: Atualizar DRY se necessário
+    [x] T18.2.1: Se componente `CompletudeDocumentos` for genérico o suficiente, documentar em `/docs/dry/`
+    [x] T18.2.2: Se função `calcularCompletude` for reutilizável para outras features, documentar
 
 ---
 

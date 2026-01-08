@@ -12,6 +12,8 @@ export type AlunoDetalhado = {
   matricula: string;
   nome: string | null;
   fonteAusente: boolean;
+  dataConclusaoEnsinoMedio?: string | null;
+  observacoes?: string | null;
   // Dados escolares (leitura)
   situacaoEscolar?: string | null;
   causaEncerramentoEscolar?: string | null;
@@ -124,6 +126,8 @@ function mapearAlunoDetalhado(raw: Record<string, any> | null): AlunoDetalhado |
     matricula: raw.matricula,
     nome: raw.nome ?? null,
     fonteAusente: Boolean(raw.fonteAusente),
+    dataConclusaoEnsinoMedio: serializarValor(raw.dataConclusaoEnsinoMedio),
+    observacoes: serializarValor(raw.observacoes),
     situacaoEscolar: raw.situacaoEscolar ?? null,
     causaEncerramentoEscolar: raw.causaEncerramentoEscolar ?? null,
     motivoEncerramento: raw.motivoEncerramento ?? null,

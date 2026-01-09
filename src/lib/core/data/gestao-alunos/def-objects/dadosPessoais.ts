@@ -16,7 +16,7 @@ const dadosPessoais: PhaseSchema<"FASE:DADOS_PESSOAIS"> = {
     cpf: ["Histórico Escolar"],
     nomeMae: ["Certidão", "Certificado", "Diploma"],
     nomePai: ["Certidão", "Certificado", "Diploma"],
-    dataConclusaoEnsinoMedio: ["Certidão", "Certificado", "Diploma"],
+    dataConclusaoEnsinoMedio: [],
     efInstituicao: [],
     efMunicipioEstado: [],
     efAnoConclusao: [],
@@ -26,7 +26,7 @@ const dadosPessoais: PhaseSchema<"FASE:DADOS_PESSOAIS"> = {
     conferidoEm: [],
     conferidoPor: [],
     certificacao: [],
-    observacoes: ["Certidão", "Certificado", "Diploma"],
+    observacoes: [],
     origemTipo: [],
     linhaOrigemId: [],
     fonteAusente: [],
@@ -69,7 +69,7 @@ const dadosPessoais: PhaseSchema<"FASE:DADOS_PESSOAIS"> = {
     tipoCertidaoCivil: [],
     ufCartorio: [],
     necessidadeEspecial: [],
-    nomeSocial: ["Histórico Escolar"],
+    nomeSocial: [],
   }
 }
 

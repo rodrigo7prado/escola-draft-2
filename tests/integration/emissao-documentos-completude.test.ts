@@ -76,6 +76,8 @@ describe("Integracao emissao documentos", () => {
         pendentes: [],
       },
       progressoDadosEscolares: {
+        camposPreenchidos: 1,
+        totalCampos: 3,
         totalSlots: 3,
         slotsPreenchidos: 1,
         percentual: 33,
@@ -83,6 +85,9 @@ describe("Integracao emissao documentos", () => {
         status: "incompleto",
       },
       progressoHistoricoEscolar: {
+        camposPreenchidos: 0,
+        totalCampos: 3,
+        percentual: 0,
         totalRegistros: 0,
         totalSeries: 0,
         status: "ausente",

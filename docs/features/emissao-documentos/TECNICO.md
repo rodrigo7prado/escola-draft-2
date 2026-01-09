@@ -226,6 +226,86 @@ Este arquivo documenta decisões técnicas não-óbvias tomadas durante a implem
 
 ---
 
+## TEC8: Extensão de Sistema de Completude para Fases
+
+**Motivação:**
+Código original tinha lógica inline de cálculo de completude em `useAlunosCertificacao`.
+Esta lógica era conceitualmente idêntica ao sistema implementado para documentos na Sessão 3.
+Ao estender o sistema existente, ganhamos:
+1. Reutilização de padrão testado
+2. Consistência entre documentos e fases
+3. Uso de def-objects como fonte única da verdade
+4. Facilita manutenção futura
+
+**Alternativas Consideradas:**
+- ❌ Manter código inline: Duplicação de lógica, dificulta manutenção
+- ❌ Criar novo DRY separado: Violaria princípio DRY (duplicaria padrão)
+- ✅ Estender DRY existente: Reutiliza padrão, mantém consistência
+
+**Decisão:**
+Estender [DRY.BACKEND:CALCULAR_COMPLETUDE_DOCUMENTOS] para suportar fases,
+seguindo exatamente o mesmo padrão de documentos.
+
+**Referências no Código:**
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:186](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - Novas funções de completude por fase
+- [src/hooks/useAlunosCertificacao.ts:161](../../src/hooks/useAlunosCertificacao.ts) - Hook atualizado para usar DRY
+
+---
+
+### TEC8.1: Uso de def-objects vs Lógica Inline
+
+**Motivação:**
+Função original `calcularResumoDadosEscolares()` usa lógica inline (3 slots fixos).
+Precisávamos decidir se usar def-objects como fonte ou manter lógica inline.
+
+**Alternativas:**
+- ❌ Lógica inline pura: Não segue padrão de def-objects, fonte da verdade duplicada
+- ⚠️ Híbrido: Usa def-objects mas tem validações customizadas
+- ✅ Def-objects como base + validadores específicos: Melhor dos dois mundos
+
+**Decisão:**
+Usar def-objects como base para os campos da fase e complementar com validadores
+específicos (ex: validação de tripla série do médio).
+
+**Referências no Código:**
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:186](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `calcularCompletudeDadosEscolares()`
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:309](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `validarTriplaSerieMedio()`
+
+---
+
+### TEC8.2: Validação de Tripla Série do Médio
+
+**Motivação:**
+Regra específica do sistema: aluno deve ter cursado 1 série "-" (mais antiga)
+seguida de 2 séries "MÉDIO" para conclusão do ensino médio regular.
+
+**Decisão:**
+Mover função `possuiTriplaSerieMedio()` do hook para `calcularCompletude.ts`
+como `validarTriplaSerieMedio()`. Mantém lógica de ordenação por ano letivo
+e validação de segmentos.
+
+**Referências no Código:**
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:309](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `validarTriplaSerieMedio()`
+
+---
+
+### TEC8.3: Cálculo de Completude de Histórico Escolar
+
+**Motivação:**
+Histórico escolar requer que aluno tenha registros de componentes curriculares
+para 3 séries do ensino médio.
+
+**Decisão:**
+Implementar `calcularCompletudeHistoricoEscolar()` que:
+1. Conta séries com históricos vinculados
+2. Status "completo" se totalSeries >= 3
+3. Retorna estrutura compatível com `CompletudeItem`
+
+**Referências no Código:**
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:257](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `calcularCompletudeHistoricoEscolar()`
+
+---
+
 ## OBSERVAÇÕES GERAIS
 
 ### Manutenção Futura

@@ -6,10 +6,17 @@ import {
   ValoresDadosPessoais,
 } from "@/lib/importacao/dadosPessoaisMetadata";
 import type { PhaseStatus } from "@/lib/core/data/gestao-alunos/phases.types";
+// [FEAT:emissao-documentos_TEC8] Usa DRY.BACKEND:CALCULAR_COMPLETUDE para fases.
 import {
+  calcularCompletudeDadosEscolares,
   calcularCompletudeEmissao,
+  calcularCompletudeHistoricoEscolar,
   type ResumoCompletudeEmissao,
+  type ResumoDadosEscolares,
+  type ResumoHistoricoEscolar,
 } from "@/lib/core/data/gestao-alunos/documentos/calcularCompletude";
+
+export type { ResumoDadosEscolares, ResumoHistoricoEscolar };
 
 type EnturmacaoResumo = {
   anoLetivo: string;
@@ -49,21 +56,6 @@ export type ResumoDadosPessoaisTurma = {
   completos: number;
   pendentes: number;
   percentualGeral: number;
-};
-
-export type ResumoDadosEscolares = {
-  totalSlots: number;
-  slotsPreenchidos: number;
-  percentual: number;
-  completo: boolean;
-  status: PhaseStatus;
-};
-
-export type ResumoHistoricoEscolar = {
-  totalRegistros: number;
-  totalSeries: number;
-  status: PhaseStatus;
-  completo: boolean;
 };
 
 type SerieCursadaResumo = {
@@ -166,97 +158,12 @@ async function obterAlunosCertificacao(filtros: FiltrosParams) {
   return alunosResposta.map<AlunoCertificacao>((aluno) => ({
     ...aluno,
     progressoDadosPessoais: calcularResumoDadosPessoais(aluno),
-    progressoDadosEscolares: calcularResumoDadosEscolares(aluno),
-    progressoHistoricoEscolar: calcularResumoHistoricoEscolar(aluno.seriesCursadas),
+    progressoDadosEscolares: calcularCompletudeDadosEscolares(aluno),
+    progressoHistoricoEscolar: calcularCompletudeHistoricoEscolar(aluno),
     // [FEAT:emissao-documentos_TEC7] Calcula completude da emissao usando def-objects.
     progressoEmissaoDocumentos: calcularCompletudeEmissao({
       ...aluno,
       seriesCursadas: aluno.seriesCursadas ?? [],
     }),
   }));
-}
-
-function calcularResumoDadosEscolares(aluno: AlunoApiResponse): ResumoDadosEscolares {
-  const totalSlots = 3;
-  const slotsPreenchidos = [
-    Boolean(aluno.situacaoEscolar?.trim()),
-    Boolean(aluno.motivoEncerramento?.trim()),
-    possuiTriplaSerieMedio(aluno.seriesCursadas),
-  ].filter(Boolean).length;
-
-  let status: ResumoDadosEscolares["status"] = "incompleto";
-  if (slotsPreenchidos === 0) {
-    status = "ausente";
-  } else if (slotsPreenchidos === totalSlots) {
-    status = "completo";
-  }
-
-  const percentual = Math.round((slotsPreenchidos / totalSlots) * 100);
-
-  return {
-    totalSlots,
-    slotsPreenchidos,
-    percentual,
-    completo: status === "completo",
-    status,
-  };
-}
-
-function calcularResumoHistoricoEscolar(
-  series?: SerieCursadaResumo[]
-): ResumoHistoricoEscolar {
-  const totalRegistros =
-    series?.reduce((total, serie) => {
-      const count = serie._count?.historicos ?? serie.historicos?.length ?? 0;
-      return total + count;
-    }, 0) ?? 0;
-  const totalSeries =
-    series?.filter((serie) => {
-      const count = serie._count?.historicos ?? serie.historicos?.length ?? 0;
-      return count > 0;
-    }).length ?? 0;
-
-  const status: PhaseStatus = totalSeries === 3 ? "completo" : "ausente";
-
-  return {
-    totalRegistros,
-    totalSeries,
-    status,
-    completo: status === "completo",
-  };
-}
-
-function possuiTriplaSerieMedio(series?: SerieCursadaResumo[]): boolean {
-  if (!series || series.length < 3) return false;
-
-  const seriesOrdenadas = [...series].sort((a, b) =>
-    compararAnoLetivoAsc(a.anoLetivo, b.anoLetivo)
-  );
-
-  const [maisAntiga, ...restantes] = seriesOrdenadas;
-  const segmentoAntiga = normalizarSegmento(maisAntiga.segmento) || "-";
-  if (segmentoAntiga !== "-") return false;
-
-  const medioRestantes = restantes.filter(
-    (serie) => normalizarSegmento(serie.segmento) === "MÉDIO"
-  ).length;
-
-  return medioRestantes >= 2;
-}
-
-function normalizarSegmento(seg?: string | null): string {
-  return (seg ?? "").trim().toUpperCase();
-}
-
-function compararAnoLetivoAsc(a?: string | null, b?: string | null): number {
-  const anoA = Number.parseInt((a ?? "").trim(), 10);
-  const anoB = Number.parseInt((b ?? "").trim(), 10);
-
-  const validoA = Number.isFinite(anoA);
-  const validoB = Number.isFinite(anoB);
-
-  if (validoA && validoB) return anoA - anoB;
-  if (validoA) return -1;
-  if (validoB) return 1;
-  return (a ?? "").localeCompare(b ?? "");
 }

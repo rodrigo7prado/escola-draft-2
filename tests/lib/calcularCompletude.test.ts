@@ -2,8 +2,11 @@ import dadosEscolares from "@/lib/core/data/gestao-alunos/def-objects/dadosEscol
 import dadosPessoais from "@/lib/core/data/gestao-alunos/def-objects/dadosPessoais";
 import historicoEscolar from "@/lib/core/data/gestao-alunos/def-objects/historicoEscolar";
 import {
+  calcularCompletudeDadosEscolares,
   calcularCompletudeDocumento,
   calcularCompletudeEmissao,
+  calcularCompletudeHistoricoEscolar,
+  validarTriplaSerieMedio,
   type DadosAlunoCompleto,
 } from "@/lib/core/data/gestao-alunos/documentos/calcularCompletude";
 import type { DocEmissao } from "@/lib/core/data/gestao-alunos/phases.types";
@@ -65,6 +68,131 @@ describe("calcularCompletudeEmissao", () => {
   it("retorna ausente quando nenhum documento possui dados", () => {
     const resumo = calcularCompletudeEmissao({});
     expect(resumo.statusGeral).toBe("ausente");
+  });
+});
+
+describe("calcularCompletudeDadosEscolares", () => {
+  it("retorna completo quando todos os slots estao preenchidos", () => {
+    const aluno: DadosAlunoCompleto = {
+      situacaoEscolar: "Ativo",
+      motivoEncerramento: "Concluido",
+      seriesCursadas: [
+        { anoLetivo: "2020", segmento: "-" },
+        { anoLetivo: "2021", segmento: "MÉDIO" },
+        { anoLetivo: "2022", segmento: "MÉDIO" },
+      ],
+    };
+
+    const resultado = calcularCompletudeDadosEscolares(aluno);
+
+    expect(resultado.status).toBe("completo");
+    expect(resultado.percentual).toBe(100);
+    expect(resultado.camposPreenchidos).toBe(3);
+    expect(resultado.camposFaltantes).toHaveLength(0);
+  });
+
+  it("retorna ausente quando nenhum slot esta preenchido", () => {
+    const aluno: DadosAlunoCompleto = {
+      situacaoEscolar: " ",
+      motivoEncerramento: null,
+      seriesCursadas: [],
+    };
+
+    const resultado = calcularCompletudeDadosEscolares(aluno);
+
+    expect(resultado.status).toBe("ausente");
+    expect(resultado.percentual).toBe(0);
+    expect(resultado.camposPreenchidos).toBe(0);
+    expect(resultado.camposFaltantes).toHaveLength(3);
+  });
+
+  it("retorna incompleto quando ha slots parciais", () => {
+    const aluno: DadosAlunoCompleto = {
+      situacaoEscolar: "Ativo",
+      motivoEncerramento: null,
+      seriesCursadas: [{ anoLetivo: "2021", segmento: "-" }],
+    };
+
+    const resultado = calcularCompletudeDadosEscolares(aluno);
+    const campos = resultado.camposFaltantes?.map((campo) => campo.campo) ?? [];
+
+    expect(resultado.status).toBe("incompleto");
+    expect(resultado.percentual).toBe(33);
+    expect(resultado.camposPreenchidos).toBe(1);
+    expect(campos).toEqual(
+      expect.arrayContaining(["motivoEncerramento", "triplaSerieMedio"])
+    );
+  });
+});
+
+describe("calcularCompletudeHistoricoEscolar", () => {
+  it("retorna completo quando ha historicos para 3 series", () => {
+    const aluno: DadosAlunoCompleto = {
+      seriesCursadas: [
+        { historicos: [{}, {}] },
+        { historicos: [{}] },
+        { _count: { historicos: 2 } },
+      ],
+    };
+
+    const resultado = calcularCompletudeHistoricoEscolar(aluno);
+
+    expect(resultado.status).toBe("completo");
+    expect(resultado.totalSeries).toBe(3);
+    expect(resultado.totalRegistros).toBe(5);
+    expect(resultado.percentual).toBe(100);
+  });
+
+  it("retorna ausente quando nao ha historicos", () => {
+    const resultado = calcularCompletudeHistoricoEscolar({ seriesCursadas: [] });
+
+    expect(resultado.status).toBe("ausente");
+    expect(resultado.totalSeries).toBe(0);
+    expect(resultado.totalRegistros).toBe(0);
+    expect(resultado.percentual).toBe(0);
+    expect(resultado.camposFaltantes).toHaveLength(1);
+  });
+
+  it("retorna incompleto quando ha historicos para 2 series", () => {
+    const resultado = calcularCompletudeHistoricoEscolar({
+      seriesCursadas: [{ historicos: [{}] }, { historicos: [{}, {}] }],
+    });
+
+    expect(resultado.status).toBe("incompleto");
+    expect(resultado.totalSeries).toBe(2);
+    expect(resultado.totalRegistros).toBe(3);
+    expect(resultado.percentual).toBe(67);
+  });
+});
+
+describe("validarTriplaSerieMedio", () => {
+  it("retorna true para 1 serie '-' e 2 series 'MÉDIO'", () => {
+    const series = [
+      { anoLetivo: "2020", segmento: "-" },
+      { anoLetivo: "2021", segmento: "MÉDIO" },
+      { anoLetivo: "2022", segmento: "MÉDIO" },
+    ];
+
+    expect(validarTriplaSerieMedio(series)).toBe(true);
+  });
+
+  it("retorna false para 3 series 'MÉDIO'", () => {
+    const series = [
+      { anoLetivo: "2020", segmento: "MÉDIO" },
+      { anoLetivo: "2021", segmento: "MÉDIO" },
+      { anoLetivo: "2022", segmento: "MÉDIO" },
+    ];
+
+    expect(validarTriplaSerieMedio(series)).toBe(false);
+  });
+
+  it("retorna false quando ha menos de 3 series", () => {
+    const series = [
+      { anoLetivo: "2020", segmento: "-" },
+      { anoLetivo: "2021", segmento: "MÉDIO" },
+    ];
+
+    expect(validarTriplaSerieMedio(series)).toBe(false);
   });
 });
 

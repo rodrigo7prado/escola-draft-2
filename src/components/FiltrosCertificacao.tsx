@@ -28,6 +28,10 @@ export function FiltrosCertificacao({
   onLimparFiltros,
   hasFiltrosAtivos
 }: FiltrosCertificacaoProps) {
+  const formatTurmaLabel = (turmaLabel: string) => {
+    const [prefixo] = turmaLabel.split('-');
+    return prefixo?.trim() || turmaLabel;
+  };
 
   return (
     <div className="space-y-2 border rounded-sm p-3 bg-neutral-50">
@@ -49,51 +53,38 @@ export function FiltrosCertificacao({
       </div>
 
       {/* Layout compacto em linha */}
-      <div className="space-y-2">
+      <div className="space-y-1">
         {/* Período Letivo */}
-        <div className="flex items-center gap-2">
-          <label className="text-[10px] font-medium text-neutral-600 w-20 flex-shrink-0">
-            Período:
-          </label>
-          {isLoadingAnos ? (
-            <div className="text-[10px] text-neutral-500">Carregando...</div>
-          ) : (
-            <div className="flex-1 min-w-0">
-              <ScrollableButtonGroup
-                options={[...anosDisponiveis].sort((a, b) => b.localeCompare(a))}
-                value={anoLetivo}
-                onChange={onAnoChange}
-                buttonClassName="min-w-[60px]"
-                maxVisibleItems={2}
-              />
-            </div>
-          )}
-        </div>
+        {isLoadingAnos ? (
+          <div className="text-[10px] text-neutral-500">Carregando...</div>
+        ) : (
+          <ScrollableButtonGroup
+            options={[...anosDisponiveis].sort((a, b) => b.localeCompare(a))}
+            value={anoLetivo}
+            onChange={onAnoChange}
+            getItemTitle={(option) => `Período: ${option}`}
+          />
+        )}
 
         {/* Turmas */}
         {anoLetivo && (
-          <div className="flex items-start gap-2">
-            <label className="text-[10px] font-medium text-neutral-600 w-20 flex-shrink-0 pt-1">
-              Turmas:
-            </label>
+          <>
             {isLoadingTurmas ? (
               <div className="text-[10px] text-neutral-500">Carregando...</div>
             ) : turmasDisponiveis.length > 0 ? (
-              <div className="flex-1 min-w-0">
-                <ScrollableButtonGroup
-                  options={turmasDisponiveis}
-                  value={turma}
-                  onChange={onTurmaChange}
-                  buttonClassName="min-w-[70px]"
-                  maxVisibleItems={3}
-                />
-              </div>
+              <ScrollableButtonGroup
+                options={turmasDisponiveis}
+                value={turma}
+                onChange={onTurmaChange}
+                getItemLabel={formatTurmaLabel}
+                getItemTitle={(option) => `Turma: ${formatTurmaLabel(option)}`}
+              />
             ) : (
               <div className="text-[10px] text-neutral-500">
                 Nenhuma turma encontrada
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
 
@@ -101,7 +92,9 @@ export function FiltrosCertificacao({
       {hasFiltrosAtivos && (
         <div className="pt-2 border-t text-[10px] text-neutral-600">
           {anoLetivo && <span>Ano: {anoLetivo}</span>}
-          {turma && <span className="ml-2">| Turma: {turma}</span>}
+          {turma && (
+            <span className="ml-2">| Turma: {formatTurmaLabel(turma)}</span>
+          )}
         </div>
       )}
     </div>

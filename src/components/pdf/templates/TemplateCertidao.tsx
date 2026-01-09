@@ -1,6 +1,7 @@
 // [FEAT:emissao-documentos_TEC2] Uso de @react-pdf/renderer para geração de PDFs
 import { Document, Page, Text } from "@react-pdf/renderer";
 import type { DadosCertidao } from "@/lib/core/data/gestao-alunos/documentos/types";
+import { dataDeConclusao } from "@/lib/core/data/gestao-alunos/dadosAdicionais";
 // [FEAT:emissao-documentos_TEC4] Layout centralizado em MAPEAMENTO_LAYOUT_DOCUMENTOS
 import { MAPEAMENTO_LAYOUT_DOCUMENTOS } from "@/lib/core/data/gestao-alunos/documentos/layout";
 // [FEAT:emissao-documentos_TEC5] Componentes PDF comuns reutilizados
@@ -9,7 +10,7 @@ import { PdfFooterCoordenadoria } from "@/components/pdf/common/PdfFooterCoorden
 import { PdfHeader } from "@/components/pdf/common/PdfHeader";
 import { criarEstilosDocumento } from "@/components/pdf/common/styles";
 // [FEAT:emissao-documentos_TEC6] Formatters centralizados para consistência
-import { formatarData, getCampoTexto } from "@/components/pdf/common/formatters";
+import { formatarData, formatarDataExtenso, getCampoTexto } from "@/components/pdf/common/formatters";
 
 export type TemplateCertidaoProps = {
   dados: DadosCertidao;
@@ -30,7 +31,7 @@ export function CertidaoPage({ dados }: TemplateCertidaoProps) {
   const nomePai = getCampoTexto(aluno, "nomePai");
   const naturalidade = getCampoTexto(aluno, "naturalidade");
   const dataNascimento = formatarData(aluno["dataNascimento"] as string | Date | null);
-  const dataConclusao = formatarData(aluno["dataConclusaoEnsinoMedio"] as string | Date | null);
+  const dataConclusao = formatarData(dataDeConclusao.EMR);
   const segmento = getCampoTexto(serie, "segmento", "ENSINO MÉDIO");
 
   const leiLdb = metadados.legislacao.leiLDB;
@@ -42,7 +43,7 @@ export function CertidaoPage({ dados }: TemplateCertidaoProps) {
   const registroFolha = getCampoTexto(null, "registroFolha");
   const livro = metadados.livros.CERTIDAO || getCampoTexto(null, "livro");
   const localEmissao = "Rio de Janeiro";
-  const dataEmissao = getCampoTexto(null, "dataEmissao");
+  const dataEmissao = formatarDataExtenso(new Date());
 
   const corpo =
     `Em cumprimento ao art. 24, inciso VII da ${leiLdb} e a ${resolucao}, CERTIFICO que, ` +

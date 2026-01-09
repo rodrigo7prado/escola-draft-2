@@ -45,6 +45,18 @@ export const formatarData = (
   return fallback;
 };
 
+export const formatarDataExtenso = (
+  valor: Date | null | undefined,
+  fallback: string = PLACEHOLDER
+) => {
+  if (!valor) return fallback;
+  return valor.toLocaleDateString("pt-BR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
 export const formatarNumero = (
   valor: number | string | null | undefined,
   fallback: string = PLACEHOLDER

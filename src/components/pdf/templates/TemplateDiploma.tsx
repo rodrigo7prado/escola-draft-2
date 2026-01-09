@@ -1,5 +1,6 @@
 import { Document, Page, Text } from "@react-pdf/renderer";
 import type { DadosDiploma } from "@/lib/core/data/gestao-alunos/documentos/types";
+import { dataDeConclusao } from "@/lib/core/data/gestao-alunos/dadosAdicionais";
 import { MAPEAMENTO_LAYOUT_DOCUMENTOS } from "@/lib/core/data/gestao-alunos/documentos/layout";
 import { PdfAssinaturas } from "@/components/pdf/common/PdfAssinaturas";
 import { PdfFooterCoordenadoria } from "@/components/pdf/common/PdfFooterCoordenadoria";
@@ -7,6 +8,7 @@ import { PdfHeader } from "@/components/pdf/common/PdfHeader";
 import { criarEstilosDocumento } from "@/components/pdf/common/styles";
 import {
   formatarData,
+  formatarDataExtenso,
   formatarNumero,
   getCampoTexto,
 } from "@/components/pdf/common/formatters";
@@ -30,7 +32,7 @@ export function DiplomaPage({ dados }: TemplateDiplomaProps) {
   const nomePai = getCampoTexto(aluno, "nomePai");
   const naturalidade = getCampoTexto(aluno, "naturalidade");
   const dataNascimento = formatarData(aluno["dataNascimento"] as string | Date | null);
-  const dataConclusao = formatarData(aluno["dataConclusaoEnsinoMedio"] as string | Date | null);
+  const dataConclusao = formatarData(dataDeConclusao.EMR);
   const segmento = getCampoTexto(serie, "segmento", "ENSINO MÉDIO");
 
   const leiLdb = metadados.legislacao.leiLDB;
@@ -44,7 +46,7 @@ export function DiplomaPage({ dados }: TemplateDiplomaProps) {
   const registroNumero = getCampoTexto(null, "registroNumero");
   const registroFolha = getCampoTexto(null, "registroFolha");
   const localEmissao = "Rio de Janeiro";
-  const dataEmissao = getCampoTexto(null, "dataEmissao");
+  const dataEmissao = formatarDataExtenso(new Date());
 
   const corpo =
     `O Diretor do ${metadados.nome}, em cumprimento ao art. 24, inciso VII da ${leiLdb} e a ` +

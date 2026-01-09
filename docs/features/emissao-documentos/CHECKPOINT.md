@@ -1195,7 +1195,7 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
     [x] T34.2.2: Arquivos que usam tipo `ResumoDadosPessoais`:
       - `/src/hooks/useAlunosCertificacao.ts`
       - `/src/components/ListaAlunosCertificacao.tsx` - UI (IMPACTO: verificar compatibilidade)
-      - `/tests/integration/emissao-documentos-completude.test.ts` - testes (IMPACTO: atualizar)
+      - `/tests/integration/emissao-documentos-completude.test.tsx` - testes (IMPACTO: atualizar)
     [x] T34.2.3: Arquivos que usam `CAMPOS_DADOS_PESSOAIS_CONFIG`:
       - `/src/components/DadosAlunoEditavel.tsx` - formulário de edição (IMPACTO: **NENHUM** - continua usando)
       - `/src/hooks/useAlunoSelecionado.ts` - (IMPACTO: verificar)
@@ -1303,7 +1303,7 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
       - **Isso é o comportamento desejado!**
 
   [x] CP34.7: Atualizar testes
-    [x] T34.7.1: Arquivo: `/tests/integration/emissao-documentos-completude.test.ts`
+    [x] T34.7.1: Arquivo: `/tests/integration/emissao-documentos-completude.test.tsx`
       - Verificar se testa `progressoDadosPessoais`
       - Atualizar expectativas para nova lógica (baseada em def-objects)
     [x] T34.7.2: Arquivo: `/tests/lib/importacao/dadosPessoaisMetadata.test.ts`

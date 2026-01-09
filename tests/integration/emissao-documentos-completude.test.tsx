@@ -56,7 +56,7 @@ describe("Integracao emissao documentos", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("ausente")).toBeInTheDocument();
+      expect(screen.getByText("incompleto")).toBeInTheDocument();
     });
   });
 

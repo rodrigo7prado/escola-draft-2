@@ -371,3 +371,548 @@ A estrutura permite expansão futura para:
 - Implementar validações personalizadas por documento
 - Criar relatórios de completude da turma
 - Filtrar alunos por documentos prontos
+
+---
+
+## Sessão 4 (Extensão de Sistema de Completude para Fases) - Feature: Emissão de Documentos
+
+### Contexto
+Esta sessão ESTENDE o sistema de completude implementado na Sessão 3 para suportar cálculo de completude por fase de gestão de alunos. Atualmente, o hook `useAlunosCertificacao` possui funções inline (`calcularResumoDadosEscolares` e `calcularResumoHistoricoEscolar`) que calculam completude de forma ad-hoc. Esta sessão irá:
+1. Abstrair essas funções para o arquivo `calcularCompletude.ts` (já existente)
+2. Seguir o mesmo padrão estabelecido para documentos
+3. Usar def-objects como fonte única da verdade
+4. Garantir consistência entre cálculos de documentos e fases
+
+### Motivação
+- **Reutilização de padrão:** Sistema de completude de documentos já foi implementado e testado
+- **Consistência:** Todas as completudes seguirão mesmo cálculo, status e formato
+- **Manutenibilidade:** Mudanças em def-objects refletirão automaticamente nos cálculos
+- **Testabilidade:** Funções puras facilitam testes unitários
+
+### Componentes DRY Usados
+- [DRY.BACKEND:CALCULAR_COMPLETUDE_DOCUMENTOS] - **ESTENDIDO** nesta sessão para suportar fases
+- [DRY.OBJECT:PHASES] - Configuração de fases
+
+### Referências de Código
+- **Código a refatorar:** `/src/hooks/useAlunosCertificacao.ts` (linhas 179-227)
+  - `calcularResumoDadosEscolares()` - função inline a ser abstraída
+  - `calcularResumoHistoricoEscolar()` - função inline a ser abstraída
+  - `possuiTriplaSerieMedio()` - validador específico (manter ou mover)
+- **Sistema existente:** `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts`
+  - Padrão a seguir: `calcularCompletudeDocumento()` e `calcularCompletudeEmissao()`
+- **Def-objects:** `/src/lib/core/data/gestao-alunos/def-objects/`
+  - `dadosPessoais.ts` - já usado para documentos
+  - `dadosEscolares.ts` - será fonte de campos obrigatórios para FASE:DADOS_ESCOLARES
+  - `historicoEscolar.ts` - será fonte para FASE:HISTORICO_ESCOLAR
+
+### Checkpoints
+
+[ ] CP19: Análise e planejamento da extensão
+  [ ] CP19.1: Analisar código inline existente
+    [ ] T19.1.1: Ler função `calcularResumoDadosEscolares()` (useAlunosCertificacao.ts:179-202)
+      - Identifica 3 slots: situacaoEscolar, motivoEncerramento, tripla série médio
+      - Retorna: totalSlots, slotsPreenchidos, percentual, completo, status
+    [ ] T19.1.2: Ler função `calcularResumoHistoricoEscolar()` (useAlunosCertificacao.ts:205-227)
+      - Conta registros em seriesCursadas[].historicos[]
+      - Status "completo" se totalSeries === 3
+      - Retorna: totalRegistros, totalSeries, status, completo
+    [ ] T19.1.3: Ler função auxiliar `possuiTriplaSerieMedio()` (useAlunosCertificacao.ts:229-245)
+      - Valida regra específica: 1 série "-" + 2 séries "MÉDIO"
+      - Ordenação por ano letivo
+
+  [ ] CP19.2: Identificar padrão comum com sistema de documentos
+    [ ] T19.2.1: Ambos contam campos/slots preenchidos vs total
+    [ ] T19.2.2: Ambos calculam percentual
+    [ ] T19.2.3: Ambos determinam status (completo/incompleto/ausente)
+    [ ] T19.2.4: Documentos usam def-objects, fases têm validações específicas
+    [ ] T19.2.5: **Decisão:** Usar def-objects + validadores customizados
+
+  [ ] CP19.3: Definir estratégia de tipos
+    [ ] T19.3.1: Verificar tipos existentes:
+      - `CompletudeDocumento` (já existe para documentos)
+      - `ResumoDadosEscolares` (tipo inline no hook)
+      - `ResumoHistoricoEscolar` (tipo inline no hook)
+    [ ] T19.3.2: Criar tipo genérico `CompletudeItem`:
+      ```typescript
+      export type CompletudeItem = {
+        fase?: Phase;              // fase se aplicável
+        documento?: DocEmissao;    // documento se aplicável
+        status: PhaseStatus;
+        percentual: number;
+        camposPreenchidos: number;
+        totalCampos: number;
+        camposFaltantes?: CampoFaltante[];
+      };
+      ```
+    [ ] T19.3.3: Manter `CompletudeDocumento` como alias/extensão de `CompletudeItem`
+    [ ] T19.3.4: Adapters se necessário para compatibilidade com código existente
+
+[ ] CP20: Criar funções de completude para FASE:DADOS_ESCOLARES
+  [ ] CP20.1: Análise de campos obrigatórios
+    [ ] T20.1.1: Consultar def-object `dadosEscolares.ts`
+    [ ] T20.1.2: Identificar campos marcados para documentos (Certidão, Certificado, etc)
+    [ ] T20.1.3: Campos específicos da fase:
+      - `Aluno.situacaoEscolar` - situação atual do aluno
+      - `Aluno.motivoEncerramento` - motivo de saída se aplicável
+      - `SerieCursada.segmento` - validação de tripla série do médio
+
+  [ ] CP20.2: Criar função `calcularCompletudeDadosEscolares()`
+    [ ] T20.2.1: Localização: `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts`
+    [ ] T20.2.2: Assinatura:
+      ```typescript
+      // [FEAT:emissao-documentos_TEC8.1] Calcula completude FASE:DADOS_ESCOLARES
+      export function calcularCompletudeDadosEscolares(
+        dadosAluno: DadosAlunoCompleto
+      ): CompletudeItem
+      ```
+    [ ] T20.2.3: Implementação:
+      1. Buscar campos de `dadosEscolares.Aluno` que são marcados para documentos
+      2. Validar campo `situacaoEscolar`: `valorPreenchido(dadosAluno.situacaoEscolar)`
+      3. Validar campo `motivoEncerramento`: `valorPreenchido(dadosAluno.motivoEncerramento)`
+      4. Validar "tripla série médio": usar função auxiliar `validarTriplaSerieMedio()`
+      5. Contar slots preenchidos vs total (3 slots)
+      6. Calcular percentual: `(slotsPreenchidos / 3) * 100`
+      7. Determinar status:
+         - "completo": todos os 3 slots preenchidos
+         - "ausente": nenhum slot preenchido
+         - "incompleto": slots parciais
+      8. Montar `camposFaltantes` se necessário
+    [ ] T20.2.4: Retornar objeto `CompletudeItem`:
+      ```typescript
+      {
+        fase: "FASE:DADOS_ESCOLARES",
+        status: status,
+        percentual: percentual,
+        camposPreenchidos: slotsPreenchidos,
+        totalCampos: 3,
+        camposFaltantes: camposFaltantes
+      }
+      ```
+
+  [ ] CP20.3: Criar função auxiliar `validarTriplaSerieMedio()`
+    [ ] T20.3.1: Mover função `possuiTriplaSerieMedio()` do hook para `calcularCompletude.ts`
+    [ ] T20.3.2: Renomear para `validarTriplaSerieMedio()` (mais descritivo)
+    [ ] T20.3.3: Adicionar comentário de rastreabilidade:
+      ```typescript
+      // [FEAT:emissao-documentos_TEC8.2] Valida regra específica: 1 série "-" + 2 "MÉDIO"
+      function validarTriplaSerieMedio(series?: SerieCursadaCompleta[]): boolean {
+        // Implementação atual mantida
+      }
+      ```
+    [ ] T20.3.4: Manter funções auxiliares `normalizarSegmento()` e `compararAnoLetivoAsc()`
+
+[ ] CP21: Criar funções de completude para FASE:HISTORICO_ESCOLAR
+  [ ] CP21.1: Análise de campos obrigatórios
+    [ ] T21.1.1: Consultar def-object `historicoEscolar.ts`
+    [ ] T21.1.2: Identificar campos marcados para "Histórico Escolar"
+    [ ] T21.1.3: Regra específica: deve ter históricos para 3 séries
+
+  [ ] CP21.2: Criar função `calcularCompletudeHistoricoEscolar()`
+    [ ] T21.2.1: Localização: `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts`
+    [ ] T21.2.2: Assinatura:
+      ```typescript
+      // [FEAT:emissao-documentos_TEC8.3] Calcula completude FASE:HISTORICO_ESCOLAR
+      export function calcularCompletudeHistoricoEscolar(
+        dadosAluno: DadosAlunoCompleto
+      ): CompletudeItem
+      ```
+    [ ] T21.2.3: Implementação:
+      1. Extrair `seriesCursadas` de `dadosAluno`
+      2. Contar total de registros em `seriesCursadas[].historicos[]`
+      3. Contar séries que têm históricos (totalSeries)
+      4. Status "completo" se `totalSeries >= 3`
+      5. Status "ausente" se `totalSeries === 0`
+      6. Status "incompleto" nos casos intermediários
+      7. Percentual baseado em `totalSeries / 3 * 100` (máximo 100%)
+    [ ] T21.2.4: Retornar objeto `CompletudeItem`:
+      ```typescript
+      {
+        fase: "FASE:HISTORICO_ESCOLAR",
+        status: status,
+        percentual: Math.min(100, Math.round((totalSeries / 3) * 100)),
+        camposPreenchidos: totalSeries,
+        totalCampos: 3,
+        camposFaltantes: totalSeries < 3 ? [{
+          campo: "historicos",
+          label: "Histórico escolar completo (3 séries)",
+          tabela: "SerieCursada",
+          fase: "FASE:HISTORICO_ESCOLAR"
+        }] : []
+      }
+      ```
+
+[ ] CP22: Criar função consolidadora (opcional)
+  [ ] CP22.1: Avaliar necessidade
+    [ ] T22.1.1: Verificar se há uso para função que consolida TODAS as 4 fases
+    [ ] T22.1.2: Se sim, criar `calcularCompletudeTodasFases()`
+    [ ] T22.1.3: Se não, pular este checkpoint
+
+  [ ] CP22.2: Implementar função consolidadora (se necessário)
+    [ ] T22.2.1: Assinatura:
+      ```typescript
+      export function calcularCompletudeTodasFases(
+        dadosAluno: DadosAlunoCompleto
+      ): ResumoCompletudeFases
+      ```
+    [ ] T22.2.2: Chamar funções de cada fase:
+      - DADOS_PESSOAIS: `calcularResumoDadosPessoais()` (já existe em outro arquivo)
+      - DADOS_ESCOLARES: `calcularCompletudeDadosEscolares()` (nova)
+      - HISTORICO_ESCOLAR: `calcularCompletudeHistoricoEscolar()` (nova)
+      - EMISSAO_DOCUMENTOS: `calcularCompletudeEmissao()` (já existe)
+    [ ] T22.2.3: Consolidar status geral de todas as 4 fases
+    [ ] T22.2.4: Retornar tipo `ResumoCompletudeFases` (a definir se necessário)
+
+[ ] CP23: Refatorar hook useAlunosCertificacao
+  [ ] CP23.1: Remover funções inline
+    [ ] T23.1.1: DELETAR função `calcularResumoDadosEscolares()` (linhas 179-202)
+      - Será substituída por `calcularCompletudeDadosEscolares()` do DRY
+    [ ] T23.1.2: DELETAR função `calcularResumoHistoricoEscolar()` (linhas 205-227)
+      - Será substituída por `calcularCompletudeHistoricoEscolar()` do DRY
+    [ ] T23.1.3: DELETAR função `possuiTriplaSerieMedio()` (linhas 229-245)
+      - Movida para `calcularCompletude.ts` como `validarTriplaSerieMedio()`
+    [ ] T23.1.4: DELETAR funções auxiliares `normalizarSegmento()` e `compararAnoLetivoAsc()`
+      - Movidas para `calcularCompletude.ts`
+
+  [ ] CP23.2: Adicionar imports do DRY
+    [ ] T23.2.1: Adicionar import no topo do arquivo:
+      ```typescript
+      // [FEAT:emissao-documentos_TEC8] Usa DRY.BACKEND:CALCULAR_COMPLETUDE para fases
+      import {
+        calcularCompletudeEmissao,
+        calcularCompletudeDadosEscolares,
+        calcularCompletudeHistoricoEscolar,
+        type ResumoCompletudeEmissao,
+        type CompletudeItem,
+      } from '@/lib/core/data/gestao-alunos/documentos/calcularCompletude';
+      ```
+
+  [ ] CP23.3: Atualizar tipos no hook
+    [ ] T23.3.1: Verificar tipo `ResumoDadosEscolares`:
+      - Se compatível com `CompletudeItem`, usar `CompletudeItem`
+      - Se incompatível, criar adapter ou manter tipo atual
+    [ ] T23.3.2: Verificar tipo `ResumoHistoricoEscolar`:
+      - Mesma análise de compatibilidade
+    [ ] T23.3.3: Atualizar tipo `AlunoCertificacao`:
+      ```typescript
+      export type AlunoCertificacao = AlunoApiResponse & {
+        progressoDadosPessoais: ResumoDadosPessoais;
+        progressoDadosEscolares: CompletudeItem;  // atualizado
+        progressoHistoricoEscolar: CompletudeItem; // atualizado
+        progressoEmissaoDocumentos: ResumoCompletudeEmissao;
+      };
+      ```
+
+  [ ] CP23.4: Atualizar função `obterAlunosCertificacao`
+    [ ] T23.4.1: Localização: linha 146 do hook
+    [ ] T23.4.2: Substituir chamadas:
+      ```typescript
+      // ANTES:
+      progressoDadosEscolares: calcularResumoDadosEscolares(aluno),
+      progressoHistoricoEscolar: calcularResumoHistoricoEscolar(aluno.seriesCursadas),
+
+      // DEPOIS:
+      progressoDadosEscolares: calcularCompletudeDadosEscolares(aluno),
+      progressoHistoricoEscolar: calcularCompletudeHistoricoEscolar(aluno),
+      ```
+
+  [ ] CP23.5: Verificar compatibilidade com componente
+    [ ] T23.5.1: Abrir `/src/components/ListaAlunosCertificacao.tsx`
+    [ ] T23.5.2: Verificar função `montarStatusPorFase()` (linha 291)
+    [ ] T23.5.3: Garantir que acessa campos corretos:
+      - `aluno.progressoDadosEscolares.status` (deve existir)
+      - `aluno.progressoDadosEscolares.percentual` (deve existir)
+      - `aluno.progressoHistoricoEscolar.status` (deve existir)
+      - `aluno.progressoHistoricoEscolar.totalRegistros` (verificar se existe ou adaptar)
+      - `aluno.progressoHistoricoEscolar.totalSeries` (verificar se existe ou adaptar)
+    [ ] T23.5.4: Criar adapters se necessário para manter compatibilidade com UI
+
+[ ] CP24: Ajustes de compatibilidade (se necessário)
+  [ ] CP24.1: Analisar campos usados no componente
+    [ ] T24.1.1: Componente usa `progressoDadosEscolares.totalSlots` e `slotsPreenchidos`?
+      - Se sim, adicionar esses campos ao tipo `CompletudeItem` como opcionais
+      - Ou criar adapter que mapeia `totalCampos` → `totalSlots`
+    [ ] T24.1.2: Componente usa `progressoHistoricoEscolar.totalRegistros` e `totalSeries`?
+      - Se sim, adicionar ao tipo `CompletudeItem` como opcionais
+      - Ou modificar `calcularCompletudeHistoricoEscolar()` para incluir esses campos
+
+  [ ] CP24.2: Implementar adapters se necessário
+    [ ] T24.2.1: Criar função `adaptarCompletudeDadosEscolares()`:
+      ```typescript
+      function adaptarCompletudeDadosEscolares(item: CompletudeItem): ResumoDadosEscolares {
+        return {
+          totalSlots: item.totalCampos,
+          slotsPreenchidos: item.camposPreenchidos,
+          percentual: item.percentual,
+          completo: item.status === "completo",
+          status: item.status,
+        };
+      }
+      ```
+    [ ] T24.2.2: Usar adapter no hook se tipos forem incompatíveis
+
+[ ] CP25: Testes das novas funções
+  [ ] CP25.1: Testes unitários para `calcularCompletudeDadosEscolares()`
+    [ ] T25.1.1: Localização: `/tests/lib/calcularCompletude.test.ts` (adicionar aos testes existentes)
+    [ ] T25.1.2: Caso 1: Aluno com todos os slots preenchidos
+      - situacaoEscolar preenchida
+      - motivoEncerramento preenchido
+      - tripla série válida
+      - Espera: status "completo", percentual 100
+    [ ] T25.1.3: Caso 2: Aluno sem nenhum slot
+      - Campos vazios/nulos
+      - Espera: status "ausente", percentual 0
+    [ ] T25.1.4: Caso 3: Aluno com slots parciais
+      - Apenas situacaoEscolar preenchida
+      - Espera: status "incompleto", percentual ~33
+    [ ] T25.1.5: Validar array de `camposFaltantes` está correto
+
+  [ ] CP25.2: Testes unitários para `calcularCompletudeHistoricoEscolar()`
+    [ ] T25.2.1: Caso 1: Aluno com 3 séries com históricos
+      - Espera: status "completo", totalSeries 3, percentual 100
+    [ ] T25.2.2: Caso 2: Aluno sem históricos
+      - Espera: status "ausente", totalSeries 0, percentual 0
+    [ ] T25.2.3: Caso 3: Aluno com 2 séries
+      - Espera: status "incompleto", totalSeries 2, percentual ~67
+
+  [ ] CP25.3: Testes unitários para `validarTriplaSerieMedio()`
+    [ ] T25.3.1: Caso válido: 1 série "-" (mais antiga) + 2 séries "MÉDIO"
+      - Espera: true
+    [ ] T25.3.2: Caso inválido: 3 séries "MÉDIO"
+      - Espera: false
+    [ ] T25.3.3: Caso inválido: menos de 3 séries
+      - Espera: false
+
+  [ ] CP25.4: Testes de integração
+    [ ] T25.4.1: Testar hook `useAlunosCertificacao` com funções DRY
+      - Mock de dados de aluno
+      - Verificar que `progressoDadosEscolares` é calculado corretamente
+      - Verificar que `progressoHistoricoEscolar` é calculado corretamente
+    [ ] T25.4.2: Testar componente `ListaAlunosCertificacao`
+      - Renderizar com dados mockados
+      - Verificar que ícones de status aparecem
+      - Verificar tooltips com informações corretas
+
+[ ] CP26: Atualizar documentação DRY
+  [ ] CP26.1: Expandir documento existente
+    [ ] T26.1.1: Abrir `/docs/dry/backend/validacao/calcular-completude.md`
+    [ ] T26.1.2: Adicionar seção "Cálculo de Completude por Fase" após seção de documentos
+    [ ] T26.1.3: Documentar função `calcularCompletudeDadosEscolares()`:
+      - Descrição da função
+      - Parâmetros e retorno
+      - Lógica de validação (3 slots)
+      - Exemplos de uso
+    [ ] T26.1.4: Documentar função `calcularCompletudeHistoricoEscolar()`:
+      - Descrição da função
+      - Regra de 3 séries
+      - Exemplos de uso
+    [ ] T26.1.5: Documentar função auxiliar `validarTriplaSerieMedio()`:
+      - Explicar regra específica
+      - Casos de uso
+    [ ] T26.1.6: Adicionar diagrama de fluxo (opcional):
+      ```
+      calcularCompletude.ts
+      ├─ Documentos
+      │  ├─ calcularCompletudeDocumento()
+      │  └─ calcularCompletudeEmissao()
+      └─ Fases
+         ├─ calcularCompletudeDadosEscolares()
+         ├─ calcularCompletudeHistoricoEscolar()
+         └─ validarTriplaSerieMedio() (auxiliar)
+      ```
+
+  [ ] CP26.2: Atualizar metadados do DRY
+    [ ] T26.2.1: Atualizar ID DRY no summary.md (se necessário):
+      - Opção 1: Manter [DRY.BACKEND:CALCULAR_COMPLETUDE_DOCUMENTOS]
+      - Opção 2: Renomear para [DRY.BACKEND:CALCULAR_COMPLETUDE] (mais genérico)
+      - **Decisão:** Manter nome atual, expandir descrição
+    [ ] T26.2.2: Atualizar descrição no `summary.md`:
+      ```markdown
+      20. [DRY.BACKEND:CALCULAR_COMPLETUDE_DOCUMENTOS](backend/validacao/calcular-completude.md#drybackendcalcular_completude_documentos) - Sistema de análise de completude baseado em def-objects para documentos e fases
+      ```
+    [ ] T26.2.3: Adicionar seção "Uso para Fases" no documento principal
+
+  [ ] CP26.3: Adicionar exemplos práticos
+    [ ] T26.3.1: Exemplo de uso em hook:
+      ```typescript
+      // Hook useAlunosCertificacao
+      import { calcularCompletudeDadosEscolares } from '@/lib/.../calcularCompletude';
+
+      const aluno = await prisma.aluno.findUnique({...});
+      const completude = calcularCompletudeDadosEscolares(aluno);
+
+      console.log(`Status: ${completude.status}`);
+      console.log(`Percentual: ${completude.percentual}%`);
+      ```
+    [ ] T26.3.2: Exemplo de uso em componente:
+      ```typescript
+      // Componente ListaAlunosCertificacao
+      const statusDadosEscolares = aluno.progressoDadosEscolares.status;
+      const percentual = aluno.progressoDadosEscolares.percentual;
+      ```
+
+  [ ] CP26.4: Adicionar referências cruzadas
+    [ ] T26.4.1: No arquivo DRY, adicionar seção "Componentes Relacionados":
+      - Hook: `useAlunosCertificacao`
+      - Componente: `ListaAlunosCertificacao`
+      - Tipos: `CompletudeItem`, `ResumoDadosEscolares`, `ResumoHistoricoEscolar`
+    [ ] T26.4.2: No arquivo DRY, adicionar seção "Features que Utilizam":
+      - Emissão de Documentos (origem)
+      - Listagem de Alunos (consumidor)
+
+[ ] CP27: Validação final e garantias de uso do DRY
+  [ ] CP27.1: Verificar imports no código
+    [ ] T27.1.1: Executar comando:
+      ```bash
+      grep -r "calcularCompletudeDadosEscolares" src/hooks/
+      ```
+      - Deve encontrar import em `useAlunosCertificacao.ts`
+    [ ] T27.1.2: Executar comando:
+      ```bash
+      grep -r "calcularCompletudeHistoricoEscolar" src/hooks/
+      ```
+      - Deve encontrar import em `useAlunosCertificacao.ts`
+    [ ] T27.1.3: Verificar que imports vêm de `calcularCompletude.ts` (não código inline)
+
+  [ ] CP27.2: Verificar comentários de rastreabilidade
+    [ ] T27.2.1: Executar comando:
+      ```bash
+      grep -r "TEC8" src/
+      ```
+      - Deve encontrar comentários em:
+        - `calcularCompletude.ts` (funções novas)
+        - `useAlunosCertificacao.ts` (import)
+    [ ] T27.2.2: Garantir formato correto: `[FEAT:emissao-documentos_TEC8.X]`
+
+  [ ] CP27.3: Validar documentação DRY atualizada
+    [ ] T27.3.1: Arquivo `/docs/dry/backend/validacao/calcular-completude.md`:
+      - Contém seção "Cálculo por Fase"?
+      - Funções documentadas: `calcularCompletudeDadosEscolares`, `calcularCompletudeHistoricoEscolar`?
+      - Exemplos de uso claros?
+    [ ] T27.3.2: Executar `pnpm summary:dry`
+      - Verificar que summary.md foi atualizado
+
+  [ ] CP27.4: Executar validações automatizadas
+    [ ] T27.4.1: Executar `pnpm validate:dry`
+      - Verificar se DRY está válido
+    [ ] T27.4.2: Executar testes:
+      ```bash
+      pnpm test calcularCompletude
+      pnpm test useAlunosCertificacao
+      ```
+      - Todos os testes devem passar
+
+  [ ] CP27.5: Verificar integração com UI
+    [ ] T27.5.1: Iniciar aplicação em dev: `pnpm dev`
+    [ ] T27.5.2: Navegar para Painel de Alunos
+    [ ] T27.5.3: Verificar que ícones de fases aparecem corretamente
+    [ ] T27.5.4: Verificar tooltips com informações de completude
+    [ ] T27.5.5: Testar com diferentes alunos (completos, incompletos, ausentes)
+
+[ ] CP28: Documentar decisões técnicas no TECNICO.md
+  [ ] CP28.1: Criar entrada TEC8 principal
+    [ ] T28.1.1: Localização: `/docs/features/emissao-documentos/TECNICO.md`
+    [ ] T28.1.2: Adicionar seção:
+      ```markdown
+      ## TEC8: Extensão de Sistema de Completude para Fases
+
+      **Motivação:**
+      Código original tinha lógica inline de cálculo de completude em `useAlunosCertificacao`.
+      Esta lógica era conceitualmente idêntica ao sistema implementado para documentos na Sessão 3.
+      Ao estender o sistema existente, ganhamos:
+      1. Reutilização de padrão testado
+      2. Consistência entre documentos e fases
+      3. Uso de def-objects como fonte única da verdade
+      4. Facilita manutenção futura
+
+      **Alternativas Consideradas:**
+      - ❌ Manter código inline: Duplicação de lógica, dificulta manutenção
+      - ❌ Criar novo DRY separado: Violaria princípio DRY (duplicaria padrão)
+      - ✅ Estender DRY existente: Reutiliza padrão, mantém consistência
+
+      **Decisão:**
+      Estender [DRY.BACKEND:CALCULAR_COMPLETUDE_DOCUMENTOS] para suportar fases,
+      seguindo exatamente o mesmo padrão de documentos.
+
+      **Referências no Código:**
+      - `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:XXX` - novas funções
+      - `/src/hooks/useAlunosCertificacao.ts:XXX` - código refatorado
+      ```
+
+  [ ] CP28.2: Criar entrada TEC8.1 - Uso de def-objects
+    [ ] T28.2.1: Adicionar subseção:
+      ```markdown
+      ### TEC8.1: Uso de def-objects vs Lógica Inline
+
+      **Motivação:**
+      Função original `calcularResumoDadosEscolares()` usa lógica inline (3 slots fixos).
+      Precisávamos decidir se usar def-objects como fonte ou manter lógica inline.
+
+      **Alternativas:**
+      - ❌ Lógica inline pura: Não segue padrão de def-objects, fonte da verdade duplicada
+      - ⚠️ Híbrido: Usa def-objects mas tem validações customizadas
+      - ✅ Def-objects como base + validadores específicos: Melhor dos dois mundos
+
+      **Decisão:**
+      Usar def-objects como fonte primária de campos obrigatórios, mas permitir
+      validadores customizados para lógica específica (ex: validação de tripla série).
+
+      **Referências no Código:**
+      - `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:XXX` - `calcularCompletudeDadosEscolares()`
+      - `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:XXX` - `validarTriplaSerieMedio()`
+      ```
+
+  [ ] CP28.3: Criar entrada TEC8.2 - Validação de tripla série
+    [ ] T28.3.1: Adicionar subseção:
+      ```markdown
+      ### TEC8.2: Validação de Tripla Série do Médio
+
+      **Motivação:**
+      Regra específica do sistema: aluno deve ter cursado 1 série "-" (mais antiga)
+      seguida de 2 séries "MÉDIO" para conclusão do ensino médio regular.
+
+      **Decisão:**
+      Mover função `possuiTriplaSerieMedio()` do hook para `calcularCompletude.ts`
+      como `validarTriplaSerieMedio()`. Mantém lógica de ordenação por ano letivo
+      e validação de segmentos.
+
+      **Referências no Código:**
+      - `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:XXX` - `validarTriplaSerieMedio()`
+      - Auxiliares: `normalizarSegmento()`, `compararAnoLetivoAsc()`
+      ```
+
+  [ ] CP28.4: Criar entrada TEC8.3 - Cálculo de histórico escolar
+    [ ] T28.4.1: Adicionar subseção:
+      ```markdown
+      ### TEC8.3: Cálculo de Completude de Histórico Escolar
+
+      **Motivação:**
+      Histórico escolar requer que aluno tenha registros de componentes curriculares
+      para 3 séries do ensino médio.
+
+      **Decisão:**
+      Implementar `calcularCompletudeHistoricoEscolar()` que:
+      1. Conta séries com históricos vinculados
+      2. Status "completo" se totalSeries >= 3
+      3. Retorna estrutura compatível com `CompletudeItem`
+
+      **Referências no Código:**
+      - `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:XXX` - função principal
+      ```
+
+---
+
+### Observações Técnicas da Sessão 4
+
+#### Compatibilidade com Código Existente
+A refatoração mantém compatibilidade com componentes existentes. Se tipos forem incompatíveis, adapters devem ser criados para mapear entre `CompletudeItem` e tipos inline antigos (`ResumoDadosEscolares`, `ResumoHistoricoEscolar`).
+
+#### Fonte Única da Verdade
+Def-objects continuam sendo a fonte única da verdade para campos obrigatórios. Validações específicas (como tripla série) são implementadas como funções auxiliares que complementam a análise baseada em def-objects.
+
+#### Performance
+Funções são puras e eficientes. Não fazem queries adicionais ao banco, apenas analisam dados já carregados pelo hook.
+
+#### Expansibilidade Futura
+- Adicionar novas fases: criar função `calcularCompletude[NomeFase]()`
+- Modificar regras de completude: atualizar def-objects ou validadores customizados
+- Criar dashboard de completude: reutilizar funções existentes

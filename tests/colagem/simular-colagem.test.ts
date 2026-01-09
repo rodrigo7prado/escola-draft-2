@@ -10,6 +10,7 @@ import {
   schemaSalvarDadosEscolares,
   schemaSalvarDadosPessoais,
 } from "@/lib/importacao/schemas";
+import { parseDataBr } from "@/lib/utils/parseDataBr";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_PATH = join(
@@ -20,14 +21,6 @@ const FIXTURE_PATH = join(
   "colagem.txt"
 );
 const DEFAULT_ALUNO_ID = "00000000-0000-4000-8000-000000000000";
-
-function parseDataBrSemHora(valor: string): Date | null {
-  const match = valor.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (!match) return null;
-  const [, dia, mes, ano] = match;
-  const date = new Date(`${ano}-${mes}-${dia}`);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
 
 describe("simular colagem (sem persistencia)", () => {
   it("processa a colagem informada via env", () => {
@@ -78,7 +71,7 @@ describe("simular colagem (sem persistencia)", () => {
 
       datas.forEach(([campo, valor]) => {
         if (!valor) return;
-        const parsed = parseDataBrSemHora(valor);
+        const parsed = parseDataBr(valor);
         if (!parsed) {
           erros.push(`Data invalida para ${campo}: "${valor}"`);
         }
@@ -114,10 +107,10 @@ describe("simular colagem (sem persistencia)", () => {
       }
 
       if (dados.alunoInfo.dataInclusao) {
-        const parsed = new Date(dados.alunoInfo.dataInclusao);
-        if (Number.isNaN(parsed.getTime())) {
+        const parsed = parseDataBr(dados.alunoInfo.dataInclusao);
+        if (!parsed) {
           erros.push(
-            `Data de inclusao invalida para JS Date: "${dados.alunoInfo.dataInclusao}"`
+            `Data de inclusao invalida para parseDataBr: "${dados.alunoInfo.dataInclusao}"`
           );
         }
       }

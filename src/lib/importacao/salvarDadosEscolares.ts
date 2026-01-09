@@ -4,6 +4,7 @@ import {
   type DadosEscolaresParseResult,
   type SerieCursadaDTO,
 } from "@/lib/parsing/parseDadosEscolares";
+import { parseDataBr } from "@/lib/utils/parseDataBr";
 
 interface SalvarDadosEscolaresParams {
   alunoId: string;
@@ -40,6 +41,8 @@ export async function salvarDadosEscolares({
       tipoImportacao: "dadosEscolares",
     } as unknown as Prisma.InputJsonValue;
 
+    const dataInclusao = parseDataBr(dados.alunoInfo.dataInclusao);
+
     await tx.aluno.update({
       where: { id: aluno.id },
       data: {
@@ -51,9 +54,7 @@ export async function salvarDadosEscolares({
         recebeOutroEspacoEscolar: dados.alunoInfo.recebeOutroEspaco,
         anoIngressoEscolar: dados.alunoInfo.anoIngresso,
         periodoIngressoEscolar: dados.alunoInfo.periodoIngresso,
-        dataInclusaoIngressoEscolar: dados.alunoInfo.dataInclusao
-          ? new Date(dados.alunoInfo.dataInclusao)
-          : null,
+        dataInclusaoIngressoEscolar: dataInclusao,
         tipoIngressoEscolar: dados.alunoInfo.tipoIngresso,
         redeOrigemIngressoEscolar: dados.alunoInfo.redeOrigem,
         matrizCurricularEscolar: dados.alunoInfo.matrizCurricular,

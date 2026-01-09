@@ -2,10 +2,90 @@
 Este arquivo contém a concepção e o workflow para a implementação de features através da metodologia IDD (Incremental Documentation Development).
 
 Conteúdo:
+- Separação de responsabilidades entre agentes IA (Claude e Codex);
 - Sumário de features (*com feature atual destacada*);
 - Workflow geral para uso do Claude AI / ChatGPT Codex;
 - Regras gerais (camadas), *relações entre camadas*;
 - **Workflow e formato** *dos fluxos, dos checkpoints da camada técnica*.
+
+---
+
+# 🎭 SEPARAÇÃO DE RESPONSABILIDADES ENTRE AGENTES IA
+
+## Claude (Agente de Documentação)
+
+**Foco:** Gestão completa da pasta `/docs/*`
+
+### Responsabilidades:
+1. **Documentação DRY** (`docs/dry/`)
+   - Criação e manutenção de toda estrutura DRY
+   - Validação através dos scripts (validate-dry, validate-tec, validate-summary-dry)
+   - Gestão do summary.md e arquivos relacionados
+
+2. **Documentação de Features**
+   - `FLUXO.md` - Fluxos de uso e mecanismos internos
+   - `CHECKPOINT.md` - Checkpoints para orientar implementações
+   - `TECNICO.md` - Ocasionalmente, apenas para situações de refatoramento.
+
+3. **Produto Entregue ao Codex**
+   - Checkpoints completos e bem estruturados
+   - Base documental clara para implementação
+   - Rastreabilidade documentação ↔ código
+
+### Workflow:
+```
+1. Recebe solicitação de documentação
+2. Cria/atualiza DRY + FLUXO.md + CHECKPOINT.md
+3. Gera CHECKPOINT.md pronto para implementação
+4. Entrega ao Codex
+```
+
+---
+
+## Codex (Agente de Implementação)
+
+**Foco:** Código-fonte, testes e decisões técnicas de implementação
+
+### Responsabilidades:
+1. **Implementação**
+   - Features, componentes, hooks, lógica de negócio
+   - Seguir checkpoints fornecidos pelo Claude
+
+2. **Documentação Técnica**
+   - `TECNICO.md` - Principalmente, documenta decisões de implementação
+   - Tags `[FEAT:nome-feature_TEC*]` no código
+   - Rastreabilidade código ↔ documentação técnica
+
+3. **Testes**
+   - Unitários, integração, E2E
+   - Cobertura e qualidade
+
+### Workflow:
+```
+1. Recebe CHECKPOINT.md do Claude
+2. Implementa baseado nos checkpoints
+3. Atualiza TECNICO.md com decisões, e com as devidas referências cruzadas nos comentários do código
+4. Marca checkpoints como concluídos
+5. Reporta ao Claude para validação documental
+```
+
+---
+
+## Fluxo Colaborativo
+
+```
+[Usuário]
+    ↓
+[Claude] → Cria documentação DRY + FLUXO.md + CHECKPOINT.md
+    ↓
+[Codex] → Implementa código + testes + atualiza TECNICO.md
+    ↓
+[Claude] → Valida e atualiza checkpoints + validações DRY
+    ↓
+[Ciclo se repete conforme necessário]
+```
+
+---
 
 # SOBRE O FUNCIONAMENTO DE UMA SESSÃO DE TRABALHO
 Cada sessão de trabalho terá como foco a implementação de uma feature específica, seguindo o workflow detalhado abaixo.

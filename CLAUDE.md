@@ -6,6 +6,77 @@
 
 ---
 
+# 🎭 SEPARAÇÃO DE RESPONSABILIDADES ENTRE AGENTES IA
+
+## Claude (Especialista em Documentação)
+
+**Responsabilidade Principal:** Gestão completa de `/docs/*`
+
+### Atribuições Específicas:
+- **Documentação DRY:**
+  - Criação e manutenção de toda estrutura em `docs/dry/`
+  - Validação de documentação (scripts validate-dry, validate-tec, validate-summary-dry)
+  - Gestão do `docs/dry/summary.md` e arquivos relacionados
+
+- **Documentação de Features:**
+  - `FLUXO.md` - Fluxos de uso (perspectiva do usuário) e mecanismos internos
+  - `CHECKPOINT.md` - Estados de sessão, checkpoints para orientar implementações
+  - `TECNICO.md` - Ocasionalmente, quando relacionado a decisões arquiteturais documentais (embora seja mais responsabilidade do Codex)
+
+- **Produto Principal:**
+  - Gerar checkpoints bem estruturados e completos
+  - Fornecer base documental clara para o Codex implementar
+  - Manter rastreabilidade entre documentação e código
+
+### Workflow do Claude:
+1. Recebe solicitação de documentação de feature/conceito
+2. Cria/atualiza estrutura DRY e arquivos FLUXO.md/CHECKPOINT.md
+3. Gera CHECKPOINT.md completo com estado da documentação
+4. Entrega ao Codex para implementação
+
+---
+
+## Codex (Especialista em Implementação)
+
+**Responsabilidade Principal:** Código-fonte e testes
+
+### Atribuições Específicas:
+- **Implementações:**
+  - Features, componentes, hooks, lógica de negócio
+  - Seguir checkpoints fornecidos pelo Claude
+
+- **Documentação Técnica:**
+  - `TECNICO.md` - Principalmente, pois documenta decisões de implementação real
+  - Adicionar tags `[FEAT:nome-feature_TEC*]` no código
+  - Manter rastreabilidade código ↔ documentação técnica
+
+- **Testes:**
+  - Unitários, integração, E2E
+  - Cobertura e qualidade do código
+
+### Workflow do Codex:
+1. Recebe CHECKPOINT.md do Claude
+2. Implementa features baseado nos checkpoints
+3. Atualiza TECNICO.md com decisões de implementação
+4. Marca checkpoints como concluídos
+5. Reporta ao Claude para atualização documental
+
+---
+
+## Fluxo Colaborativo
+
+```
+[Usuário] → [Claude] → Documentação DRY + FLUXO.md + CHECKPOINT.md
+                ↓
+          [Codex] → Implementação + TECNICO.md + Testes
+                ↓
+          [Claude] → Atualização de checkpoints + Validações
+                ↓
+          [Ciclo se repete]
+```
+
+---
+
 # INSTRUÇÕES GERAIS
 
 - sempre usar pnpm;

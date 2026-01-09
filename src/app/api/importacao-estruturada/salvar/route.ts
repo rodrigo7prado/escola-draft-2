@@ -1,57 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-
-/**
- * Schema de validação do request - TODOS OS 32 CAMPOS
- */
-const schemaRequest = z.object({
-  alunoId: z.string().uuid('ID do aluno inválido'),
-  textoBruto: z.string().min(10, 'Texto bruto obrigatório'),
-  dados: z.object({
-    // Dados Cadastrais (10 campos)
-    nome: z.string().optional(),
-    nomeSocial: z.string().optional(),
-    dataNascimento: z.string().optional(),
-    sexo: z.enum(['M', 'F']).optional(),
-    estadoCivil: z.string().optional(),
-    paisNascimento: z.string().optional(),
-    nacionalidade: z.string().optional(),
-    uf: z.string().optional(),
-    naturalidade: z.string().optional(),
-    necessidadeEspecial: z.string().optional(),
-
-    // Documentos (7 campos)
-    tipoDocumento: z.string().optional(),
-    rg: z.string().optional(),
-    complementoIdentidade: z.string().optional(),
-    estadoEmissao: z.string().optional(),
-    orgaoEmissor: z.string().optional(),
-    dataEmissaoRG: z.string().optional(),
-    cpf: z.string().optional(),
-
-    // Filiação (4 campos)
-    nomeMae: z.string().optional(),
-    cpfMae: z.string().optional(),
-    nomePai: z.string().optional(),
-    cpfPai: z.string().optional(),
-
-    // Contato (1 campo)
-    email: z.string().optional(),
-
-    // Certidão Civil (10 campos)
-    tipoCertidaoCivil: z.string().optional(),
-    numeroCertidaoCivil: z.string().optional(),
-    ufCartorio: z.string().optional(),
-    municipioCartorio: z.string().optional(),
-    nomeCartorio: z.string().optional(),
-    numeroTermo: z.string().optional(),
-    dataEmissaoCertidao: z.string().optional(),
-    estadoCertidao: z.string().optional(),
-    folhaCertidao: z.string().optional(),
-    livroCertidao: z.string().optional(),
-  }),
-});
+import { schemaSalvarDadosPessoais } from '@/lib/importacao/schemas';
 
 /**
  * POST /api/importacao-estruturada/salvar
@@ -67,7 +17,7 @@ export async function POST(request: NextRequest) {
   try {
     // 1. Validar request body
     const body = await request.json();
-    const { alunoId, textoBruto, dados } = schemaRequest.parse(body);
+    const { alunoId, textoBruto, dados } = schemaSalvarDadosPessoais.parse(body);
 
     // 2. Validar que aluno existe
     const aluno = await prisma.aluno.findUnique({

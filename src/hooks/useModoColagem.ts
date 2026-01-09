@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import type { DadosPessoais } from "@/lib/parsing/parseDadosPessoais";
 import type { DadosEscolaresParseResult } from "@/lib/parsing/parseDadosEscolares";
 import type { TipoPagina } from "@/lib/parsing/detectarTipoPagina";
+import { extrairMatriculaDoTexto } from "@/lib/parsing/extrairMatriculaDoTexto";
 
 /**
  * Hook para gerenciar o modo de colagem de dados estruturados
@@ -381,14 +382,4 @@ export function useModoColagem(options: UseModoColagemOptions = {}) {
     // Helpers
     isModoColagemAtivo: (alunoId: string) => state.alunoIdAtivo === alunoId,
   };
-}
-
-function extrairMatriculaDoTexto(texto: string): string | null {
-  const labelMatch = texto.match(/MATR[IÍ]CULA[^0-9]*([0-9]{15})/i);
-  if (labelMatch) {
-    return labelMatch[1];
-  }
-
-  const genericMatch = texto.match(/\b\d{15}\b/);
-  return genericMatch ? genericMatch[0] : null;
 }

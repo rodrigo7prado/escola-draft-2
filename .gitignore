@@ -56,3 +56,6 @@ docs/templates/*
 # Draft files
 DRAFT.md
 .draft/*
+
+# Colagem
+tests/fixtures/colagem/*

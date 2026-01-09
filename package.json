@@ -12,6 +12,7 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
+    "simular:colagem": "vitest run tests/colagem/simular-colagem.test.ts",
     "prepare": "husky",
     "migrate:all": "bash scripts/migrate-all.sh deploy",
     "migrate:dev": "bash scripts/migrate-all.sh dev",

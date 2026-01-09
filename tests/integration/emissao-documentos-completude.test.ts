@@ -72,6 +72,8 @@ describe("Integracao emissao documentos", () => {
         totalCampos: 10,
         camposPreenchidos: 5,
         percentual: 50,
+        status: "incompleto",
+        camposFaltantes: [],
         completo: false,
         pendentes: [],
       },

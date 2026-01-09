@@ -268,8 +268,10 @@ Usar def-objects como base para os campos da fase e complementar com validadores
 específicos (ex: validação de tripla série do médio).
 
 **Referências no Código:**
-- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:186](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `calcularCompletudeDadosEscolares()`
-- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:309](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `validarTriplaSerieMedio()`
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:278](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `calcularCompletudeDadosEscolares()`
+
+**Nota:**
+A validacao customizada foi removida na TEC9.2 para garantir convergencia.
 
 ---
 
@@ -285,7 +287,7 @@ como `validarTriplaSerieMedio()`. Mantém lógica de ordenação por ano letivo
 e validação de segmentos.
 
 **Referências no Código:**
-- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:309](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `validarTriplaSerieMedio()`
+Codigo removido na TEC9.2 (ver TEC9.2).
 
 ---
 
@@ -302,7 +304,113 @@ Implementar `calcularCompletudeHistoricoEscolar()` que:
 3. Retorna estrutura compatível com `CompletudeItem`
 
 **Referências no Código:**
-- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:257](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `calcularCompletudeHistoricoEscolar()`
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:295](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `calcularCompletudeHistoricoEscolar()`
+
+---
+
+## TEC9: Refatoração - Convergência de Cálculo de Completude
+
+**Motivação:**
+Sessão 4 implementou funções de completude para fases, mas não seguiam o padrão
+de `calcularCompletudeDocumento()`. Isso causou incongruência:
+- Emissão de Documentos analisava campos de def-objects
+- Fases analisavam campos hard-coded diferentes
+- Resultado: números não convergiam
+
+**Problema Identificado:**
+- `calcularCompletudeDadosEscolares()` analisava `situacaoEscolar`,
+  `motivoEncerramento`, `triplaSerieMedio` - campos que não aparecem em documentos
+- `calcularCompletudeHistoricoEscolar()` apenas contava séries, sem analisar campos
+
+**Alternativas Consideradas:**
+- ❌ Manter funções separadas: Duplicação de lógica, viola DRY
+- ❌ Adicionar campos customizados aos def-objects: Poluiria def-objects com campos não usados
+- ✅ Criar função genérica que filtra def-objects por fase: Reutiliza lógica, garante convergência
+
+**Decisão:**
+Criar função `calcularCompletudeFase(fase, dadosAluno)` que:
+1. Filtra def-object pela fase desejada
+2. Analisa apenas campos que são usados em algum documento
+3. Reutiliza helpers existentes (`campoEstaPreenchido`, `valorPreenchido`, etc)
+4. Garante que fases e documentos usem mesma base de cálculo
+
+**Referências no Código:**
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:190](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `calcularCompletudeFase()`
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:278](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - funções refatoradas
+
+---
+
+### TEC9.1: Função Genérica calcularCompletudeFase()
+
+**Motivação:**
+Evitar duplicação de lógica entre fases e documentos. Garantir que todas
+as análises de completude sigam mesmo padrão e usem def-objects.
+
+**Implementação:**
+- Recebe fase como parâmetro
+- Encontra def-object correspondente
+- Itera campos que são usados em algum documento (array não-vazio)
+- Reutiliza 100% da lógica de helpers existentes
+
+**Vantagens:**
+- DRY: uma única implementação para documentos e fases
+- Consistência: mesma lógica de status, percentual, campos faltantes
+- Manutenibilidade: mudanças em def-objects refletem automaticamente
+
+**Referências no Código:**
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:190](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts)
+
+---
+
+### TEC9.2: Remoção de Validações Customizadas
+
+**Motivação:**
+Funções `validarTriplaSerieMedio()`, `normalizarSegmento()`, `compararAnoLetivoAsc()`
+foram criadas na Sessão 4 para validar regras específicas que não são usadas
+em documentos.
+
+**Decisão:**
+Remover completamente essas funções, pois:
+1. Não são campos de def-objects
+2. Não são usados em nenhum documento
+3. Criavam divergência com cálculo de documentos
+
+**Nota:**
+Se no futuro essas validações forem necessárias para lógica de negócio
+(não relacionada a documentos), devem ser implementadas em módulo separado,
+não nas funções de completude.
+
+---
+
+### TEC9.3: Adapters de compatibilidade para fases
+
+**Motivação:**
+A UI depende de campos legados (`totalSlots`, `slotsPreenchidos`,
+`totalRegistros`, `totalSeries`) para tooltips e indicadores.
+
+**Decisão:**
+Manter adapters nas funções de fase, reaproveitando o cálculo genérico e
+expondo os campos esperados pela interface.
+
+**Referências no Código:**
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:278](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `calcularCompletudeDadosEscolares()`
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:295](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `calcularCompletudeHistoricoEscolar()`
+
+---
+
+### TEC9.4: Completude de Dados Pessoais baseada em def-objects
+
+**Motivação:**
+O cálculo de dados pessoais usava lista hard-coded de 34 campos, gerando
+divergência com a base de documentos.
+
+**Decisão:**
+Criar `calcularCompletudeDadosPessoais()` com base em def-objects e manter
+`calcularResumoDadosPessoais()` para edição completa.
+
+**Referências no Código:**
+- [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:265](../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) - `calcularCompletudeDadosPessoais()`
+- [src/lib/importacao/dadosPessoaisMetadata.ts:239](../../src/lib/importacao/dadosPessoaisMetadata.ts) - `calcularResumoDadosPessoais()`
 
 ---
 

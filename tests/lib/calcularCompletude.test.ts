@@ -2,14 +2,15 @@ import dadosEscolares from "@/lib/core/data/gestao-alunos/def-objects/dadosEscol
 import dadosPessoais from "@/lib/core/data/gestao-alunos/def-objects/dadosPessoais";
 import historicoEscolar from "@/lib/core/data/gestao-alunos/def-objects/historicoEscolar";
 import {
+  calcularCompletudeDadosPessoais,
   calcularCompletudeDadosEscolares,
   calcularCompletudeDocumento,
   calcularCompletudeEmissao,
+  calcularCompletudeFase,
   calcularCompletudeHistoricoEscolar,
-  validarTriplaSerieMedio,
   type DadosAlunoCompleto,
 } from "@/lib/core/data/gestao-alunos/documentos/calcularCompletude";
-import type { DocEmissao } from "@/lib/core/data/gestao-alunos/phases.types";
+import type { DocEmissao, Phase } from "@/lib/core/data/gestao-alunos/phases.types";
 
 const DOCUMENTOS: DocEmissao[] = [
   "Certidão",
@@ -71,128 +72,123 @@ describe("calcularCompletudeEmissao", () => {
   });
 });
 
-describe("calcularCompletudeDadosEscolares", () => {
-  it("retorna completo quando todos os slots estao preenchidos", () => {
-    const aluno: DadosAlunoCompleto = {
-      situacaoEscolar: "Ativo",
-      motivoEncerramento: "Concluido",
-      seriesCursadas: [
-        { anoLetivo: "2020", segmento: "-" },
-        { anoLetivo: "2021", segmento: "MÉDIO" },
-        { anoLetivo: "2022", segmento: "MÉDIO" },
-      ],
-    };
-
-    const resultado = calcularCompletudeDadosEscolares(aluno);
+describe("calcularCompletudeDadosPessoais", () => {
+  it("retorna completo quando todos os campos exigidos estao preenchidos", () => {
+    const alunoCompleto = montarAlunoCompletoPorFase("FASE:DADOS_PESSOAIS");
+    const resultado = calcularCompletudeDadosPessoais(alunoCompleto);
 
     expect(resultado.status).toBe("completo");
     expect(resultado.percentual).toBe(100);
-    expect(resultado.camposPreenchidos).toBe(3);
     expect(resultado.camposFaltantes).toHaveLength(0);
   });
 
-  it("retorna ausente quando nenhum slot esta preenchido", () => {
-    const aluno: DadosAlunoCompleto = {
-      situacaoEscolar: " ",
-      motivoEncerramento: null,
-      seriesCursadas: [],
-    };
-
-    const resultado = calcularCompletudeDadosEscolares(aluno);
+  it("retorna ausente quando nenhum campo esta preenchido", () => {
+    const resultado = calcularCompletudeDadosPessoais({});
 
     expect(resultado.status).toBe("ausente");
     expect(resultado.percentual).toBe(0);
     expect(resultado.camposPreenchidos).toBe(0);
-    expect(resultado.camposFaltantes).toHaveLength(3);
+    expect(resultado.camposFaltantes?.length).toBeGreaterThan(0);
   });
 
-  it("retorna incompleto quando ha slots parciais", () => {
-    const aluno: DadosAlunoCompleto = {
-      situacaoEscolar: "Ativo",
-      motivoEncerramento: null,
-      seriesCursadas: [{ anoLetivo: "2021", segmento: "-" }],
-    };
+  it("retorna incompleto quando falta algum campo", () => {
+    const alunoCompleto = montarAlunoCompletoPorFase("FASE:DADOS_PESSOAIS");
+    delete (alunoCompleto as Record<string, unknown>).nome;
 
-    const resultado = calcularCompletudeDadosEscolares(aluno);
+    const resultado = calcularCompletudeDadosPessoais(alunoCompleto);
     const campos = resultado.camposFaltantes?.map((campo) => campo.campo) ?? [];
 
     expect(resultado.status).toBe("incompleto");
-    expect(resultado.percentual).toBe(33);
-    expect(resultado.camposPreenchidos).toBe(1);
-    expect(campos).toEqual(
-      expect.arrayContaining(["motivoEncerramento", "triplaSerieMedio"])
-    );
+    expect(campos).toEqual(expect.arrayContaining(["nome"]));
+  });
+});
+
+describe("calcularCompletudeDadosEscolares", () => {
+  it("retorna completo quando todos os campos exigidos estao preenchidos", () => {
+    const alunoCompleto = montarAlunoCompletoPorFase("FASE:DADOS_ESCOLARES");
+    const resultado = calcularCompletudeDadosEscolares(alunoCompleto);
+
+    expect(resultado.status).toBe("completo");
+    expect(resultado.percentual).toBe(100);
+    expect(resultado.camposFaltantes).toHaveLength(0);
+  });
+
+  it("retorna ausente quando nenhum campo esta preenchido", () => {
+    const resultado = calcularCompletudeDadosEscolares({});
+
+    expect(resultado.status).toBe("ausente");
+    expect(resultado.percentual).toBe(0);
+    expect(resultado.camposPreenchidos).toBe(0);
+    expect(resultado.camposFaltantes?.length).toBeGreaterThan(0);
+  });
+
+  it("retorna incompleto quando falta algum campo", () => {
+    const alunoCompleto = montarAlunoCompletoPorFase("FASE:DADOS_ESCOLARES");
+    const serie = alunoCompleto.seriesCursadas?.[0] as Record<string, unknown>;
+    delete (alunoCompleto as Record<string, unknown>).nome;
+    if (serie) delete serie.segmento;
+
+    const resultado = calcularCompletudeDadosEscolares(alunoCompleto);
+    const campos = resultado.camposFaltantes?.map((campo) => campo.campo) ?? [];
+
+    expect(resultado.status).toBe("incompleto");
+    expect(campos).toEqual(expect.arrayContaining(["nome", "segmento"]));
   });
 });
 
 describe("calcularCompletudeHistoricoEscolar", () => {
-  it("retorna completo quando ha historicos para 3 series", () => {
-    const aluno: DadosAlunoCompleto = {
-      seriesCursadas: [
-        { historicos: [{}, {}] },
-        { historicos: [{}] },
-        { _count: { historicos: 2 } },
-      ],
-    };
-
-    const resultado = calcularCompletudeHistoricoEscolar(aluno);
+  it("retorna completo quando todos os campos exigidos estao preenchidos", () => {
+    const alunoCompleto = montarAlunoCompletoPorFase("FASE:HISTORICO_ESCOLAR");
+    const resultado = calcularCompletudeHistoricoEscolar(alunoCompleto);
 
     expect(resultado.status).toBe("completo");
-    expect(resultado.totalSeries).toBe(3);
-    expect(resultado.totalRegistros).toBe(5);
+    expect(resultado.totalSeries).toBe(1);
+    expect(resultado.totalRegistros).toBe(1);
     expect(resultado.percentual).toBe(100);
   });
 
-  it("retorna ausente quando nao ha historicos", () => {
-    const resultado = calcularCompletudeHistoricoEscolar({ seriesCursadas: [] });
+  it("retorna ausente quando nenhum campo esta preenchido", () => {
+    const resultado = calcularCompletudeHistoricoEscolar({});
 
     expect(resultado.status).toBe("ausente");
     expect(resultado.totalSeries).toBe(0);
     expect(resultado.totalRegistros).toBe(0);
     expect(resultado.percentual).toBe(0);
-    expect(resultado.camposFaltantes).toHaveLength(1);
+    expect(resultado.camposFaltantes?.length).toBeGreaterThan(0);
   });
 
-  it("retorna incompleto quando ha historicos para 2 series", () => {
-    const resultado = calcularCompletudeHistoricoEscolar({
-      seriesCursadas: [{ historicos: [{}] }, { historicos: [{}, {}] }],
-    });
+  it("retorna incompleto quando falta algum campo", () => {
+    const alunoCompleto = montarAlunoCompletoPorFase("FASE:HISTORICO_ESCOLAR");
+    const historico = alunoCompleto.seriesCursadas?.[0]
+      ?.historicos?.[0] as Record<string, unknown> | undefined;
+    if (historico) delete historico.componenteCurricular;
+
+    const resultado = calcularCompletudeHistoricoEscolar(alunoCompleto);
+    const campos = resultado.camposFaltantes?.map((campo) => campo.campo) ?? [];
 
     expect(resultado.status).toBe("incompleto");
-    expect(resultado.totalSeries).toBe(2);
-    expect(resultado.totalRegistros).toBe(3);
-    expect(resultado.percentual).toBe(67);
+    expect(resultado.totalSeries).toBe(1);
+    expect(resultado.totalRegistros).toBe(1);
+    expect(campos).toEqual(expect.arrayContaining(["componenteCurricular"]));
   });
 });
 
-describe("validarTriplaSerieMedio", () => {
-  it("retorna true para 1 serie '-' e 2 series 'MÉDIO'", () => {
-    const series = [
-      { anoLetivo: "2020", segmento: "-" },
-      { anoLetivo: "2021", segmento: "MÉDIO" },
-      { anoLetivo: "2022", segmento: "MÉDIO" },
-    ];
+describe("calcularCompletudeFase", () => {
+  it("retorna ausente quando fase nao possui def-object", () => {
+    const resultado = calcularCompletudeFase("FASE:EMISSAO_DOCUMENTOS", {});
 
-    expect(validarTriplaSerieMedio(series)).toBe(true);
+    expect(resultado.status).toBe("ausente");
+    expect(resultado.totalCampos).toBe(0);
+    expect(resultado.camposPreenchidos).toBe(0);
   });
 
-  it("retorna false para 3 series 'MÉDIO'", () => {
-    const series = [
-      { anoLetivo: "2020", segmento: "MÉDIO" },
-      { anoLetivo: "2021", segmento: "MÉDIO" },
-      { anoLetivo: "2022", segmento: "MÉDIO" },
-    ];
+  it("ignora campos sem documentos associados", () => {
+    const resultado = calcularCompletudeFase("FASE:DADOS_PESSOAIS", {
+      id: "ok",
+    });
 
-    expect(validarTriplaSerieMedio(series)).toBe(false);
-  });
-
-  it("retorna false quando ha menos de 3 series", () => {
-    const series = [
-      { anoLetivo: "2020", segmento: "-" },
-      { anoLetivo: "2021", segmento: "MÉDIO" },
-    ];
-
-    expect(validarTriplaSerieMedio(series)).toBe(false);
+    expect(resultado.status).toBe("ausente");
+    expect(resultado.camposPreenchidos).toBe(0);
   });
 });
 
@@ -245,4 +241,63 @@ function montarAlunoCompleto(documentos: DocEmissao[]): DadosAlunoCompleto {
     ...aluno,
     seriesCursadas: [serieCompleta],
   };
+}
+
+function montarAlunoCompletoPorFase(fase: Phase): DadosAlunoCompleto {
+  const schema = obterSchemaPorFase(fase);
+  if (!schema) return {};
+
+  const aluno: Record<string, unknown> = {};
+  const serie: Record<string, unknown> = {};
+  const historico: Record<string, unknown> = {};
+  let precisaSerie = false;
+  let precisaHistorico = false;
+
+  for (const [tabela, campos] of Object.entries(schema)) {
+    for (const [campo, documentos] of Object.entries(campos)) {
+      if (!Array.isArray(documentos) || documentos.length === 0) continue;
+
+      if (tabela === "Aluno") {
+        aluno[campo] = "ok";
+        continue;
+      }
+
+      if (tabela === "SerieCursada") {
+        precisaSerie = true;
+        serie[campo] = "ok";
+        continue;
+      }
+
+      if (tabela === "HistoricoEscolar") {
+        precisaHistorico = true;
+        historico[campo] = "ok";
+      }
+    }
+  }
+
+  if (!precisaSerie && !precisaHistorico) {
+    return aluno;
+  }
+
+  const serieCompleta: Record<string, unknown> = {
+    ...serie,
+  };
+
+  if (precisaHistorico) {
+    serieCompleta.historicos = [historico];
+  }
+
+  return {
+    ...aluno,
+    seriesCursadas: [serieCompleta],
+  };
+}
+
+function obterSchemaPorFase(
+  fase: Phase
+): Record<string, Record<string, DocEmissao[]>> | null {
+  if (fase === "FASE:DADOS_PESSOAIS") return dadosPessoais;
+  if (fase === "FASE:DADOS_ESCOLARES") return dadosEscolares;
+  if (fase === "FASE:HISTORICO_ESCOLAR") return historicoEscolar;
+  return null;
 }

@@ -220,6 +220,22 @@ export function normalizarValorParaComparacao(
   return normalizarTextoGenerico(valor);
 }
 
+/**
+ * [DEPRECATED para calculo de completude de documentos]
+ *
+ * Esta funcao calcula completude de todos os campos de dados pessoais,
+ * independente de serem usados em documentos de emissao.
+ *
+ * USO ATUAL:
+ * - Formulario de edicao completa de dados pessoais (DadosAlunoEditavel.tsx)
+ * - Funcionalidades de importacao que precisam validar todos os campos
+ *
+ * PARA CALCULO DE COMPLETUDE DE DOCUMENTOS:
+ * - Use `calcularCompletudeDadosPessoais()` de `calcularCompletude.ts`
+ * - Essa funcao usa def-objects e analisa apenas campos usados em documentos
+ *
+ * @see calcularCompletudeDadosPessoais - para completude de documentos
+ */
 export function calcularResumoDadosPessoais(
   aluno: ValoresDadosPessoais
 ): ResumoDadosPessoais {

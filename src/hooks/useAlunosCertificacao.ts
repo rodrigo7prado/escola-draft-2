@@ -1,16 +1,13 @@
 import { useMemo } from "react";
 import useSWR from "swr";
-import {
-  calcularResumoDadosPessoais,
-  ResumoDadosPessoais,
-  ValoresDadosPessoais,
-} from "@/lib/importacao/dadosPessoaisMetadata";
-import type { PhaseStatus } from "@/lib/core/data/gestao-alunos/phases.types";
+import type { ValoresDadosPessoais } from "@/lib/importacao/dadosPessoaisMetadata";
 // [FEAT:emissao-documentos_TEC8] Usa DRY.BACKEND:CALCULAR_COMPLETUDE para fases.
 import {
+  calcularCompletudeDadosPessoais,
   calcularCompletudeDadosEscolares,
   calcularCompletudeEmissao,
   calcularCompletudeHistoricoEscolar,
+  type ResumoDadosPessoaisCompletude,
   type ResumoCompletudeEmissao,
   type ResumoDadosEscolares,
   type ResumoHistoricoEscolar,
@@ -40,7 +37,7 @@ type AlunoApiResponse = ValoresDadosPessoais & {
 };
 
 export type AlunoCertificacao = AlunoApiResponse & {
-  progressoDadosPessoais: ResumoDadosPessoais;
+  progressoDadosPessoais: ResumoDadosPessoaisCompletude;
   progressoDadosEscolares: ResumoDadosEscolares;
   progressoHistoricoEscolar: ResumoHistoricoEscolar;
   progressoEmissaoDocumentos: ResumoCompletudeEmissao;
@@ -157,7 +154,7 @@ async function obterAlunosCertificacao(filtros: FiltrosParams) {
 
   return alunosResposta.map<AlunoCertificacao>((aluno) => ({
     ...aluno,
-    progressoDadosPessoais: calcularResumoDadosPessoais(aluno),
+    progressoDadosPessoais: calcularCompletudeDadosPessoais(aluno),
     progressoDadosEscolares: calcularCompletudeDadosEscolares(aluno),
     progressoHistoricoEscolar: calcularCompletudeHistoricoEscolar(aluno),
     // [FEAT:emissao-documentos_TEC7] Calcula completude da emissao usando def-objects.

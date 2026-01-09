@@ -957,9 +957,9 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
 
 ### Checkpoints
 
-[ ] CP29: Análise da refatoração necessária
-  [ ] CP29.1: Identificar campos que DEVEM ser analisados por fase
-    [ ] T29.1.1: Analisar def-object `dadosEscolares.ts`:
+[x] CP29: Análise da refatoração necessária
+  [x] CP29.1: Identificar campos que DEVEM ser analisados por fase
+    [x] T29.1.1: Analisar def-object `dadosEscolares.ts`:
       - Aluno.matricula: ["Certidão", "Certificado"]
       - Aluno.nome: ["Certidão", "Certificado", "Diploma", "Histórico Escolar"]
       - Aluno.sexo: ["Certidão", "Certificado", "Diploma", "Histórico Escolar"]
@@ -969,11 +969,11 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
       - SerieCursada.segmento: ["Certidão", "Certificado", "Diploma"]
       - SerieCursada.cargaHorariaTotal: ["Certificado", "Diploma"]
       - **TOTAL:** ~8 campos usados em documentos
-    [ ] T29.1.2: Campos atualmente analisados (INCORRETOS):
+    [x] T29.1.2: Campos atualmente analisados (INCORRETOS):
       - `situacaoEscolar` - **NÃO aparece em documentos** (array vazio no def-object linha 39)
       - `motivoEncerramento` - **NÃO aparece em documentos** (array vazio linha 41)
       - `triplaSerieMedio` - **NÃO é um campo, é uma validação customizada**
-    [ ] T29.1.3: Analisar def-object `historicoEscolar.ts`:
+    [x] T29.1.3: Analisar def-object `historicoEscolar.ts`:
       - SerieCursada.anoLetivo: ["Histórico Escolar"]
       - SerieCursada.serie: ["Histórico Escolar"]
       - SerieCursada.periodoLetivo: ["Histórico Escolar"]
@@ -984,25 +984,25 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
       - HistoricoEscolar.cargaHoraria: ["Histórico Escolar"]
       - **TOTAL:** ~8 campos usados no documento "Histórico Escolar"
 
-  [ ] CP29.2: Decisão de estratégia de refatoração
-    [ ] T29.2.1: **Decisão principal:** Reutilizar lógica de `calcularCompletudeDocumento()`
+  [x] CP29.2: Decisão de estratégia de refatoração
+    [x] T29.2.1: **Decisão principal:** Reutilizar lógica de `calcularCompletudeDocumento()`
       - **Não** criar lógica separada para fases
       - **Sim** adaptar função existente para suportar filtro por fase
-    [ ] T29.2.2: **Alternativas consideradas:**
+    [x] T29.2.2: **Alternativas consideradas:**
       - ❌ Manter funções separadas com lógica duplicada: Viola DRY
       - ❌ Criar função nova que itera def-objects apenas da fase: Duplica lógica
       - ✅ Criar função helper que filtra campos por fase + reutiliza lógica existente
-    [ ] T29.2.3: **Abordagem escolhida:**
+    [x] T29.2.3: **Abordagem escolhida:**
       - Criar função `calcularCompletudeFase(fase, dadosAluno)` que:
         1. Filtra def-objects pela fase desejada
         2. Itera campos dessa fase que são usados em **qualquer documento**
         3. Reutiliza funções helper existentes (`campoEstaPreenchido`, `valorPreenchido`, etc)
 
-[ ] CP30: Criar nova função genérica para fases
-  [ ] CP30.1: Implementar `calcularCompletudeFase()`
-    [ ] T30.1.1: Localização: `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts`
-    [ ] T30.1.2: Adicionar após `calcularCompletudeEmissao()` (antes das funções antigas de fase)
-    [ ] T30.1.3: Assinatura:
+[x] CP30: Criar nova função genérica para fases
+  [x] CP30.1: Implementar `calcularCompletudeFase()`
+    [x] T30.1.1: Localização: `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts`
+    [x] T30.1.2: Adicionar após `calcularCompletudeEmissao()` (antes das funções antigas de fase)
+    [x] T30.1.3: Assinatura:
       ```typescript
       // [FEAT:emissao-documentos_TEC9.1] Calcula completude de fase baseado em def-objects
       // Analisa apenas campos que são usados em algum documento
@@ -1011,7 +1011,7 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
         dadosAluno: DadosAlunoCompleto
       ): CompletudeItem
       ```
-    [ ] T30.1.4: Implementação:
+    [x] T30.1.4: Implementação:
       ```typescript
       function calcularCompletudeFase(
         fase: Phase,
@@ -1080,16 +1080,16 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
         };
       }
       ```
-    [ ] T30.1.5: Comentário de rastreabilidade:
+    [x] T30.1.5: Comentário de rastreabilidade:
       ```typescript
       // [FEAT:emissao-documentos_TEC9.1] Calcula completude de fase usando def-objects
       // Garante que fases analisem mesmos campos que documentos (convergência)
       ```
 
-[ ] CP31: Refatorar `calcularCompletudeDadosEscolares()`
-  [ ] CP31.1: Simplificar para usar nova função genérica
-    [ ] T31.1.1: DELETAR implementação atual (linhas 186-254)
-    [ ] T31.1.2: Nova implementação:
+[x] CP31: Refatorar `calcularCompletudeDadosEscolares()`
+  [x] CP31.1: Simplificar para usar nova função genérica
+    [x] T31.1.1: DELETAR implementação atual (linhas 186-254)
+    [x] T31.1.2: Nova implementação:
       ```typescript
       // [FEAT:emissao-documentos_TEC9.2] Calcula completude FASE:DADOS_ESCOLARES
       export function calcularCompletudeDadosEscolares(
@@ -1106,12 +1106,12 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
         };
       }
       ```
-    [ ] T31.1.3: Verificar que tipos são compatíveis (ResumoDadosEscolares extends CompletudeItem)
+    [x] T31.1.3: Verificar que tipos são compatíveis (ResumoDadosEscolares extends CompletudeItem)
 
-[ ] CP32: Refatorar `calcularCompletudeHistoricoEscolar()`
-  [ ] CP32.1: Simplificar para usar nova função genérica
-    [ ] T32.1.1: DELETAR implementação atual (linhas 257-306)
-    [ ] T32.1.2: Nova implementação:
+[x] CP32: Refatorar `calcularCompletudeHistoricoEscolar()`
+  [x] CP32.1: Simplificar para usar nova função genérica
+    [x] T32.1.1: DELETAR implementação atual (linhas 257-306)
+    [x] T32.1.2: Nova implementação:
       ```typescript
       // [FEAT:emissao-documentos_TEC9.3] Calcula completude FASE:HISTORICO_ESCOLAR
       export function calcularCompletudeHistoricoEscolar(
@@ -1143,82 +1143,82 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
         };
       }
       ```
-    [ ] T32.1.3: Manter cálculo de `totalRegistros` e `totalSeries` para compatibilidade com UI
+    [x] T32.1.3: Manter cálculo de `totalRegistros` e `totalSeries` para compatibilidade com UI
 
-[ ] CP33: Remover código não utilizado
-  [ ] CP33.1: Remover função `validarTriplaSerieMedio()`
-    [ ] T33.1.1: DELETAR função `validarTriplaSerieMedio()` (linhas 309-327)
+[x] CP33: Remover código não utilizado
+  [x] CP33.1: Remover função `validarTriplaSerieMedio()`
+    [x] T33.1.1: DELETAR função `validarTriplaSerieMedio()` (linhas 309-327)
       - Não é usada em documentos
       - Não é um campo do def-object
       - Era uma validação customizada que não segue o padrão
-    [ ] T33.1.2: DELETAR funções auxiliares:
+    [x] T33.1.2: DELETAR funções auxiliares:
       - `normalizarSegmento()` (linha 329)
       - `compararAnoLetivoAsc()` (linha 333)
-    [ ] T33.1.3: Verificar se essas funções são usadas em outros lugares:
+    [x] T33.1.3: Verificar se essas funções são usadas em outros lugares:
       ```bash
       grep -r "validarTriplaSerieMedio" src/
       grep -r "normalizarSegmento" src/
       grep -r "compararAnoLetivoAsc" src/
       ```
-    [ ] T33.1.4: Se não forem usadas em outros lugares, deletar completamente
+    [x] T33.1.4: Se não forem usadas em outros lugares, deletar completamente
 
-  [ ] CP33.2: Atualizar exports
-    [ ] T33.2.1: Remover export de `validarTriplaSerieMedio` se estava exportada
-    [ ] T33.2.2: Manter exports de:
+  [x] CP33.2: Atualizar exports
+    [x] T33.2.1: Remover export de `validarTriplaSerieMedio` se estava exportada
+    [x] T33.2.2: Manter exports de:
       - `calcularCompletudeDocumento`
       - `calcularCompletudeEmissao`
       - `calcularCompletudeDadosEscolares`
       - `calcularCompletudeHistoricoEscolar`
       - Tipos: `CompletudeItem`, `CompletudeDocumento`, `ResumoCompletudeEmissao`, etc.
 
-[ ] CP34: Refatorar FASE:DADOS_PESSOAIS para usar def-objects
-  [ ] CP34.1: Análise da situação atual
-    [ ] T34.1.1: Verificar implementação de `calcularResumoDadosPessoais()`
+[x] CP34: Refatorar FASE:DADOS_PESSOAIS para usar def-objects
+  [x] CP34.1: Análise da situação atual
+    [x] T34.1.1: Verificar implementação de `calcularResumoDadosPessoais()`
       - Localização: `/src/lib/importacao/dadosPessoaisMetadata.ts:223`
       - **PROBLEMA:** Usa lista hard-coded `CAMPOS_DADOS_PESSOAIS` (34 campos)
       - **PROBLEMA:** NÃO usa def-object `dadosPessoais.ts`
       - **PROBLEMA:** Analisa TODOS os 34 campos, independente de serem usados em documentos
       - **CONSEQUÊNCIA:** Números NÃO convergem com Emissão de Documentos
-    [ ] T34.1.2: Verificar def-object `dadosPessoais.ts` existe:
+    [x] T34.1.2: Verificar def-object `dadosPessoais.ts` existe:
       - Localização: `/src/lib/core/data/gestao-alunos/def-objects/dadosPessoais.ts`
       - Contém campos marcados por documento (ex: nome: ["Certidão", "Certificado", ...])
       - **TOTAL de campos usados em documentos:** ~13 campos (não 34!)
-    [ ] T34.1.3: Comparar listas de campos:
+    [x] T34.1.3: Comparar listas de campos:
       - `CAMPOS_DADOS_PESSOAIS` (hard-coded): 34 campos
       - `dadosPessoais.Aluno` (def-object) com documentos: ~13 campos
       - **Divergência:** 21 campos analisados que NÃO são usados em documentos!
 
-  [ ] CP34.2: Identificar impactos da refatoração
-    [ ] T34.2.1: Arquivos que usam `calcularResumoDadosPessoais()`:
+  [x] CP34.2: Identificar impactos da refatoração
+    [x] T34.2.1: Arquivos que usam `calcularResumoDadosPessoais()`:
       - `/src/hooks/useAlunosCertificacao.ts` - hook principal (IMPACTO: precisa migrar)
       - Outros usos? Executar: `grep -r "calcularResumoDadosPessoais" src/`
-    [ ] T34.2.2: Arquivos que usam tipo `ResumoDadosPessoais`:
+    [x] T34.2.2: Arquivos que usam tipo `ResumoDadosPessoais`:
       - `/src/hooks/useAlunosCertificacao.ts`
       - `/src/components/ListaAlunosCertificacao.tsx` - UI (IMPACTO: verificar compatibilidade)
       - `/tests/integration/emissao-documentos-completude.test.ts` - testes (IMPACTO: atualizar)
-    [ ] T34.2.3: Arquivos que usam `CAMPOS_DADOS_PESSOAIS_CONFIG`:
+    [x] T34.2.3: Arquivos que usam `CAMPOS_DADOS_PESSOAIS_CONFIG`:
       - `/src/components/DadosAlunoEditavel.tsx` - formulário de edição (IMPACTO: **NENHUM** - continua usando)
       - `/src/hooks/useAlunoSelecionado.ts` - (IMPACTO: verificar)
       - **IMPORTANTE:** Formulário de edição pode continuar usando CAMPOS_DADOS_PESSOAIS_CONFIG
-    [ ] T34.2.4: Avaliar se `CAMPOS_DADOS_PESSOAIS` deve ser mantido:
+    [x] T34.2.4: Avaliar se `CAMPOS_DADOS_PESSOAIS` deve ser mantido:
       - **SIM** - Formulário de edição precisa de todos os 34 campos
       - **SIM** - Funcionalidade de importação/edição é diferente de cálculo de completude
       - **Decisão:** Manter `CAMPOS_DADOS_PESSOAIS` para edição, criar nova função para completude
 
-  [ ] CP34.3: Estratégia de refatoração
-    [ ] T34.3.1: **NÃO modificar** arquivo `dadosPessoaisMetadata.ts`:
+  [x] CP34.3: Estratégia de refatoração
+    [x] T34.3.1: **NÃO modificar** arquivo `dadosPessoaisMetadata.ts`:
       - Manter `CAMPOS_DADOS_PESSOAIS` e `calcularResumoDadosPessoais()` existentes
       - Esses são usados para funcionalidade de **edição completa** de dados
       - Diferentes de cálculo de completude para **documentos**
-    [ ] T34.3.2: **Criar nova função** em `calcularCompletude.ts`:
+    [x] T34.3.2: **Criar nova função** em `calcularCompletude.ts`:
       - `calcularCompletudeDadosPessoais()` - usa def-objects, analisa apenas campos de documentos
       - Reutiliza função genérica `calcularCompletudeFase("FASE:DADOS_PESSOAIS", ...)`
-    [ ] T34.3.3: **Migrar hook** para usar nova função:
+    [x] T34.3.3: **Migrar hook** para usar nova função:
       - Hook usa função de completude (baseada em documentos)
       - Formulário de edição continua usando função antiga (todos os campos)
 
-  [ ] CP34.4: Implementar nova função de completude
-    [ ] T34.4.1: Adicionar função em `calcularCompletude.ts`:
+  [x] CP34.4: Implementar nova função de completude
+    [x] T34.4.1: Adicionar função em `calcularCompletude.ts`:
       ```typescript
       // [FEAT:emissao-documentos_TEC9.4] Calcula completude FASE:DADOS_PESSOAIS
       export function calcularCompletudeDadosPessoais(
@@ -1227,12 +1227,12 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
         return calcularCompletudeFase("FASE:DADOS_PESSOAIS", dadosAluno);
       }
       ```
-    [ ] T34.4.2: Verificar compatibilidade de tipos:
+    [x] T34.4.2: Verificar compatibilidade de tipos:
       - `CompletudeItem` vs `ResumoDadosPessoais`
       - Campos comuns: `totalCampos`, `camposPreenchidos`, `percentual`
       - Campo diferente: `completo` (ResumoDadosPessoais) vs `status` (CompletudeItem)
       - Campo diferente: `pendentes` (ResumoDadosPessoais) vs `camposFaltantes` (CompletudeItem)
-    [ ] T34.4.3: Criar adapter se necessário:
+    [x] T34.4.3: Criar adapter se necessário:
       ```typescript
       export type ResumoDadosPessoaisCompletude = CompletudeItem & {
         completo: boolean;
@@ -1252,8 +1252,8 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
       }
       ```
 
-  [ ] CP34.5: Atualizar hook useAlunosCertificacao
-    [ ] T34.5.1: Remover import de `dadosPessoaisMetadata.ts`:
+  [x] CP34.5: Atualizar hook useAlunosCertificacao
+    [x] T34.5.1: Remover import de `dadosPessoaisMetadata.ts`:
       ```typescript
       // DELETAR:
       import {
@@ -1262,14 +1262,14 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
         ValoresDadosPessoais,
       } from "@/lib/importacao/dadosPessoaisMetadata";
       ```
-    [ ] T34.5.2: Adicionar import de `calcularCompletude.ts`:
+    [x] T34.5.2: Adicionar import de `calcularCompletude.ts`:
       ```typescript
       import {
         calcularCompletudeDadosPessoais,
         type ResumoDadosPessoaisCompletude,
       } from '@/lib/core/data/gestao-alunos/documentos/calcularCompletude';
       ```
-    [ ] T34.5.3: Atualizar tipo `AlunoCertificacao`:
+    [x] T34.5.3: Atualizar tipo `AlunoCertificacao`:
       ```typescript
       export type AlunoCertificacao = AlunoApiResponse & {
         progressoDadosPessoais: ResumoDadosPessoaisCompletude;  // atualizado
@@ -1278,7 +1278,7 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
         progressoEmissaoDocumentos: ResumoCompletudeEmissao;
       };
       ```
-    [ ] T34.5.4: Atualizar função `obterAlunosCertificacao`:
+    [x] T34.5.4: Atualizar função `obterAlunosCertificacao`:
       ```typescript
       // ANTES:
       progressoDadosPessoais: calcularResumoDadosPessoais(aluno),
@@ -1286,37 +1286,37 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
       // DEPOIS:
       progressoDadosPessoais: calcularCompletudeDadosPessoais(aluno),
       ```
-    [ ] T34.5.5: Manter export de `ValoresDadosPessoais` se usado em outros lugares
+    [x] T34.5.5: Manter export de `ValoresDadosPessoais` se usado em outros lugares
 
-  [ ] CP34.6: Verificar compatibilidade com componente ListaAlunosCertificacao
-    [ ] T34.6.1: Função `montarStatusPorFase()` (linha 291):
+  [x] CP34.6: Verificar compatibilidade com componente ListaAlunosCertificacao
+    [x] T34.6.1: Função `montarStatusPorFase()` (linha 291):
       - Acessa: `aluno.progressoDadosPessoais.camposPreenchidos` ✅ existe
       - Acessa: `aluno.progressoDadosPessoais.totalCampos` ✅ existe
       - **APÓS refatoração:** valores serão diferentes (menos campos)
-    [ ] T34.6.2: Função `mapearStatusPessoais()` (linha 324):
+    [x] T34.6.2: Função `mapearStatusPessoais()` (linha 324):
       - Acessa: `resumo.completo` ✅ existe no adapter
       - Acessa: `resumo.camposPreenchidos` ✅ existe
       - **Compatível** com adapter
-    [ ] T34.6.3: Verificar se UI precisa de ajustes:
+    [x] T34.6.3: Verificar se UI precisa de ajustes:
       - Tooltip mostrará menos campos faltantes (apenas os usados em documentos)
       - Percentual será diferente (base de cálculo diferente)
       - **Isso é o comportamento desejado!**
 
-  [ ] CP34.7: Atualizar testes
-    [ ] T34.7.1: Arquivo: `/tests/integration/emissao-documentos-completude.test.ts`
+  [x] CP34.7: Atualizar testes
+    [x] T34.7.1: Arquivo: `/tests/integration/emissao-documentos-completude.test.ts`
       - Verificar se testa `progressoDadosPessoais`
       - Atualizar expectativas para nova lógica (baseada em def-objects)
-    [ ] T34.7.2: Arquivo: `/tests/lib/importacao/dadosPessoaisMetadata.test.ts`
+    [x] T34.7.2: Arquivo: `/tests/lib/importacao/dadosPessoaisMetadata.test.ts`
       - **NÃO modificar** - testa função antiga (ainda usada para edição)
-    [ ] T34.7.3: Criar novos testes em `/tests/lib/calcularCompletude.test.ts`:
+    [x] T34.7.3: Criar novos testes em `/tests/lib/calcularCompletude.test.ts`:
       - Testar `calcularCompletudeDadosPessoais()`
       - Caso 1: Aluno com todos os campos de def-object preenchidos → "completo"
       - Caso 2: Aluno sem nenhum campo → "ausente"
       - Caso 3: Aluno com campos parciais → "incompleto"
       - Verificar que NÃO analisa campos que não aparecem em documentos
 
-  [ ] CP34.8: Documentar divergência entre funções
-    [ ] T34.8.1: Criar comentário em `dadosPessoaisMetadata.ts`:
+  [x] CP34.8: Documentar divergência entre funções
+    [x] T34.8.1: Criar comentário em `dadosPessoaisMetadata.ts`:
       ```typescript
       /**
        * [DEPRECATED para cálculo de completude de documentos]
@@ -1340,7 +1340,7 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
         // ... implementação existente
       }
       ```
-    [ ] T34.8.2: Adicionar comentário em `calcularCompletude.ts`:
+    [x] T34.8.2: Adicionar comentário em `calcularCompletude.ts`:
       ```typescript
       /**
        * Calcula completude de DADOS PESSOAIS baseado em def-objects.
@@ -1357,13 +1357,13 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
       ```
 
 [ ] CP35: Testes das funções refatoradas
-  [ ] CP35.1: Verificar testes existentes
-    [ ] T35.1.1: Localização: `/tests/lib/calcularCompletude.test.ts`
-    [ ] T35.1.2: Verificar se existem testes para `calcularCompletudeDadosEscolares()`
-    [ ] T35.1.3: Verificar se existem testes para `calcularCompletudeHistoricoEscolar()`
+  [x] CP35.1: Verificar testes existentes
+    [x] T35.1.1: Localização: `/tests/lib/calcularCompletude.test.ts`
+    [x] T35.1.2: Verificar se existem testes para `calcularCompletudeDadosEscolares()`
+    [x] T35.1.3: Verificar se existem testes para `calcularCompletudeHistoricoEscolar()`
 
-  [ ] CP35.2: Atualizar testes para nova implementação
-    [ ] T35.2.1: Testes de `calcularCompletudeDadosEscolares()`:
+  [x] CP35.2: Atualizar testes para nova implementação
+    [x] T35.2.1: Testes de `calcularCompletudeDadosEscolares()`:
       - **ANTES:** testava 3 slots (situacaoEscolar, motivoEncerramento, triplaSerie)
       - **DEPOIS:** deve testar campos de `dadosEscolares.ts` usados em documentos
       - Casos de teste:
@@ -1371,7 +1371,7 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
         2. Aluno sem nenhum campo → "ausente"
         3. Aluno com campos parciais → "incompleto"
         4. Verificar `camposFaltantes` contém campos corretos do def-object
-    [ ] T35.2.2: Testes de `calcularCompletudeHistoricoEscolar()`:
+    [x] T35.2.2: Testes de `calcularCompletudeHistoricoEscolar()`:
       - **ANTES:** testava apenas contagem de séries (>= 3)
       - **DEPOIS:** deve testar campos de `historicoEscolar.ts` usados em documentos
       - Casos de teste:
@@ -1379,7 +1379,7 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
         2. Aluno sem históricos → "ausente"
         3. Aluno com históricos parciais → "incompleto"
         4. Verificar `camposFaltantes` contém campos corretos do def-object
-    [ ] T35.2.3: Testar função genérica `calcularCompletudeFase()`:
+    [x] T35.2.3: Testar função genérica `calcularCompletudeFase()`:
       - Caso 1: Fase válida com def-object
       - Caso 2: Fase sem def-object → retorna "ausente"
       - Caso 3: Def-object com campos vazios (sem documentos) → retorna "ausente"
@@ -1453,10 +1453,10 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
     [ ] T37.2.2: Executar `pnpm summary:dry` para atualizar summary.md
     [ ] T37.2.3: Corrigir erros se houver
 
-[ ] CP38: Documentar decisões técnicas no TECNICO.md
-  [ ] CP38.1: Criar entrada TEC9 principal
-    [ ] T38.1.1: Localização: `/docs/features/emissao-documentos/TECNICO.md`
-    [ ] T38.1.2: Adicionar seção:
+[x] CP38: Documentar decisões técnicas no TECNICO.md
+  [x] CP38.1: Criar entrada TEC9 principal
+    [x] T38.1.1: Localização: `/docs/features/emissao-documentos/TECNICO.md`
+    [x] T38.1.2: Adicionar seção:
       ```markdown
       ## TEC9: Refatoração - Convergência de Cálculo de Completude
 
@@ -1489,8 +1489,8 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
       - `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:XXX` - funções refatoradas
       ```
 
-  [ ] CP38.2: Criar entrada TEC9.1 - Função genérica
-    [ ] T38.2.1: Adicionar subseção:
+  [x] CP38.2: Criar entrada TEC9.1 - Função genérica
+    [x] T38.2.1: Adicionar subseção:
       ```markdown
       ### TEC9.1: Função Genérica calcularCompletudeFase()
 
@@ -1513,8 +1513,8 @@ Garantir que as funções de completude de fases analisem **exatamente os mesmos
       - `/src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts:XXX`
       ```
 
-  [ ] CP38.3: Criar entrada TEC9.2 - Remoção de código customizado
-    [ ] T38.2.2: Adicionar subseção:
+  [x] CP38.3: Criar entrada TEC9.2 - Remoção de código customizado
+    [x] T38.2.2: Adicionar subseção:
       ```markdown
       ### TEC9.2: Remoção de Validações Customizadas
 

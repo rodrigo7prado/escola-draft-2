@@ -37,6 +37,11 @@ export type CompletudeItem = {
   camposFaltantes?: CampoFaltante[];
 };
 
+export type ResumoDadosPessoaisCompletude = CompletudeItem & {
+  completo: boolean;
+  pendentes?: string[];
+};
+
 export type ResumoDadosEscolares = CompletudeItem & {
   totalSlots: number;
   slotsPreenchidos: number;
@@ -182,81 +187,119 @@ export function calcularCompletudeEmissao(
   };
 }
 
-// [FEAT:emissao-documentos_TEC8.1] Calcula completude FASE:DADOS_ESCOLARES.
-export function calcularCompletudeDadosEscolares(
+// [FEAT:emissao-documentos_TEC9.1] Calcula completude de fase usando def-objects.
+// Garante que fases analisem mesmos campos que documentos (convergencia).
+export function calcularCompletudeFase(
+  fase: Phase,
   dadosAluno: DadosAlunoCompleto
-): ResumoDadosEscolares {
-  const totalSlots = 3;
+): CompletudeItem {
+  let totalCampos = 0;
+  let camposPreenchidos = 0;
   const camposFaltantes: CampoFaltante[] = [];
 
-  const situacaoPreenchida = valorPreenchido(
-    obterValorCampoAluno(dadosAluno, "situacaoEscolar")
-  );
-  if (!situacaoPreenchida) {
-    camposFaltantes.push({
-      campo: "situacaoEscolar",
-      label: obterLabelCampo("situacaoEscolar"),
-      tabela: "Aluno",
-      fase: "FASE:DADOS_ESCOLARES",
-    });
+  const defObj = DEF_OBJECTS.find((obj) => obj.fase === fase);
+  if (!defObj) {
+    return {
+      fase,
+      status: "ausente",
+      percentual: 0,
+      camposPreenchidos: 0,
+      totalCampos: 0,
+      camposFaltantes: [],
+    };
   }
 
-  const motivoPreenchido = valorPreenchido(
-    obterValorCampoAluno(dadosAluno, "motivoEncerramento")
-  );
-  if (!motivoPreenchido) {
-    camposFaltantes.push({
-      campo: "motivoEncerramento",
-      label: obterLabelCampo("motivoEncerramento"),
-      tabela: "Aluno",
-      fase: "FASE:DADOS_ESCOLARES",
-    });
+  for (const [tabela, campos] of Object.entries(defObj.schema)) {
+    for (const [campo, documentos] of Object.entries(campos)) {
+      if (!Array.isArray(documentos) || documentos.length === 0) continue;
+
+      totalCampos += 1;
+      const preenchido = campoEstaPreenchido(tabela, campo, dadosAluno);
+
+      if (preenchido) {
+        camposPreenchidos += 1;
+      } else {
+        camposFaltantes.push({
+          campo,
+          label: obterLabelCampo(campo),
+          tabela,
+          fase,
+        });
+      }
+    }
   }
 
-  const triplaSerieValida = validarTriplaSerieMedio(
-    obterSeriesCursadas(dadosAluno)
-  );
-  if (!triplaSerieValida) {
-    camposFaltantes.push({
-      campo: "triplaSerieMedio",
-      label: "Tripla serie do medio",
-      tabela: "SerieCursada",
-      fase: "FASE:DADOS_ESCOLARES",
-    });
-  }
-
-  const slotsPreenchidos = [
-    situacaoPreenchida,
-    motivoPreenchido,
-    triplaSerieValida,
-  ].filter(Boolean).length;
-
-  const percentual = Math.round((slotsPreenchidos / totalSlots) * 100);
+  const percentual =
+    totalCampos === 0
+      ? 0
+      : Math.round((camposPreenchidos / totalCampos) * 100);
 
   let status: PhaseStatus = "incompleto";
-  if (slotsPreenchidos === 0) {
+  if (totalCampos === 0 || camposPreenchidos === 0) {
     status = "ausente";
-  } else if (slotsPreenchidos === totalSlots) {
+  } else if (camposPreenchidos === totalCampos) {
     status = "completo";
   }
 
   return {
-    fase: "FASE:DADOS_ESCOLARES",
+    fase,
     status,
     percentual,
-    camposPreenchidos: slotsPreenchidos,
-    totalCampos: totalSlots,
+    camposPreenchidos,
+    totalCampos,
     camposFaltantes,
-    totalSlots,
-    slotsPreenchidos,
-    completo: status === "completo",
   };
 }
 
-// [FEAT:emissao-documentos_TEC8.3] Calcula completude FASE:HISTORICO_ESCOLAR.
+/**
+ * Calcula completude de dados pessoais baseada em def-objects.
+ *
+ * IMPORTANTE: analisa apenas campos usados em documentos de emissao.
+ *
+ * DIFERENCA em relacao a `calcularResumoDadosPessoais()`:
+ * - Esta funcao: apenas campos usados em documentos
+ * - Funcao antiga: todos os campos de edicao
+ *
+ * @see dadosPessoaisMetadata.calcularResumoDadosPessoais - para validacao completa
+ */
+// [FEAT:emissao-documentos_TEC9.4] Calcula completude FASE:DADOS_PESSOAIS.
+export function calcularCompletudeDadosPessoais(
+  dadosAluno: DadosAlunoCompleto
+): ResumoDadosPessoaisCompletude {
+  const resultado = calcularCompletudeFase("FASE:DADOS_PESSOAIS", dadosAluno);
+
+  return {
+    ...resultado,
+    completo: resultado.status === "completo",
+    pendentes: resultado.camposFaltantes?.map((campo) => campo.campo),
+  };
+}
+
+// [FEAT:emissao-documentos_TEC9.2] Calcula completude FASE:DADOS_ESCOLARES.
+export function calcularCompletudeDadosEscolares(
+  dadosAluno: DadosAlunoCompleto
+): ResumoDadosEscolares {
+  const resultado = calcularCompletudeFase(
+    "FASE:DADOS_ESCOLARES",
+    dadosAluno
+  );
+
+  return {
+    ...resultado,
+    totalSlots: resultado.totalCampos,
+    slotsPreenchidos: resultado.camposPreenchidos,
+    completo: resultado.status === "completo",
+  };
+}
+
+// [FEAT:emissao-documentos_TEC9.3] Calcula completude FASE:HISTORICO_ESCOLAR.
 export function calcularCompletudeHistoricoEscolar(
   dadosAluno: DadosAlunoCompleto
 ): ResumoHistoricoEscolar {
+  const resultado = calcularCompletudeFase(
+    "FASE:HISTORICO_ESCOLAR",
+    dadosAluno
+  );
   const series = obterSeriesCursadas(dadosAluno);
 
   const { totalRegistros, totalSeries } = series.reduce(
@@ -272,75 +315,12 @@ export function calcularCompletudeHistoricoEscolar(
     { totalRegistros: 0, totalSeries: 0 }
   );
 
-  let status: PhaseStatus = "incompleto";
-  if (totalSeries >= 3) {
-    status = "completo";
-  } else if (totalSeries === 0) {
-    status = "ausente";
-  }
-
-  const percentual = Math.min(100, Math.round((totalSeries / 3) * 100));
-  const camposFaltantes: CampoFaltante[] =
-    totalSeries < 3
-      ? [
-          {
-            campo: "historicos",
-            label: "Historico escolar completo (3 series)",
-            tabela: "SerieCursada",
-            fase: "FASE:HISTORICO_ESCOLAR",
-          },
-        ]
-      : [];
-
   return {
-    fase: "FASE:HISTORICO_ESCOLAR",
-    status,
-    percentual,
-    camposPreenchidos: totalSeries,
-    totalCampos: 3,
-    camposFaltantes,
+    ...resultado,
     totalRegistros,
     totalSeries,
-    completo: status === "completo",
+    completo: resultado.status === "completo",
   };
-}
-
-// [FEAT:emissao-documentos_TEC8.2] Valida regra especifica: 1 serie "-" + 2 "MÉDIO".
-export function validarTriplaSerieMedio(
-  series?: SerieCursadaCompleta[]
-): boolean {
-  if (!series || series.length < 3) return false;
-
-  const seriesOrdenadas = [...series].sort((a, b) =>
-    compararAnoLetivoAsc(a.anoLetivo, b.anoLetivo)
-  );
-
-  const [maisAntiga, ...restantes] = seriesOrdenadas;
-  const segmentoAntiga = normalizarSegmento(maisAntiga.segmento) || "-";
-  if (segmentoAntiga !== "-") return false;
-
-  const medioRestantes = restantes.filter(
-    (serie) => normalizarSegmento(serie.segmento) === "MÉDIO"
-  ).length;
-
-  return medioRestantes >= 2;
-}
-
-function normalizarSegmento(seg?: string | null): string {
-  return (seg ?? "").trim().toUpperCase();
-}
-
-function compararAnoLetivoAsc(a?: string | null, b?: string | null): number {
-  const anoA = Number.parseInt((a ?? "").trim(), 10);
-  const anoB = Number.parseInt((b ?? "").trim(), 10);
-
-  const validoA = Number.isFinite(anoA);
-  const validoB = Number.isFinite(anoB);
-
-  if (validoA && validoB) return anoA - anoB;
-  if (validoA) return -1;
-  if (validoB) return 1;
-  return (a ?? "").localeCompare(b ?? "");
 }
 
 function campoEstaPreenchido(

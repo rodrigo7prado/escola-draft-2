@@ -16,6 +16,9 @@ Sumário organizado das documentações de DRY e IDD para refletir o estado atua
 ### Importação de Perfil
 1. [DRY.BACKEND:IMPORT_PROFILE](backend/imports/import-profile/backend.dry.md#importacao-de-perfil)
 
+### Validação e Completude
+2. [DRY.BACKEND:CALCULAR_COMPLETUDE_DOCUMENTOS](backend/validacao/calcular-completude.md#drybackendcalcular_completude_documentos) - Sistema de análise de completude baseado em def-objects
+
 ## UI
 
 ### Componentes Base
@@ -31,6 +34,7 @@ Sumário organizado das documentações de DRY e IDD para refletir o estado atua
 ### Componentes Especializados
 9. [DRY.UI:CONFIRMACAO_POR_DIGITACAO](ui/ui-components.dry.md#9-confirmacao-por-digitacao) - Confirmação com digitação
 10. [DRY.UI:ANALISE_COMPLETUDE_DE_DADOS](ui/ui-components.dry.md#10-analise-completude-de-dados) - Análise de completude
+11. [DRY.UI:CARD_COMPLETUDE_COM_DETALHAMENTO](ui/ui-components.dry.md#11-card-completude-com-detalhamento) - Card de completude com expansão de detalhes
 
 ## Objetos e Tipos
 
@@ -42,3 +46,6 @@ Sumário organizado das documentações de DRY e IDD para refletir o estado atua
 3. [DRY.TYPE:PhaseSchema](objects/index.md#drytypephaseschema) - Schema genérico de fase
 4. [DRY.TYPE:ModelosPrismaFluxo](objects/index.md#drytypemodelosprismafluxo) - Modelos do fluxo
 5. [DRY.TYPE:DocEmissao](objects/index.md#drytypedocemissao) - Tipos de documentos
+6. [DRY.TYPE:CompletudeItem](objects/index.md#drytypecompletudeitem) - Resultado de análise de completude por item
+7. [DRY.TYPE:ResumoCompletude](objects/index.md#drytyperesumocompletude) - Consolidação de completude de múltiplos itens
+8. [DRY.TYPE:CampoFaltante](objects/index.md#drytypecampofaltante) - Campo obrigatório não preenchido

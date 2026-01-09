@@ -12,6 +12,9 @@
 3. [DRY.TYPE:PhaseSchema](#drytypephaseschema) - Schema genérico de fase
 4. [DRY.TYPE:ModelosPrismaFluxo](#drytypemodelosprismafluxo) - Modelos do fluxo
 5. [DRY.TYPE:DocEmissao](#drytypedocemissao) - Tipos de documentos
+6. [DRY.TYPE:CompletudeItem](#drytypecompletudeitem) - Resultado de análise de completude por item
+7. [DRY.TYPE:ResumoCompletude](#drytyperesumocompletude) - Consolidação de completude de múltiplos itens
+8. [DRY.TYPE:CampoFaltante](#drytypecampofaltante) - Campo obrigatório não preenchido
 
 ---
 
@@ -248,6 +251,165 @@ Ou use a skill:
 ```
 /validate-dry
 ```
+
+---
+
+---
+
+## Tipos de Completude
+
+### DRY.TYPE:CampoFaltante
+
+**Tipo:** Interface
+
+```typescript
+export type CampoFaltante = {
+  campo: string;    // Nome técnico do campo (ex: "dataNascimento")
+  label: string;    // Nome legível (ex: "Data de nascimento")
+  tabela: string;   // Tabela de origem (ex: "Aluno", "SerieCursada")
+  fase: Phase;      // Fase a que pertence (ex: "FASE:DADOS_PESSOAIS")
+};
+```
+
+**Descrição:** Representa um campo obrigatório que não está preenchido durante análise de completude.
+
+**Uso:** Identificar e exibir campos que precisam ser preenchidos para completar um documento, fase ou processo.
+
+**Localização:** [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts](../../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) (linha 19)
+
+**Exemplo:**
+```typescript
+const campoFaltante: CampoFaltante = {
+  campo: "dataNascimento",
+  label: "Data de nascimento",
+  tabela: "Aluno",
+  fase: "FASE:DADOS_PESSOAIS"
+};
+```
+
+**Referências:**
+- Usado em [DRY.TYPE:CompletudeItem]
+- Consumido por [DRY.UI:CARD_COMPLETUDE_COM_DETALHAMENTO]
+- Gerado por [DRY.BACKEND:CALCULAR_COMPLETUDE_DOCUMENTOS]
+
+---
+
+### DRY.TYPE:CompletudeItem
+
+**Tipo:** Genérico
+
+```typescript
+export type CompletudeItem<TItem extends string> = {
+  item: TItem;                    // Identificador do item analisado
+  status: PhaseStatus;            // "completo" | "incompleto" | "ausente"
+  percentual: number;             // 0-100
+  camposPreenchidos: number;      // Quantidade de campos preenchidos
+  totalCampos: number;            // Quantidade total de campos obrigatórios
+  camposFaltantes: CampoFaltante[]; // Lista de campos não preenchidos
+};
+
+// Uso específico para documentos
+export type CompletudeDocumento = CompletudeItem<DocEmissao>;
+```
+
+**Descrição:** Resultado genérico de análise de completude para um item específico (documento, fase, etapa, seção).
+
+**Uso:** Armazenar resultado detalhado da análise de completude de um único item.
+
+**Localização:** [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts](../../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) (linha 26)
+
+**Exemplo:**
+```typescript
+const completudeCertidao: CompletudeDocumento = {
+  documento: "Certidão",
+  status: "incompleto",
+  percentual: 85,
+  camposPreenchidos: 17,
+  totalCampos: 20,
+  camposFaltantes: [
+    { campo: "cpf", label: "CPF", tabela: "Aluno", fase: "FASE:DADOS_PESSOAIS" },
+    { campo: "rg", label: "RG", tabela: "Aluno", fase: "FASE:DADOS_PESSOAIS" },
+    { campo: "nomePai", label: "Nome do pai", tabela: "Aluno", fase: "FASE:DADOS_PESSOAIS" }
+  ]
+};
+```
+
+**Generalização:**
+```typescript
+// Para outros contextos
+type CompletudeImportacao = CompletudeItem<TipoImportacao>;
+type CompletudeFase = CompletudeItem<Phase>;
+type CompletudeSecao = CompletudeItem<SecaoFormulario>;
+```
+
+**Referências:**
+- Usado em [DRY.TYPE:ResumoCompletude]
+- Retornado por [DRY.BACKEND:CALCULAR_COMPLETUDE_DOCUMENTOS]
+- Consumido por [DRY.UI:CARD_COMPLETUDE_COM_DETALHAMENTO]
+
+---
+
+### DRY.TYPE:ResumoCompletude
+
+**Tipo:** Genérico
+
+```typescript
+export type ResumoCompletude<TItem extends string> = {
+  statusGeral: PhaseStatus;        // Status consolidado de todos os itens
+  itensProntos: number;            // Quantidade de itens com status "completo"
+  totalItens: number;              // Total de itens analisados
+  porItem: Record<TItem, CompletudeItem<TItem>>; // Detalhes por item
+};
+
+// Uso específico para emissão de documentos
+export type ResumoCompletudeEmissao = ResumoCompletude<DocEmissao>;
+```
+
+**Descrição:** Consolidação genérica de análise de completude para múltiplos itens relacionados.
+
+**Uso:** Armazenar resultado agregado da análise de completude de um conjunto de itens.
+
+**Localização:** [src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts](../../../src/lib/core/data/gestao-alunos/documentos/calcularCompletude.ts) (linha 35)
+
+**Exemplo:**
+```typescript
+const resumo: ResumoCompletudeEmissao = {
+  statusGeral: "incompleto",
+  documentosProntos: 2,
+  totalDocumentos: 4,
+  porDocumento: {
+    "Certidão": { /* CompletudeDocumento */ },
+    "Certificado": { /* CompletudeDocumento */ },
+    "Diploma": { /* CompletudeDocumento */ },
+    "Histórico Escolar": { /* CompletudeDocumento */ }
+  }
+};
+
+// Acessar documento específico
+const certidao = resumo.porDocumento["Certidão"];
+console.log(`Certidão: ${certidao.percentual}% completa`);
+```
+
+**Lógica de Status Geral:**
+```typescript
+// Determinar statusGeral baseado nos itens:
+if (todos os itens completos) → statusGeral = "completo"
+else if (todos os itens ausentes) → statusGeral = "ausente"
+else → statusGeral = "incompleto"
+```
+
+**Generalização:**
+```typescript
+// Para outros contextos
+type ResumoImportacao = ResumoCompletude<TipoImportacao>;
+type ResumoFases = ResumoCompletude<Phase>;
+type ResumoFormulario = ResumoCompletude<SecaoFormulario>;
+```
+
+**Referências:**
+- Contém múltiplos [DRY.TYPE:CompletudeItem]
+- Retornado por [DRY.BACKEND:CALCULAR_COMPLETUDE_DOCUMENTOS]
+- Prop principal de [DRY.UI:CARD_COMPLETUDE_COM_DETALHAMENTO]
 
 ---
 

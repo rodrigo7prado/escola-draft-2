@@ -21,6 +21,7 @@ Documentação de todos os componentes UI do sistema, incluindo componentes base
 ### Componentes Especializados
 9. [DRY.UI:CONFIRMACAO_POR_DIGITACAO] - Confirmação com digitação
 10. [DRY.UI:ANALISE_COMPLETUDE_DE_DADOS] - Análise de completude
+11. [DRY.UI:CARD_COMPLETUDE_COM_DETALHAMENTO] - Card de completude com expansão de detalhes
 
 ---
 
@@ -247,3 +248,220 @@ Documentação de todos os componentes UI do sistema, incluindo componentes base
     - `completo`: verde
     - `parcial`: amarelo
     - `ausente`: vermelho
+
+---
+
+### 11. Card Completude com Detalhamento
+
+#### [x] 11. *`DRY.UI:CARD_COMPLETUDE_COM_DETALHAMENTO`*
+  - **Localização:** `/src/components/CompletudeDocumentos.tsx`
+  - **Descrição:** Componente genérico de card para exibir análise de completude de múltiplos itens (documentos, fases, etapas), com expansão de detalhes e navegação para campos faltantes.
+  - **Dependências:** [DRY.BACKEND:CALCULAR_COMPLETUDE_DOCUMENTOS], [DRY.OBJECT:PHASES]
+
+## API
+
+**Propriedades:**
+- `completude` (`ResumoCompletudeEmissao`): Objeto com análise consolidada de completude
+  - `statusGeral`: Status consolidado (completo/incompleto/ausente)
+  - `documentosProntos`: Quantidade de itens com status completo
+  - `totalDocumentos`: Total de itens analisados
+  - `porDocumento`: Detalhes por item individual
+- `onNavigateToAba?: (abaId: string) => void`: Callback para navegar para aba com campo faltante
+
+**Eventos:**
+- `onNavigateToAba(abaId)`: Disparado ao clicar em campo faltante para navegar à aba correspondente
+
+**Estado Interno:**
+- `detalhesAbertos`: Record controlando expansão de cada card de item
+
+## Comportamento
+
+**Resumo Geral:**
+- Badge de status geral com cor dinâmica (verde/amarelo/vermelho)
+- Contador "X/Y documentos prontos"
+
+**Cards por Item:**
+- Grid responsivo (1 coluna mobile, 2 colunas desktop)
+- Cada card exibe:
+  - Título do item (ex: "Certidão", "Certificado")
+  - Percentual e contadores (ex: "85% · 17/20 campos")
+  - Badge de status individual
+  - Botão "Ver detalhes" expansível
+
+**Detalhes Expandidos:**
+- Lista de campos faltantes agrupados por fase
+- Ordem respeita `PHASES_CONFIG[fase].ordem`
+- Campos clicáveis que chamam `onNavigateToAba()`
+- Feedback visual: texto azul com hover underline
+
+**Cores por Status:**
+- `completo`: verde (bg-green-100 text-green-700)
+- `incompleto`: amarelo (bg-yellow-100 text-yellow-700)
+- `ausente`: vermelho (bg-red-100 text-red-700)
+
+## Fluxo de Uso
+
+1. Componente recebe objeto `completude` do backend
+2. Renderiza resumo geral no topo
+3. Itera sobre itens na ordem definida (`ORDEM_DOCUMENTOS`)
+4. Usuário clica "Ver detalhes" para expandir card
+5. Lista de campos faltantes é exibida, agrupada por fase
+6. Usuário clica em campo faltante → `onNavigateToAba()` é chamado
+7. Aba correspondente é focada para preenchimento
+
+## Agrupamento de Campos Faltantes
+
+Função interna `agruparCamposFaltantes()`:
+- Agrupa campos por `fase`
+- Ordena grupos por `PHASES_CONFIG[fase].ordem`
+- Retorna array de `GrupoCamposFaltantes`
+
+```typescript
+type GrupoCamposFaltantes = {
+  fase: Phase;
+  campos: CampoFaltante[];
+};
+```
+
+## Reutilização
+
+Este componente pode ser generalizado para outros contextos de completude:
+
+**Uso Atual:**
+- Análise de documentos de emissão (Certidão, Certificado, Diploma, Histórico)
+
+**Usos Futuros:**
+- Dashboard de completude de turma (exibir completude por aluno)
+- Validação de importação (mostrar campos importados vs faltantes)
+- Checklist de processos (ex: matrícula, formatura)
+- Análise de qualidade de dados (campos críticos faltantes)
+
+**Adaptações Necessárias para Generalização:**
+```typescript
+// Props genéricas
+interface CardCompletudeProps<T extends string> {
+  titulo: string;
+  itens: ItemCompletude<T>[];
+  resumo?: {
+    status: PhaseStatus;
+    itensProntos: number;
+    totalItens: number;
+  };
+  onNavigate?: (destino: string) => void;
+  labelPlural?: string;  // "documentos", "etapas", "seções"
+}
+```
+
+## Checklist de Implementação
+
+- [x] Cards expansíveis com estado controlado
+- [x] Badges de status com cores dinâmicas
+- [x] Agrupamento de campos por fase
+- [x] Navegação via callback `onNavigateToAba`
+- [x] Grid responsivo (mobile/desktop)
+- [x] Feedback visual em campos clicáveis
+- [x] Respeito à ordem de fases definida em PHASES_CONFIG
+- [x] Estado vazio tratado ("Nenhum campo faltante")
+
+## Exemplos de Uso
+
+### Uso Básico (Emissão de Documentos)
+
+```typescript
+import { CompletudeDocumentos } from '@/components/CompletudeDocumentos';
+import { calcularCompletudeEmissao } from '@/lib/core/data/gestao-alunos/documentos/calcularCompletude';
+
+function AbaEmissao({ aluno, onNavigate }) {
+  const completude = calcularCompletudeEmissao(aluno);
+
+  return (
+    <div>
+      <CompletudeDocumentos
+        completude={completude}
+        onNavigateToAba={onNavigate}
+      />
+      {/* Resto da UI de emissão */}
+    </div>
+  );
+}
+```
+
+### Integração com Sistema de Abas
+
+```typescript
+function DadosAluno({ aluno }) {
+  const [abaAtiva, setAbaAtiva] = useState("dados-pessoais");
+
+  const completude = calcularCompletudeEmissao(aluno);
+
+  return (
+    <Tabs value={abaAtiva} onValueChange={setAbaAtiva}>
+      <TabsList>
+        <TabsTrigger value="dados-pessoais">Dados Pessoais</TabsTrigger>
+        <TabsTrigger value="dados-escolares">Dados Escolares</TabsTrigger>
+        <TabsTrigger value="historico">Histórico</TabsTrigger>
+        <TabsTrigger value="emissao">Emissão</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="emissao">
+        <CompletudeDocumentos
+          completude={completude}
+          onNavigateToAba={setAbaAtiva}
+        />
+      </TabsContent>
+    </Tabs>
+  );
+}
+```
+
+### Desabilitar Botões Baseado em Completude
+
+```typescript
+function BotoesEmissao({ aluno }) {
+  const completude = calcularCompletudeEmissao(aluno);
+  const certidao = completude.porDocumento["Certidão"];
+
+  return (
+    <div>
+      <CompletudeDocumentos completude={completude} />
+
+      <Button
+        disabled={certidao.status !== "completo"}
+        onClick={() => imprimirCertidao(aluno)}
+      >
+        Imprimir Certidão
+      </Button>
+
+      {certidao.status !== "completo" && (
+        <Tooltip>
+          Preencha os {certidao.camposFaltantes.length} campos faltantes
+        </Tooltip>
+      )}
+    </div>
+  );
+}
+```
+
+## Referências Cruzadas
+
+**Componentes Relacionados:**
+- [DRY.UI:ICONE_STATUS_FASE](#7-icone-status-fase) - Usado internamente para exibir ícones de fase
+- [DRY.UI:AGREGADOR_ICONES_FASES](#8-agregador-icones-fases) - Padrão similar de agregação de status
+- [DRY.BASE-UI:TABS](#5-tabs-base) - Frequentemente usado em conjunto para navegação
+
+**Backend Relacionado:**
+- [DRY.BACKEND:CALCULAR_COMPLETUDE_DOCUMENTOS](../backend/validacao/calcular-completude.md#drybackendcalcular_completude_documentos) - Fonte de dados de completude
+
+**Objetos Relacionados:**
+- [DRY.OBJECT:PHASES](../objects/phases.md#dryobjectphases) - Configuração de fases para agrupamento
+- [DRY.TYPE:PhaseStatus](../objects/index.md#drytypephase) - Tipos de status utilizados
+- [DRY.TYPE:DocEmissao](../objects/index.md#drytypedocemissao) - Tipos de documentos
+- [DRY.TYPE:CompletudeItem](../objects/index.md#drytypecompletudeitem) - Tipo de resultado por item
+- [DRY.TYPE:ResumoCompletude](../objects/index.md#drytyperesumocompletude) - Tipo de resumo consolidado
+- [DRY.TYPE:CampoFaltante](../objects/index.md#drytypecampofaltante) - Tipo de campo faltante
+
+**Origem da Implementação:**
+- Feature: Emissão de Documentos
+- Sessão: 3 (Análise de Completude)
+- Checkpoint: C15
+- Documentação: `/docs/features/emissao-documentos/CHECKPOINT.md`

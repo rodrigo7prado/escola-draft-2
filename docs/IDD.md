@@ -97,9 +97,10 @@ Cada sessão de trabalho terá como foco a implementação de uma feature espec�
 - [Importação por colagem](features/importacao-por-colagem/FLUXO.md);
 - [Importação de Ficha Individual - Histórico](features/importacao-ficha-individual-historico/FLUXO.md);
 - [Sistema de Fases de Gestão de Alunos](features/sistema-fases-gestao-alunos/FLUXO.md);  
-- [Emissão de Documentos](features/emissao-documentos/CHECKPOINT.md); <---
+- [Emissão de Documentos](features/emissao-documentos/CHECKPOINT.md);
+- [Painel de Emissão de Documentos](features/painel-emissao-documentos/CHECKPOINT.md); <---
 
-**FEATURE ATUAL**: `Emissão de Documentos`
+**FEATURE ATUAL**: `Painel de Emissão de Documentos`
 
 # WORKFLOW GERAL PARA IMPLEMENTAÇÃO DE FEATURES
 - IDENTIFICAR a feature a ser implementada em FEATURE ATUAL acima;

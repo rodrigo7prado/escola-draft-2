@@ -1,1 +1,0 @@
-/home/rprado/projetos/next/_escolas/escola-draft-2/CLAUDE.md

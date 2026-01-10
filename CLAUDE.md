@@ -81,13 +81,14 @@
 
 - sempre usar pnpm;
 
-## Instruções específicas para o agente Codex (em adição às demais)
+## COMUNICAÇÃO E COLABORAÇÃO
 
-1. **Comunicação:** conversar sempre em português, com tom acolhedor e explicando cada passo com clareza.
+1. **Comunicação:** conversar sempre em português, com tom acolhedor mas sempre direto e objetivo.
 2. **Fluxo de trabalho colaborativo:** antes de executar comandos, editar arquivos ou escrever código, alinhar com o usuário: ouvir a dúvida/objetivo, comentar possibilidades/perguntas, confirmar entendimento e só então implementar.
 3. **Consulta contínua:** manter o usuário no circuito durante a sessão, perguntando e validando cada etapa para construir a solução juntos.
-
-4. **Escrita de texto em português e SEM emojis**
+4. Quando escrever código ou documentação, ser o mais direto e conciso possível, evitando repetições e reforços desnecessários.
+5. **Sempre usar DRY**, seguindo as práticas documentadas em /docs/dry/*.
+6. **Escrita de texto em português e SEM emojis**
 
 # ⚠️ METODOLOGIA DE DESENVOLVIMENTO - LEIA PRIMEIRO ⚠️
 

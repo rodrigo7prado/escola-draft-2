@@ -5,6 +5,14 @@ export type FiltrosCertificacaoState = {
   turma: string;
 };
 
+const getTurmaSortKey = (turmaLabel: string) => {
+  const prefixo = turmaLabel.split('-')[0]?.trim() || turmaLabel;
+  const match = prefixo.match(/(\d+)(?!.*\d)/);
+  const numero = match ? Number.parseInt(match[1], 10) : Number.MAX_SAFE_INTEGER;
+  const basePrefixo = match ? prefixo.replace(match[1], '') : prefixo;
+  return { numero, basePrefixo };
+};
+
 export function useFiltrosCertificacao() {
   // Estados dos filtros
   const [anoLetivo, setAnoLetivo] = useState<string>('');
@@ -74,11 +82,29 @@ export function useFiltrosCertificacao() {
         const data = await response.json();
 
         if (data.tipo === 'turmas') {
-          setTurmasDisponiveis(data.dados);
+          const turmasOrdenadas = [...data.dados].sort((a, b) => {
+            const keyA = getTurmaSortKey(a);
+            const keyB = getTurmaSortKey(b);
+
+            if (keyA.numero !== keyB.numero) {
+              return keyA.numero - keyB.numero;
+            }
+
+            const prefixCompare = keyA.basePrefixo.localeCompare(
+              keyB.basePrefixo,
+              'pt-BR',
+              { sensitivity: 'base' }
+            );
+            if (prefixCompare !== 0) return prefixCompare;
+
+            return a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' });
+          });
+
+          setTurmasDisponiveis(turmasOrdenadas);
 
           // Selecionar automaticamente a primeira turma
-          if (data.dados.length > 0) {
-            setTurma(data.dados[0]);
+          if (turmasOrdenadas.length > 0) {
+            setTurma(turmasOrdenadas[0]);
           }
         }
       } catch (error) {

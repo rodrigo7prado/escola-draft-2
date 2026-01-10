@@ -1,5 +1,8 @@
-@include .ai/CORE.md [CORE.md](.ai/CORE.md)
-@include .ai/ARQUITETURA_PROJETO.md [ARQUITETURA_PROJETO.md](.ai/ARQUITETURA_PROJETO.md)
+## ARQUIVOS INCLUÍDOS
+Quanto aos próximos arquivos incluídos, nunca pergunte se deve lê-los, a leitura é obrigatória.
+- @include .ai/CORE.md [CORE.md](.ai/CORE.md)
+- @include .ai/ARQUITETURA_PROJETO.md [ARQUITETURA_PROJETO.md](.ai/ARQUITETURA_PROJETO.md)
+- @include .ai/glossario/* [glossario](.ai/glossario/*) - neste caso, incluir todos os arquivos do diretório glossario
 
 ## COMUNICAÇÃO E COLABORAÇÃO
 

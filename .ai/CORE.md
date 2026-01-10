@@ -18,6 +18,10 @@
 
 - sempre usar pnpm;
 
+- sempre que encontrar palavras começando com maiúscula (e.g., Aluno, Turma), considerar como entidades do domínio e se certificar de já conhecer suas definições, dadas em [./.ai/glossario/principal.md](./glossario/*), através do glossário;
+
+- sempre que não conseguir entender o termo com palavras começando em maíúscula, me pergunte imediatamente antes de prosseguir;
+
 # ⚠️ METODOLOGIA DE DESENVOLVIMENTO - LEIA PRIMEIRO ⚠️
 
 ## 🎯 METODOLOGIA IDD (Incremental Documentation Development)

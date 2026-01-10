@@ -1,5 +1,6 @@
 @include .ai/CORE.md [CORE.md](.ai/CORE.md)
 @include .ai/ARQUITETURA_PROJETO.md [ARQUITETURA_PROJETO.md](.ai/ARQUITETURA_PROJETO.md)
+@include .ai/glossario/* [glossario](.ai/glossario/*)
 
 # ⚠️ PROTOCOLO OBRIGATÓRIO DE INÍCIO DE SESSÃO ⚠️
 

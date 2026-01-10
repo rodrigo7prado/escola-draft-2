@@ -1,6 +1,9 @@
 **IDD - Incremental Documentation Development**
 Este arquivo contém a concepção e o workflow para a implementação de features através da metodologia IDD (Incremental Documentation Development).
 
+# Glossário
+Antes de qualquer coisa, leia a [ARQUITETURA_PROJETO.md](./../.ai/ARQUITETURA_PROJETO.md) para entender os termos usados nesta metodologia.
+
 Conteúdo:
 - Separação de responsabilidades entre agentes IA (Claude e Codex);
 - Sumário de features (*com feature atual destacada*);
@@ -98,9 +101,9 @@ Cada sessão de trabalho terá como foco a implementação de uma feature espec�
 - [Importação de Ficha Individual - Histórico](features/importacao-ficha-individual-historico/FLUXO.md);
 - [Sistema de Fases de Gestão de Alunos](features/sistema-fases-gestao-alunos/FLUXO.md);  
 - [Emissão de Documentos](features/emissao-documentos/CHECKPOINT.md);
-- [Painel de Emissão de Documentos](features/painel-emissao-documentos/CHECKPOINT.md); <---
+- [Página de Emissão de Documentos](features/pagina-emissao-documentos/CHECKPOINT.md); <---
 
-**FEATURE ATUAL**: `Painel de Emissão de Documentos`
+**FEATURE ATUAL**: `Página de Emissão de Documentos`
 
 # WORKFLOW GERAL PARA IMPLEMENTAÇÃO DE FEATURES
 - IDENTIFICAR a feature a ser implementada em FEATURE ATUAL acima;

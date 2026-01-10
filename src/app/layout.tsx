@@ -42,7 +42,7 @@ export default function RootLayout({
               <Link href="/migracao" className="hover:text-neutral-900">
                 Migração
               </Link>
-              <Link href="/gestao-aluno" className="hover:text-neutral-900">
+              <Link href="/gestao-alunos" className="hover:text-neutral-900">
                 Gestão de Alunos
               </Link>
               <Link href="/emissao-documentos" className="hover:text-neutral-900">

@@ -7,6 +7,7 @@ Quanto aos próximos arquivos incluídos, nunca pergunte se deve lê-los, a leit
 ## COMUNICAÇÃO E COLABORAÇÃO
 
 1. **Comunicação:** conversar sempre em português, com tom acolhedor e explicando cada passo com clareza.
+2. Restrinja-se aos arquivos que forem indicados no fluxo de arquivos referenciados desde AGENTS.md. Evite invocar arquivos por conta própria.
 
 ## METODOLOGIA DE DESENVOLVIMENTO
 

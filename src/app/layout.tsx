@@ -30,24 +30,25 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex flex-col overflow-hidden`}
       >
         <header className="border-b border-neutral-200 shrink-0">
-          <div className="mx-auto max-w-6xl px-4 py-2 flex items-center gap-4 text-sm">
-            <div className="font-medium">
+          <div className="mx-auto max-w-6xl px-4 py-1.5 flex items-center gap-4 text-xs min-w-0">
+            <div className="font-medium truncate min-w-0">
               Sistema de Certificação | Colégio Estadual Senor Abravanel
             </div>
-            {/* <nav className="flex items-center gap-3 text-neutral-600">
-              <Link href="/#migracao" className="hover:text-neutral-900">
+            <nav className="flex items-center gap-3 text-neutral-600 shrink-0">
+              {/* [FEAT:pagina-emissao-documentos_TEC5] menu principal global */}
+              <Link href="/" className="hover:text-neutral-900">
+                Home
+              </Link>
+              <Link href="/migracao" className="hover:text-neutral-900">
                 Migração
               </Link>
-              <Link href="/#inconsistencias" className="hover:text-neutral-900">
-                Inconsistências
+              <Link href="/gestao-aluno" className="hover:text-neutral-900">
+                Gestão de Alunos
               </Link>
-              <Link href="/#alunos" className="hover:text-neutral-900">
-                Alunos
+              <Link href="/emissao-documentos" className="hover:text-neutral-900">
+                Emissão de Documentos
               </Link>
-              <Link href="/#impressao" className="hover:text-neutral-900">
-                Impressão
-              </Link>
-            </nav> */}
+            </nav>
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-4 flex-1 min-h-0 w-full">

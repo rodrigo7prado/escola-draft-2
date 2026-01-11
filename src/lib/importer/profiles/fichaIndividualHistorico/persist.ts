@@ -7,6 +7,28 @@ function toStringSafe(v: unknown) {
   return typeof v === "string" ? v : String(v);
 }
 
+function extrairNumeroSerie(valor?: string | null) {
+  if (!valor) return undefined;
+  const match = String(valor).match(/\d+/);
+  if (!match) return undefined;
+  const numero = parseInt(match[0], 10);
+  return Number.isNaN(numero) ? undefined : numero;
+}
+
+function obterSerieMaximaArquivo(parsed: ParseResult) {
+  let melhor: { numero: number; valor: string } | undefined;
+  for (const serie of parsed.series) {
+    const raw = toStringSafe(serie.contexto["serie"] ?? serie.contexto["SÉRIE"]);
+    if (!raw) continue;
+    const numero = extrairNumeroSerie(raw);
+    if (numero === undefined) continue;
+    if (!melhor || numero > melhor.numero) {
+      melhor = { numero, valor: raw };
+    }
+  }
+  return melhor?.valor;
+}
+
 function isLinhaSituacaoFinal(texto?: string | null) {
   if (!texto) return false;
   const normalized = texto
@@ -59,6 +81,12 @@ export async function persistSeriesHistorico(
     string,
     { disciplinas: Array<Prisma.HistoricoEscolarCreateManyInput>; sheets: number[] }
   >();
+  const serieMaximaArquivo = obterSerieMaximaArquivo(parsed);
+  if (debugImport) {
+    console.info("[persist:fichaHistorico] serie maxima do arquivo", {
+      serieMaximaArquivo,
+    });
+  }
 
   for (const [idx, serie] of parsed.series.entries()) {
     const resumo = {
@@ -72,6 +100,18 @@ export async function persistSeriesHistorico(
       frequenciaGlobal: typeof serie.resumo.frequenciaGlobal === "number" ? serie.resumo.frequenciaGlobal : undefined,
       situacaoFinal: toStringSafe(serie.resumo.situacaoFinal),
     };
+
+    const serieOriginal = resumo.serie;
+    if (serieMaximaArquivo) {
+      resumo.serie = serieMaximaArquivo;
+    }
+    if (debugImport && serieOriginal !== resumo.serie) {
+      console.info("[persist:fichaHistorico] serie ajustada", {
+        sheetIndex: idx,
+        serieOriginal,
+        serieMaximaArquivo: resumo.serie,
+      });
+    }
 
     if (debugImport) {
       console.info("[persist:fichaHistorico] resumo situacaoFinal", {

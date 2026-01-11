@@ -70,6 +70,32 @@ export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunR
 
   const rawSheets: RawSheetCells[] = [];
   const sheets = await loadWorkbookSheets(buffer);
+  const resolverSituacaoFinal = components.resolvers?.situacaoFinal;
+  if (resolverSituacaoFinal) {
+    const situacoesPorSheet = sheets.map((sheet, idx) => {
+      const valor = resolverSituacaoFinal({ sheets: [{ rows: sheet.rows }] });
+      const normalizado = typeof valor === "string" ? valor.trim() : undefined;
+      if (debugImport) {
+        console.info("[import:xlsx] resolver situacaoFinal", {
+          profile: profile.tipoArquivo,
+          fileName,
+          sheet: sheet.name,
+          sheetIndex: idx,
+          situacaoFinal: normalizado,
+        });
+      }
+      return normalizado;
+    });
+
+    situacoesPorSheet.forEach((situacaoFinal, idx) => {
+      if (!situacaoFinal) return;
+      const serie = parsed.series[idx];
+      if (!serie) return;
+      if (!serie.resumo.situacaoFinal) {
+        serie.resumo.situacaoFinal = situacaoFinal;
+      }
+    });
+  }
   for (const sheet of sheets) {
     const cells: Record<string, string> = {};
     for (const [rowNumber, cols] of Object.entries(sheet.rows)) {

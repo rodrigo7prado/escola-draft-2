@@ -39,3 +39,8 @@ Quanto aos próximos arquivos incluídos, nunca pergunte se deve lê-los, a leit
 4. Marca checkpoints como concluídos
 5. Reporta ao Claude para atualização documental
 
+### Refatorações com base em TECNICO.md
+Sempre que for pedida uma refatoração baseada em TECNICO.md:
+1. Reanalise todo o conjunto
+2. Refatore apenas as diferenças
+3. Não escreva nada mais em TECNICO.md.

@@ -11,13 +11,10 @@ import type {
 } from "@/lib/importer/pipelines/xlsx/types";
 import { loadWorkbookSheets } from "@/lib/parsers/xlsx/utils";
 
-async function ensureHashUnique(prisma: PrismaClient, hash: string, tipoArquivo: string) {
-  const existing = await prisma.arquivoImportado.findFirst({
-    where: { hashArquivo: hash, status: "ativo", tipo: tipoArquivo },
+async function getArquivoByHash(prisma: PrismaClient, hash: string) {
+  return prisma.arquivoImportado.findUnique({
+    where: { hashArquivo: hash },
   });
-  if (existing) {
-    throw new DuplicateFileError("Arquivo com conteúdo idêntico já existe", existing.id);
-  }
 }
 
 function buildLinhasPayload(
@@ -113,7 +110,20 @@ export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunR
     });
   }
 
-  await ensureHashUnique(prisma, dataHash, profile.tipoArquivo);
+  const existingArquivo = await getArquivoByHash(prisma, dataHash);
+  if (existingArquivo && existingArquivo.tipo !== profile.tipoArquivo) {
+    throw new DuplicateFileError(
+      "Arquivo com conteúdo idêntico já existe em outro tipo de importacao",
+      existingArquivo.id
+    );
+  }
+  if (debugImport && existingArquivo) {
+    console.info("[import:xlsx] hash duplicado, reutilizando arquivo", {
+      profile: profile.tipoArquivo,
+      fileName,
+      arquivoId: existingArquivo.id,
+    });
+  }
 
   const resultado = await prisma.$transaction(async (tx) => {
     if (debugImport) {
@@ -124,17 +134,28 @@ export async function runXlsxImport(params: ImportRunParams): Promise<ImportRunR
         lines: lines.length,
       });
     }
-    const arquivo = await tx.arquivoImportado.create({
-      data: {
-        nomeArquivo: fileName,
-        hashArquivo: dataHash,
-        tipo: profile.tipoArquivo,
-        status: "ativo",
-      },
-    });
+    const arquivo = existingArquivo
+      ? await tx.arquivoImportado.update({
+          where: { id: existingArquivo.id },
+          data: {
+            nomeArquivo: fileName,
+            status: "ativo",
+            dataUpload: new Date(),
+            excluidoEm: null,
+            excluidoPor: null,
+          },
+        })
+      : await tx.arquivoImportado.create({
+          data: {
+            nomeArquivo: fileName,
+            hashArquivo: dataHash,
+            tipo: profile.tipoArquivo,
+            status: "ativo",
+          },
+        });
 
     const linhasPayload = buildLinhasPayload(arquivo.id, lines, profile.tipoEntidade);
-    if (linhasPayload.length) {
+    if (!existingArquivo && linhasPayload.length) {
       await tx.linhaImportada.createMany({ data: linhasPayload });
     }
 

@@ -55,12 +55,6 @@ export async function persistSeriesHistorico(
     );
   }
 
-  const seriesNaoEncontradas: Array<{
-    anoLetivo?: string;
-    periodoLetivo?: string;
-    curso?: string;
-    serie?: string;
-  }> = [];
   const historicosPorSerieId = new Map<
     string,
     { disciplinas: Array<Prisma.HistoricoEscolarCreateManyInput>; sheets: number[] }
@@ -151,8 +145,31 @@ export async function persistSeriesHistorico(
         `Séries existentes no banco para o aluno ${chave.alunoMatricula}:`,
         seriesDoAluno
       );
-      seriesNaoEncontradas.push(chave);
-      continue;
+      if (debugImport) {
+        console.info("[persist:fichaHistorico] criando nova serieCursada", {
+          alunoMatricula: aluno.matricula,
+          anoLetivo: resumo.anoLetivo,
+          periodoLetivo: resumo.periodoLetivo,
+          curso: resumo.curso,
+          serie: resumo.serie,
+        });
+      }
+      const novaSerie = await tx.serieCursada.create({
+        data: {
+          alunoMatricula: aluno.matricula,
+          anoLetivo: resumo.anoLetivo as string,
+          periodoLetivo: resumo.periodoLetivo as string,
+          curso: resumo.curso ?? undefined,
+          serie: resumo.serie ?? undefined,
+          segmento: segmentoPlanilha ?? undefined,
+          turno: resumo.turno ?? undefined,
+          unidadeEnsino: resumo.unidadeEnsino ?? undefined,
+          cargaHorariaTotal: resumo.cargaHorariaTotal ?? undefined,
+          frequenciaGlobal: resumo.frequenciaGlobal ?? undefined,
+          situacaoFinal: resumo.situacaoFinal ?? undefined,
+        },
+      });
+      existente = novaSerie;
     }
 
     if (debugImport) {
@@ -175,6 +192,10 @@ export async function persistSeriesHistorico(
     const serieRecord = await tx.serieCursada.update({
       where: { id: existente.id },
       data: {
+        anoLetivo: resumo.anoLetivo as string,
+        periodoLetivo: resumo.periodoLetivo as string,
+        curso: resumo.curso ?? undefined,
+        serie: resumo.serie ?? undefined,
         segmento: segmentoPlanilha ?? undefined,
         turno: resumo.turno ?? undefined,
         cargaHorariaTotal: resumo.cargaHorariaTotal ?? undefined,
@@ -216,11 +237,6 @@ export async function persistSeriesHistorico(
         sheetsOrigem: payload.sheets,
       });
     }
-  }
-
-  if (seriesNaoEncontradas.length) {
-    console.warn("Séries não encontradas para atualização:", seriesNaoEncontradas);
-    throw new Error(`Séries não encontradas para atualização (${seriesNaoEncontradas.length})`);
   }
 
   return { persistido: true };

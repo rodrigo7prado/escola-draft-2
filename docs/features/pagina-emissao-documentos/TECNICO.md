@@ -11,7 +11,7 @@ Estrutura de Layout:
       - [Filtro de Alunos por Turma] // Barra horizontal
       - [Conteúdo]
 
-Recursos Usados e configurações:
+Recursos Usados e Configurações:
 -> `Estilo de UI Ultra-Compacto`
   - Local de uso: `Página de Emissão de Documentos`
 -> `Campo de Pesquisa com Autocompletar`
@@ -29,27 +29,27 @@ Recursos Usados e configurações:
   - Local de uso: `Barra Lateral Esquerda` -> `Alunos Pendentes`
 
 
-[ ] TEC1: Estrutura Geral
-    [ ] `Estilo de UI Ultra-Compacto`;
-[ ] TEC2: Parte superior
-    [ ] `Campo de Pesquisa com Autocompletar`
+[x] TEC1: Estrutura Geral
+    [x] `Estilo de UI Ultra-Compacto`;
+[x] TEC2: Parte superior
+    [x] `Campo de Pesquisa com Autocompletar`
 [ ] TEC3: BARRA LATERAL ESQUERDA
     - A lista terá duas sublistas planas, uma abaixo da outra, organizadas em suas sessões nomeadas principais:
-        [ ] `Alunos Concluintes`;
-        [ ] `Alunos Pedentes`
-    [ ] Layout do item em uma linha apenas;
-    [ ] Layout do item preparado para ícones de status (a definir futuramente);
-    [ ] Exibição do nome do aluno;
-    [ ] A matrícula é exibida apenas em hover sobre o nome do aluno;
-    [ ] Item com botão de cópia de matrícula;
+        [x] `Alunos Concluintes`;
+        [x] `Alunos Pedentes`
+    [x] Layout do item em uma linha apenas;
+    [x] Layout do item preparado para ícones de status (a definir futuramente);
+    [x] Exibição do nome do aluno;
+    [x] A matrícula é exibida apenas em hover sobre o nome do aluno;
+    [x] Item com botão de cópia de matrícula;
     [ ] Lista sem seleção, apenas exibição;
 
-[ ] TEC4: BLOCO DE DE FILTRO E CONTEÚDO
-    [ ] TEC4.1: FILTRO DE ALUNOS POR TURMA
+[x] TEC4: BLOCO DE DE FILTRO E CONTEÚDO
+    [x] TEC4.1: FILTRO DE ALUNOS POR TURMA
         - Alunos serão agupados por `Navegação Estrutural de Alunos por Turmas: Modalidade de Segmento`;
         - Inicialmente, a única Modalidade de Segmento existente será "Ensino Médio Regular".
         - As turmas serão exibidas em `Turma (Modo Abreviado)`;
         - As turmas serão ordenadas como `Turmas Ordenadas Numericamente`;
-[ ] TEC4.2: CONTEÚDO
+[x] TEC4.2: CONTEÚDO
     - Área de emissão de documentos (placeholder - mock vazio por enquanto)
     - Botão "Emitir Documentos" (desabilitado se nenhum aluno selecionado)

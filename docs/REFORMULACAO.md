@@ -28,7 +28,7 @@ Este documento orienta a implementação de uma **nova metodologia simplificada*
 **Formato de Termos:**
 - Na documentação, termos do glossário são escritos entre crases: `Aluno Concluinte`, `Turma (Modo Abreviado)`
 - Isso torna visualmente claro que o termo tem definição específica no glossário
-- Exemplo: "A lista deve exibir `Alunos Concluintes` e `Alunos Elegíveis para Emissão de Documentos`"
+- Exemplo: "A lista deve exibir `Alunos Concluintes` e `Alunos Pedentes`"
 
 ### Estratégia de Coexistência
 
@@ -374,7 +374,7 @@ Ver templates em:
 
 ## Visão Geral
 
-A `Página de Emissão de Documentos` permite emissão em lote de documentos para múltiplos alunos selecionados. Os alunos são divididos em duas categorias: `Alunos Concluintes` (aprovados) e `Alunos Elegíveis para Emissão de Documentos` (pendentes, não cancelados).
+A `Página de Emissão de Documentos` permite emissão em lote de documentos para múltiplos alunos selecionados. Os alunos são divididos em duas categorias: `Alunos Concluintes` (aprovados) e `Alunos Pedentes` (pendentes, não cancelados).
 
 ---
 
@@ -382,7 +382,7 @@ A `Página de Emissão de Documentos` permite emissão em lote de documentos par
 
 Usuário acessa a página e visualiza duas listas laterais organizadas:
 - `Alunos Concluintes` - alunos aprovados na última série
-- `Alunos Elegíveis para Emissão de Documentos` - alunos pendentes (não aprovados, não cancelados)
+- `Alunos Pedentes` - alunos pendentes (não aprovados, não cancelados)
 
 O sistema oferece:
 - Campo de busca com suporte a coringa (*) para nome ou matrícula
@@ -499,7 +499,7 @@ Usuário pode não saber nome completo ou deseja buscar padrões (ex: "Mar*Silva
 
 ## Categorização de Alunos (Concluintes vs Pendentes)
 
-Sistema distingue `Alunos Concluintes` de `Alunos Elegíveis para Emissão de Documentos`.
+Sistema distingue `Alunos Concluintes` de `Alunos Pedentes`.
 
 **Motivação:**
 Documentos têm regras diferentes dependendo da situação do aluno. Concluintes recebem certificados completos, pendentes podem receber declarações parciais.
@@ -512,7 +512,7 @@ Documentos têm regras diferentes dependendo da situação do aluno. Concluintes
 
 **Termos relacionados:**
 - `Alunos Concluintes` - [principal.md](../../../.ai/glossario/principal.md#alunos-concluintes)
-- `Alunos Elegíveis para Emissão de Documentos` - [principal.md](../../../.ai/glossario/principal.md#alunos-elegiveis-para-emissao-de-documentos)
+- `Alunos Pedentes` - [principal.md](../../../.ai/glossario/principal.md#alunos-elegiveis-para-emissao-de-documentos)
 
 ---
 

@@ -21,15 +21,16 @@ Este projeto usa **duas metodologias** de documentação:
 - Referência: `docs/IDD.md`
 
 ### Glossário (Compartilhado)
-- Localização: `.ai/glossario/*.md`
+- Localização: `.ai/glossario/entradas*.md`
 - SSOT para termos de domínio
 - Metodologia simplificada: usar `Termos` entre crases (ex.: `Lista de Alunos Concluintes`)
 - Metodologia antiga: termos com Maiúscula
 
 ## COMUNICAÇÃO E COLABORAÇÃO
-
-1. **Comunicação:** conversar sempre em português, com tom acolhedor e explicando cada passo com clareza.
-2. Restrinja-se aos arquivos que forem indicados no fluxo de arquivos referenciados desde AGENTS.md. Evite invocar arquivos por conta própria.
+1. **Comunicação:** conversar sempre em português
+2. Explique suas estratégias antes de executá-las
+3. Evite buscar varrer o código por conta própria sem antes ter uma estratégia clara e comunicá-la
+3. Após uma implementação ou refatoração, explicar cada passo com clareza.
 
 ## METODOLOGIA DE DESENVOLVIMENTO
 

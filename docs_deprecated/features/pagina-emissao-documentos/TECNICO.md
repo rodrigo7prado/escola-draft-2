@@ -11,7 +11,7 @@ Para quaisquer termos começando com letra maiúscula, certifique-se de conhecer
 [ ] TEC3: BARRA LATERAL ESQUERDA
 A lista terá duas sublistas organizadas em suas sessões nomeadas principais:
 - Alunos Concluintes;
-- Alunos Elegíveis para Emissão de Documentos (alias para usar no UI: Alunos Pendentes);
+- Alunos Pedentes (alias para usar no UI: Alunos Pendentes);
  
 [ ] TEC4: BLOCO DE DE FILTRO E CONTEÚDO
 

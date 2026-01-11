@@ -19,8 +19,8 @@ Abaixo estão listadas as categorias e os termos correspondentes presentes no gl
 // Navegabilidade, breadcrumbs, pesquisas
 
 ### [Navegação Estrutural]
- - [`Navegação Estrutural de Alunos por Turmas`](./../glossario/entradas/hierarquias.md#navegação-estrutural-de-alunos-por-turmas)
- - [`Navegação Estrutural de Alunos por Turmas: Modalidade de Segmento`](./../glossario/entradas/hierarquias.md#navegação-estrutural-de-alunos-por-turmas-modalidade-de-curso)
+ - [`Navegação Estrutural Múltipla (Breadcrumb)`](./../glossario/entradas/hierarquias.md#navegação-estrutural-de-alunos-por-turmas)
+ - [`Navegação Estrutural Múltipla (Breadcrumb): Modalidade de Segmento`](./../glossario/entradas/hierarquias.md#navegação-estrutural-de-alunos-por-turmas-modalidade-de-curso)
 
 ### [Campo de Pesquisa]
   - [`Campo de Pesquisa com Autocompletar`](./../glossario/entradas/campo-de-pesquisa.md#campo-de-pesquisa-com-autocompletar)

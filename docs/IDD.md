@@ -80,6 +80,16 @@ Cada feature possui:
 
 ## Workflow de Desenvolvimento
 
+### Convenções e Procedimentos
+[x] Indica requisito implementado
+[ ] Indica requisito pendente
+[!] Indica necessidade de refatoração ou atenção especial
+
+*Onde houver "// TODO", se a pendência for resolvida:*
+  - preencher com as informações necessárias se for o caso
+  - eliminar o comentário
+  - e marcar o requisito como implementado [x];
+
 ### Fase 1: Documentação (Claude)
 1. Usuário solicita nova feature ou melhoria
 2. Usuário pode criar um apoio lógico em  FLUXO.md, ou o Claude cria do zero
@@ -87,28 +97,40 @@ Cada feature possui:
 4. Claude pode validar, corrigir ou atualizar o glossário se novos termos forem necessários
 
 ### Fase 2: Implementação ou Refatoração (Codex)
-1. Codex lê FLUXO.md + TECNICO.md + glossários (todos os arquivos em .ai/glossario/entradas*.md)
-2. Codex analisa recursos usados e requisitos técnicos e avalia a viabilidade e consistência da proposta
-3. Se for uma refatoração, Codex avaliará os checks vazios e implementará na ordem numérica dos itens
-  3.1. A cada item lido, Codex tentará entender aquele checkpoint integrado no fluxo geral
-  3.2. Codex então atualizará o seu entendimento do fluxo geral após olhar os checkpoints a serem revisados, corrigidos ou implementados
-4. Se houver inconsistências ou dúvidas, Codex pode solicitar esclarecimentos ao Usuário
-5. Após esclarecimentos, Codex NÃO prossegue para implementação. Codex deve REINICIAR a Fase 2, voltando ao passo 1.
-6. Se passar na avaliação inicial, Codex tentará implementar o código seguindo os seguintes passos:
-    6.1. Codex lê o item de TECNICO.md
-    6.2. Codex consulta o glossário para entender os `Termos` usados
-    6.3. Se não encontrar o termo, Codex interrompe a implementação e solicita ao Usuário para atualizar o glossário.
-    6.4. Codex consulta da 'definição técnica' do termo no glossário para detalhes de implementação
-    6.5. Codex analisa a viabilidade técnica do item atual de TECNICO.md
-    6.6. Se não houver estratégia clara, não buscar soluções alternativas. Codex interrompe a implementação e solicita esclarecimentos ao Usuário.
-    6.7. Não buscar documentação em docs/deprecated/ se não houver recomendações prévias.
-    6.8. Se houver dúvidas ou inconsistências, Codex interrompe a implementação e solicita esclarecimentos ao Usuário
-    6.9. Após esclarecimentos, Codex volta ao passo 6.5
-    6.10. Após implementação do item, Codex marca o checkbox correspondente em TECNICO.md como concluído
-    6.11. Codex verifica se há mais itens pendentes em TECNICO.md
-    6.12. Se houver mais itens, Codex volta ao passo 6.1
-    6.13. Se não houver mais itens, Codex escreve comentários no código implementado estabelecendo referência para TECNICO.md mencionando o número do item correspondente
-7. Codex dá checklist nos itens concluídos em TECNICO.md
+1. LEITURA INICIAL (ordem importante):
+   1.1. Codex lê TODOS os glossários (.ai/glossario/entradas/*.md)
+   1.2. Codex constrói índice mental de recursos disponíveis
+   1.3. Codex lê FLUXO.md (contexto geral)
+   1.4. Codex lê TECNICO.md (mapa de uso dos recursos)
+
+2. VALIDAÇÃO:
+   2.1. Para cada recurso em TECNICO.md:
+        - Verificar se existe no glossário
+        - Se NÃO existir: interromper e solicitar atualização do glossário
+   2.2. Validar estrutura de layout
+   2.3. Validar requisitos específicos
+
+3. IMPLEMENTAÇÃO (para cada item em TECNICO.md):
+   3.1. Identificar recurso do glossário (ex: `Campo de Pesquisa com Autocompletar`)
+   3.2. Consultar glossário para obter:
+        - Categoria
+        - Descrição
+        - Opções Ativáveis (se aplicável)
+        - Parâmetros (se aplicável)
+        - Definições técnicas (comportamento, componente, etc)
+   3.3. Aplicar configurações específicas do TECNICO.md:
+        - Local de uso
+        - Opções ativadas
+        - Valores de parâmetros
+        - Labels/aliases
+   3.4. Implementar código
+   3.5. Marcar checkbox em TECNICO.md
+   3.6. Preencher informações pedidas em TODOs nos glossários, se aplicável
+   3.7. Repetir até finalizar
+
+4. FINALIZAÇÃO:
+   4.1. Adicionar comentários no código referenciando TECNICO.md
+   4.2. Verificar todos os checkboxes marcados
 
 
 ## Formato dos Arquivos

@@ -4,28 +4,23 @@
 **Local de Chamada do Componente de UI**: `src/app/emissao-documentos/page.tsx`
 
 Estrutura de Layout:
-  - [Parte Superior]
+  - [Barra de Pesquisa Superior]
   - [Wrapper Principal]
     - [Barra Lateral Esquerda]
     - [Bloco de Filtro e Conteúdo]
-      - [Filtro de Alunos por Turma] // Barra horizontal
+      - [Breadcrumb de Filtros] // Barra horizontal
       - [Conteúdo]
 
 Recursos Usados e Configurações:
--> `Estilo de UI Ultra-Compacto`
-  - Local de uso: `Página de Emissão de Documentos`
--> `Campo de Pesquisa com Autocompletar`
-  - Local de uso: `Parte Superior`
-  - *Opções Ativáveis*: `Curinga`
+[x] `Estilo de UI Ultra-Compacto` -> Toda a página
+[x] `Campo de Pesquisa com Autocompletar` -> [Barra de Pesquisa Superior]
+  - *Opções Ativadas*: `Curinga`
   - *Parametros*:
     - `Origem de Dados`: nome do aluno, matrícula
--> `Navegação Estrutural de Alunos por Turmas: Modalidade de Segmento`
-  - Local de uso: `Filtro de Alunos por Turma`
-  - *Definições Técnicas*:
-  - *Instruções gerais*: A única Modalidade de Segmento existente será "Ensino Médio Regular".
--> `Alunos Concluintes`
+[x] `Navegação Estrutural Múltipla (Breadcrumb): Modalidade de Segmento` -> [Breadcrumb de Filtros]
+[x] `Alunos Concluintes`
   - Local de uso: `Barra Lateral Esquerda` -> `Alunos Concluintes`
--> `Alunos Pedentes`
+[x] `Alunos Pedentes`
   - Local de uso: `Barra Lateral Esquerda` -> `Alunos Pendentes`
 
 
@@ -33,23 +28,21 @@ Recursos Usados e Configurações:
     [x] `Estilo de UI Ultra-Compacto`;
 [x] TEC2: Parte superior
     [x] `Campo de Pesquisa com Autocompletar`
-[ ] TEC3: BARRA LATERAL ESQUERDA
+[x] TEC3: BARRA LATERAL ESQUERDA
     - A lista terá duas sublistas planas, uma abaixo da outra, organizadas em suas sessões nomeadas principais:
         [x] `Alunos Concluintes`;
         [x] `Alunos Pedentes`
     [x] Layout do item em uma linha apenas;
     [x] Layout do item preparado para ícones de status (a definir futuramente);
     [x] Exibição do nome do aluno;
-    [x] A matrícula é exibida apenas em hover sobre o nome do aluno;
+    [x] A matrícula é exibida apenas num tooltip quando o cursor estiver sobre o nome do aluno;
     [x] Item com botão de cópia de matrícula;
-    [ ] Lista sem seleção, apenas exibição;
-
 [x] TEC4: BLOCO DE DE FILTRO E CONTEÚDO
-    [x] TEC4.1: FILTRO DE ALUNOS POR TURMA
-        - Alunos serão agupados por `Navegação Estrutural de Alunos por Turmas: Modalidade de Segmento`;
-        - Inicialmente, a única Modalidade de Segmento existente será "Ensino Médio Regular".
-        - As turmas serão exibidas em `Turma (Modo Abreviado)`;
-        - As turmas serão ordenadas como `Turmas Ordenadas Numericamente`;
+    [x] TEC4.1: `Navegação Estrutural Múltipla (Breadcrumb): Modalidade de Segmento`
 [x] TEC4.2: CONTEÚDO
     - Área de emissão de documentos (placeholder - mock vazio por enquanto)
-    - Botão "Emitir Documentos" (desabilitado se nenhum aluno selecionado)
+    - Botão "Emitir Documentos" (desabilitado)
+
+Referências de Implementação:
+- `Navegação Estrutural Múltipla (Breadcrumb): Modalidade de Segmento`: `src/components/paginas/PaginaEmissaoDocumentos.tsx:388`
+- Tooltip e botão de cópia de matrícula: `src/components/paginas/PaginaEmissaoDocumentos.tsx:461`

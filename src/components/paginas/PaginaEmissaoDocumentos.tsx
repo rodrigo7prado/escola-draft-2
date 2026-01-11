@@ -25,6 +25,7 @@ const MODALIDADE_LABELS: Record<string, string> = {
 };
 
 const MODALIDADE_PADRAO = "Ensino Médio Regular";
+const ANO_LETIVO_PADRAO = "";
 const TURMA_TODAS = "Todas";
 const TOTAL_SUGESTOES = 8;
 
@@ -34,6 +35,7 @@ export function PaginaEmissaoDocumentos() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
+  const [anoLetivoFiltro, setAnoLetivoFiltro] = useState(ANO_LETIVO_PADRAO);
   const [modalidadeFiltro, setModalidadeFiltro] = useState(MODALIDADE_PADRAO);
   const [turmaFiltro, setTurmaFiltro] = useState(TURMA_TODAS);
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
@@ -105,22 +107,82 @@ export function PaginaEmissaoDocumentos() {
     [concluintes, pendentes]
   );
 
-  const modalidadesExibidas = [MODALIDADE_PADRAO];
+  const anosLetivosDisponiveis = useMemo(() => {
+    const setAnos = new Set<string>();
+    alunosBase.forEach((aluno) => {
+      aluno.enturmacoes.forEach((enturmacao) => {
+        if (enturmacao.anoLetivo) {
+          setAnos.add(enturmacao.anoLetivo);
+        }
+      });
+    });
+    return Array.from(setAnos).sort(compararAnoLetivoDesc);
+  }, [alunosBase]);
+
+  useEffect(() => {
+    if (anosLetivosDisponiveis.length === 0) return;
+    if (
+      !anoLetivoFiltro ||
+      !anosLetivosDisponiveis.includes(anoLetivoFiltro)
+    ) {
+      setAnoLetivoFiltro(anosLetivosDisponiveis[0]);
+    }
+  }, [anosLetivosDisponiveis, anoLetivoFiltro]);
+
+  const modalidadesDisponiveis = useMemo(() => {
+    const setModalidades = new Set<string>();
+    alunosBase.forEach((aluno) => {
+      aluno.enturmacoes.forEach((enturmacao) => {
+        if (anoLetivoFiltro && enturmacao.anoLetivo !== anoLetivoFiltro) {
+          return;
+        }
+        setModalidades.add(formatarModalidade(enturmacao.modalidade));
+      });
+    });
+    return Array.from(setModalidades).sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: "base" })
+    );
+  }, [alunosBase, anoLetivoFiltro]);
+
+  useEffect(() => {
+    if (modalidadesDisponiveis.length === 0) return;
+    if (
+      !modalidadeFiltro ||
+      !modalidadesDisponiveis.includes(modalidadeFiltro)
+    ) {
+      setModalidadeFiltro(modalidadesDisponiveis[0]);
+    }
+  }, [modalidadesDisponiveis, modalidadeFiltro]);
+
+  const enturmacaoAtendeFiltro = (enturmacao: EnturmacaoResumo) => {
+    if (anoLetivoFiltro && enturmacao.anoLetivo !== anoLetivoFiltro) {
+      return false;
+    }
+    if (
+      modalidadeFiltro &&
+      formatarModalidade(enturmacao.modalidade) !== modalidadeFiltro
+    ) {
+      return false;
+    }
+    return true;
+  };
 
   const alunosPorModalidade = useMemo(() => {
-    if (!modalidadeFiltro) {
+    if (!anoLetivoFiltro && !modalidadeFiltro) {
       return alunosBase;
     }
     return alunosBase.filter((aluno) => {
-      const enturmacao = selecionarEnturmacaoPrincipal(aluno.enturmacoes);
-      return formatarModalidade(enturmacao?.modalidade) === modalidadeFiltro;
+      return aluno.enturmacoes.some((enturmacao) =>
+        enturmacaoAtendeFiltro(enturmacao)
+      );
     });
-  }, [alunosBase, modalidadeFiltro]);
+  }, [alunosBase, anoLetivoFiltro, modalidadeFiltro]);
 
   const turmasDisponiveis = useMemo(() => {
     const setTurmas = new Set<string>();
     alunosPorModalidade.forEach((aluno) => {
       aluno.enturmacoes.forEach((enturmacao) => {
+        if (!enturmacaoAtendeFiltro(enturmacao)) return;
         setTurmas.add(abreviarTurma(enturmacao.turma));
       });
     });
@@ -130,7 +192,7 @@ export function PaginaEmissaoDocumentos() {
     );
 
     return [TURMA_TODAS, ...turmasOrdenadas];
-  }, [alunosPorModalidade]);
+  }, [alunosPorModalidade, anoLetivoFiltro, modalidadeFiltro]);
 
   useEffect(() => {
     if (turmasDisponiveis.length === 0) return;
@@ -145,10 +207,12 @@ export function PaginaEmissaoDocumentos() {
     }
     return alunosPorModalidade.filter((aluno) =>
       aluno.enturmacoes.some(
-        (enturmacao) => abreviarTurma(enturmacao.turma) === turmaFiltro
+        (enturmacao) =>
+          enturmacaoAtendeFiltro(enturmacao) &&
+          abreviarTurma(enturmacao.turma) === turmaFiltro
       )
     );
-  }, [alunosPorModalidade, turmaFiltro]);
+  }, [alunosPorModalidade, turmaFiltro, anoLetivoFiltro, modalidadeFiltro]);
 
   const alunosFiltrados = useMemo(() => {
     if (!termoBusca) {
@@ -324,39 +388,34 @@ export function PaginaEmissaoDocumentos() {
         <section className="flex-1 border rounded-sm overflow-hidden flex flex-col">
           {/* [FEAT:pagina-emissao-documentos_TEC4] Bloco de filtro e conteúdo */}
           <div className="px-2 py-1 border-b bg-neutral-50 text-[11px] font-semibold text-neutral-700">
-            Filtro de Modalidade
+            Breadcrumb de Filtros
           </div>
-          <div className="px-2 py-1 border-b text-[11px] text-neutral-600 flex items-center gap-2">
-            <label htmlFor="filtro-modalidade" className="text-neutral-600">
-              Modalidade de Segmento
-            </label>
-            <select
-              id="filtro-modalidade"
-              value={modalidadeFiltro}
-              onChange={(event) => setModalidadeFiltro(event.target.value)}
-              className="border border-neutral-200 rounded-sm px-2 py-1 text-[11px] bg-white"
-            >
-              {modalidadesExibidas.map((modalidade) => (
-                <option key={modalidade} value={modalidade}>
-                  {modalidade}
-                </option>
-              ))}
-            </select>
-            <label htmlFor="filtro-turma" className="text-neutral-600">
-              Turma
-            </label>
-            <select
-              id="filtro-turma"
-              value={turmaFiltro}
-              onChange={(event) => setTurmaFiltro(event.target.value)}
-              className="border border-neutral-200 rounded-sm px-2 py-1 text-[11px] bg-white"
-            >
-              {turmasDisponiveis.map((turma) => (
-                <option key={turma} value={turma}>
-                  {turma}
-                </option>
-              ))}
-            </select>
+          <div className="px-2 py-1 border-b text-[11px] text-neutral-600">
+            <div className="flex flex-wrap items-center gap-2">
+              <BreadcrumbFiltro
+                id="filtro-ano-letivo"
+                label="Ano Letivo"
+                value={anoLetivoFiltro}
+                onChange={setAnoLetivoFiltro}
+                options={anosLetivosDisponiveis}
+              />
+              <span className="text-neutral-400">/</span>
+              <BreadcrumbFiltro
+                id="filtro-modalidade"
+                label="Modalidade de Segmento"
+                value={modalidadeFiltro}
+                onChange={setModalidadeFiltro}
+                options={modalidadesDisponiveis}
+              />
+              <span className="text-neutral-400">/</span>
+              <BreadcrumbFiltro
+                id="filtro-turma"
+                label="Turma (Modo Abreviado)"
+                value={turmaFiltro}
+                onChange={setTurmaFiltro}
+                options={turmasDisponiveis}
+              />
+            </div>
           </div>
           <div className="px-2 py-2 text-[11px] text-neutral-600">
             {isLoading && (
@@ -400,13 +459,11 @@ type AlunoListItemProps = {
 };
 
 function AlunoListItem({ aluno, selecionado, onToggle }: AlunoListItemProps) {
-  const linha = formatarAlunoLinha(aluno);
   const nome = aluno.nome ?? "Sem nome";
 
   return (
     <div
       className="group flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-neutral-50"
-      title={linha}
     >
       {/* [FEAT:pagina-emissao-documentos_TEC3] Layout de item em linha com espaço para ícone */}
       <span
@@ -419,11 +476,11 @@ function AlunoListItem({ aluno, selecionado, onToggle }: AlunoListItemProps) {
         className="h-3 w-3"
       />
       <div className="min-w-0 flex-1 flex items-center gap-1 overflow-hidden">
-        <span className="truncate whitespace-nowrap text-[11px] text-neutral-800">
+        <span
+          className="truncate whitespace-nowrap text-[11px] text-neutral-800"
+          title={aluno.matricula}
+        >
           {nome}
-        </span>
-        <span className="text-[10px] text-neutral-400 whitespace-nowrap overflow-hidden max-w-0 group-hover:max-w-[140px] group-focus-within:max-w-[140px] transition-all">
-          · {aluno.matricula}
         </span>
       </div>
       <div className="flex items-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
@@ -539,15 +596,6 @@ function correspondeBusca(valor: string, termo: string, regex: RegExp | null) {
   return valorNormalizado.includes(termo.toLowerCase());
 }
 
-function selecionarEnturmacaoPrincipal(enturmacoes: EnturmacaoResumo[]) {
-  return enturmacoes[0] ?? null;
-}
-
-function formatarAlunoLinha(aluno: AlunoConcluinte) {
-  const nome = aluno.nome ?? "Sem nome";
-  return `${nome} · ${aluno.matricula}`;
-}
-
 function segmentarTurma(turma: string) {
   return turma.toUpperCase().split(/(\d+)/g).filter(Boolean);
 }
@@ -558,4 +606,57 @@ function obterNumeroParte(parte: string) {
   }
   const numero = Number(parte);
   return Number.isNaN(numero) ? null : numero;
+}
+
+function compararAnoLetivoDesc(anoA: string, anoB: string) {
+  const numeroA = Number(anoA);
+  const numeroB = Number(anoB);
+
+  if (!Number.isNaN(numeroA) && !Number.isNaN(numeroB)) {
+    return numeroB - numeroA;
+  }
+
+  return anoB.localeCompare(anoA, undefined, { numeric: true });
+}
+
+type BreadcrumbFiltroProps = {
+  id: string;
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+};
+
+function BreadcrumbFiltro({
+  id,
+  label,
+  value,
+  options,
+  onChange,
+}: BreadcrumbFiltroProps) {
+  const hasOptions = options.length > 0;
+  const selectedValue = value || options[0] || "";
+
+  return (
+    <label htmlFor={id} className="flex items-center gap-2">
+      <span className="text-neutral-500">{label}</span>
+      <select
+        id={id}
+        value={selectedValue}
+        onChange={(event) => onChange(event.target.value)}
+        className="border border-neutral-200 rounded-sm px-2 py-1 text-[11px] bg-white"
+      >
+        {!hasOptions && (
+          <option value="" disabled>
+            Sem opções
+          </option>
+        )}
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
 }

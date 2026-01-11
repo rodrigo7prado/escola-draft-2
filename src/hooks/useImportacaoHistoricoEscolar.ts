@@ -34,6 +34,7 @@ export function useImportacaoHistoricoEscolar(): UseImportacaoHistoricoEscolarRe
     processedFiles: 0,
     errorFiles: 0,
   });
+  const debugImport = process.env.NODE_ENV !== "production";
 
   const abrirModal = () => setModalAberto(true);
   const fecharModal = () => {
@@ -49,6 +50,12 @@ export function useImportacaoHistoricoEscolar(): UseImportacaoHistoricoEscolarRe
     abrirModal();
 
     const totalFiles = arquivos.length;
+    if (debugImport) {
+      console.info("[import:histo] arquivos selecionados", {
+        totalFiles,
+        nomes: Array.from(arquivos).map((arquivo) => arquivo.name),
+      });
+    }
     setProgresso({ totalFiles, processedFiles: 0, errorFiles: 0 });
 
     let processedFiles = 0;
@@ -63,6 +70,12 @@ export function useImportacaoHistoricoEscolar(): UseImportacaoHistoricoEscolarRe
       // Processar arquivos sequencialmente
       for (const arquivo of Array.from(arquivos)) {
         const matriculaArquivo = extrairMatriculaDoNomeArquivo(arquivo.name);
+        if (debugImport) {
+          console.info("[import:histo] processando arquivo", {
+            nome: arquivo.name,
+            matriculaArquivo,
+          });
+        }
         if (!matriculaArquivo) {
           errorFiles++;
           processedFiles++;
@@ -88,6 +101,9 @@ export function useImportacaoHistoricoEscolar(): UseImportacaoHistoricoEscolarRe
 
         try {
           await importarArquivo(arquivo, alunoDestino);
+          if (debugImport) {
+            console.info("[import:histo] upload concluido", { nome: arquivo.name });
+          }
           processedFiles++;
         } catch (error) {
           console.error(`Erro ao importar arquivo ${arquivo.name}:`, error);
@@ -132,6 +148,15 @@ async function importarArquivo(
   const arrayBuffer = await arquivo.arrayBuffer();
   const uint8Array = new Uint8Array(arrayBuffer);
   const fileData = btoa(String.fromCharCode(...uint8Array));
+  const debugImport = process.env.NODE_ENV !== "production";
+  if (debugImport) {
+    console.info("[import:histo] preparando upload", {
+      nome: arquivo.name,
+      alunoId: aluno.id,
+      alunoMatricula: aluno.matricula,
+      tamanhoBytes: arquivo.size,
+    });
+  }
 
   const response = await fetch("/api/importacoes/ficha-individual-historico", {
     method: "POST",
@@ -145,6 +170,12 @@ async function importarArquivo(
       alunoMatricula: aluno.matricula,
     }),
   });
+  if (debugImport) {
+    console.info("[import:histo] resposta upload", {
+      nome: arquivo.name,
+      status: response.status,
+    });
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({} as Record<string, unknown>));

@@ -24,6 +24,7 @@ export async function importXlsxJson({
   transactionOptions,
 }: ImportAdapterContext) {
   try {
+    const debugImport = process.env.DEBUG_IMPORT === "true";
     const contentType =
       typeof (request as any).headers?.get === "function"
         ? request.headers.get("content-type") ?? ""
@@ -44,6 +45,15 @@ export async function importXlsxJson({
     const selectedKeyId = body?.selectedKeyId as KeyBuilderId | undefined;
     const alunoId = body?.alunoId as string | undefined;
     const alunoMatricula = body?.alunoMatricula as string | undefined;
+    if (debugImport) {
+      console.info("[import:xlsx] request", {
+        profile: profile.tipoArquivo,
+        fileName,
+        alunoId,
+        alunoMatricula,
+        contentType,
+      });
+    }
 
     if (!fileName) {
       return NextResponse.json({ error: "fileName ausente" }, { status: 400 });
@@ -60,6 +70,13 @@ export async function importXlsxJson({
     const matriculaNormalizada = matriculaExtraida
       ? normalizarMatricula(matriculaExtraida)
       : undefined;
+    if (debugImport) {
+      console.info("[import:xlsx] matricula extraida", {
+        fileName,
+        matriculaExtraida,
+        matriculaNormalizada,
+      });
+    }
 
     if (!matriculaNormalizada && !alunoMatriculaNormalizada) {
       throw new ImportValidationError(
@@ -78,6 +95,12 @@ export async function importXlsxJson({
     }
 
     const matriculaParaBusca = matriculaNormalizada ?? alunoMatriculaNormalizada!;
+    if (debugImport) {
+      console.info("[import:xlsx] matricula para busca", {
+        fileName,
+        matriculaParaBusca,
+      });
+    }
 
     let buffer: Buffer;
     try {

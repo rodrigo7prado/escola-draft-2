@@ -79,6 +79,17 @@ export async function persistSeriesHistorico(
       situacaoFinal: toStringSafe(serie.resumo.situacaoFinal),
     };
 
+    if (debugImport) {
+      console.info("[persist:fichaHistorico] resumo situacaoFinal", {
+        sheetIndex: idx,
+        situacaoFinalRaw: serie.resumo.situacaoFinal,
+        situacaoFinalNormalized: resumo.situacaoFinal,
+      });
+      if (!resumo.situacaoFinal) {
+        console.warn("[persist:fichaHistorico] situacaoFinal ausente no resumo", { sheetIndex: idx });
+      }
+    }
+
     if (!resumo.anoLetivo || !resumo.periodoLetivo || !resumo.curso || !resumo.serie) {
       throw new Error("Contexto incompleto para localizar série (ano/periodo/curso/serie)");
     }
@@ -153,6 +164,11 @@ export async function persistSeriesHistorico(
         serieAtual: existente.serie,
         atualizarParaSegmento: segmentoPlanilha,
         sheetIndex: idx,
+      });
+      console.info("[persist:fichaHistorico] update situacaoFinal", {
+        serieId: existente.id,
+        situacaoFinalAtual: existente.situacaoFinal,
+        situacaoFinalNova: resumo.situacaoFinal,
       });
     }
 

@@ -2,11 +2,11 @@
 
 ## CONTEXTO DA REFORMULAÇÃO
 
-Este documento orienta a migração completa da estrutura de documentação do projeto de uma metodologia baseada em DRY/Checkpoints para uma abordagem simplificada baseada em Glossário + Fluxos + Decisões Técnicas.
+Este documento orienta a implementação de uma **nova metodologia simplificada** para documentação de features, que **coexistirá** com a metodologia IDD/DRY existente.
 
 ### Por que esta reformulação?
 
-**Problemas identificados na estrutura anterior:**
+**Problemas identificados na estrutura IDD/DRY atual:**
 1. **Checkpoints são voláteis:** Cada refatoração exige novos checkpoints, criando lixo documental
 2. **DRY muito burocrático:** Prefixos `[DRY.*]`, `[FEAT:*_TEC*]`, `TEC*` criam fricção na escrita
 3. **Glossário desconectado:** Termos definidos em arquivo separado, mas sem integração clara com documentação técnica
@@ -14,11 +14,10 @@ Este documento orienta a migração completa da estrutura de documentação do p
 
 **O que funcionou bem e será preservado:**
 - ✅ Separação Claude (documentação) / Codex (implementação)
-- ✅ Conceito de sessões incrementais de trabalho
 - ✅ Glossário como fonte de verdade para termos de domínio
 - ✅ Rastreabilidade entre documentação e código
 
-### Nova Abordagem
+### Nova Abordagem (Metodologia Simplificada)
 
 **Princípios:**
 1. **Escrita fluida:** Markdown natural, sem prefixos ou tags especiais
@@ -31,21 +30,38 @@ Este documento orienta a migração completa da estrutura de documentação do p
 - Isso torna visualmente claro que o termo tem definição específica no glossário
 - Exemplo: "A lista deve exibir `Alunos Concluintes` e `Alunos Elegíveis para Emissão de Documentos`"
 
+### Estratégia de Coexistência
+
+**Features ANTIGAS (já implementadas):**
+- Mantêm metodologia IDD/DRY existente
+- Documentação em `docs_deprecated/features/*`
+- Continuam usando checkpoints, prefixos [DRY.*], etc
+- **NÃO serão migradas**
+
+**Feature pagina-emissao-documentos + NOVAS features:**
+- Usam metodologia simplificada
+- Documentação em `docs/features/*`
+- Sem checkpoints, sem prefixos
+- Apenas FLUXO.md + TECNICO.md
+
+**Referência de IDD:**
+- `docs_deprecated/IDD.md` - Metodologia antiga (preservada)
+- `docs/IDD.md` - Metodologia nova (a ser criada)
+
 ---
 
 ## IMPORTANTE: REGRAS PARA O CODEX
 
 ### O que NÃO fazer:
-- ❌ **NUNCA** modificar, mover ou deletar nada em `docs_deprecated/`
-- ❌ **NUNCA** criar estrutura `docs/dry/`
-- ❌ **NUNCA** usar prefixos `[DRY.*]`, `[FEAT:*]`, `CP1.2.3`
-- ❌ **NUNCA** criar arquivos `CHECKPOINT.md`
+- ❌ **NUNCA** modificar ou deletar `docs_deprecated/`
+- ❌ **NUNCA** migrar features antigas para novo formato
+- ❌ **NUNCA** criar `docs/dry/` na nova estrutura
+- ❌ **NUNCA** usar prefixos `[DRY.*]`, `[FEAT:*]`, `CP1.2.3` em `docs/`
 
 ### O que fazer:
-- ✅ Trabalhar apenas na pasta `docs/` (nova estrutura)
-- ✅ Usar `docs_deprecated/` apenas como **referência de leitura**
-- ✅ Ao migrar conteúdo, **adaptar** para novo formato (não copiar/colar)
-- ✅ Usar `Termos` entre crases quando referenciar glossário
+- ✅ Criar `docs/` com nova estrutura apenas para `pagina-emissao-documentos`
+- ✅ Usar `docs_deprecated/` como referência de leitura quando necessário
+- ✅ Usar `Termos` entre crases na nova documentação
 - ✅ Escrever em prosa natural e objetiva
 
 ---
@@ -53,30 +69,26 @@ Este documento orienta a migração completa da estrutura de documentação do p
 ## ESTRUTURA FINAL ESPERADA
 
 ```
-docs/
-├── IDD.md                    # Metodologia reformulada (sem checkpoints)
-├── REFORMULACAO.md          # Este arquivo (contexto da migração)
+docs_deprecated/              # Features antigas - NÃO MEXER
+├── IDD.md                    # Metodologia antiga
+├── dry/                      # Estrutura DRY antiga
 ├── features/
-│   ├── pagina-emissao-documentos/
-│   │   ├── FLUXO.md         # Fluxos usuário + mecanismos internos
-│   │   └── TECNICO.md       # Decisões técnicas de implementação
 │   ├── importacao-por-colagem/
-│   │   ├── FLUXO.md
-│   │   └── TECNICO.md
 │   ├── sistema-fases-gestao-alunos/
-│   │   ├── FLUXO.md
-│   │   └── TECNICO.md
 │   ├── importacao-ficha-individual-historico/
-│   │   ├── FLUXO.md
-│   │   └── TECNICO.md
 │   └── emissao-documentos/
+└── ...
+
+docs/                         # Nova estrutura (simplificada)
+├── IDD.md                    # Metodologia nova
+├── REFORMULACAO.md          # Este arquivo
+├── features/
+│   └── pagina-emissao-documentos/    # ÚNICA feature no novo formato
 │       ├── FLUXO.md
 │       └── TECNICO.md
-├── structures/
-│   └── [estruturas compartilhadas, se aplicável]
 └── templates/
-    ├── FLUXO.md             # Template para novas features
-    └── TECNICO.md           # Template para decisões técnicas
+    ├── FLUXO.md
+    └── TECNICO.md
 ```
 
 ---
@@ -85,19 +97,19 @@ docs/
 
 ### 1.1 Criar Estrutura de Pastas
 
-Criar toda a estrutura de pastas necessária:
+Criar apenas a estrutura necessária para a nova metodologia:
 
 ```bash
 docs/
 docs/features/
 docs/features/pagina-emissao-documentos/
-docs/features/importacao-por-colagem/
-docs/features/sistema-fases-gestao-alunos/
-docs/features/importacao-ficha-individual-historico/
-docs/features/emissao-documentos/
-docs/structures/
 docs/templates/
 ```
+
+**NÃO criar:**
+- ❌ `docs/dry/`
+- ❌ `docs/structures/` (por enquanto)
+- ❌ Pastas para outras features
 
 ### 1.2 Criar Template: docs/templates/FLUXO.md
 
@@ -185,22 +197,33 @@ docs/templates/
 
 ---
 
-## FASE 2: REESCREVER DOCUMENTAÇÃO CORE
+## FASE 2: CRIAR docs/IDD.md (Nova Metodologia)
 
-### 2.1 Reescrever docs/IDD.md
-
-**Referência:** `docs_deprecated/IDD.md` (LER para entender estrutura, NÃO copiar)
-
-**Objetivo:** Documentar a metodologia IDD reformulada, sem checkpoints.
+**Objetivo:** Documentar a metodologia simplificada que será usada em `pagina-emissao-documentos` e futuras features.
 
 **Conteúdo esperado:**
 
 ```markdown
-# IDD - Incremental Documentation Development (Reformulado)
+# IDD Simplificado - Metodologia para Novas Features
+
+## Nota sobre Coexistência
+
+Esta metodologia simplificada coexiste com a metodologia IDD/DRY original documentada em `docs_deprecated/IDD.md`.
+
+**Features antigas** (importacao-por-colagem, sistema-fases-gestao-alunos, etc):
+- Continuam usando metodologia original em `docs_deprecated/`
+- Mantêm checkpoints, estrutura DRY, prefixos, etc
+
+**Feature pagina-emissao-documentos + novas features:**
+- Usam esta metodologia simplificada
+- Documentação em `docs/features/`
+- Sem checkpoints, sem prefixos
+
+---
 
 ## Visão Geral
 
-[Explicar o conceito de desenvolvimento incremental orientado por documentação]
+Desenvolvimento incremental orientado por documentação, com foco em escrita fluida e rastreabilidade via glossário.
 
 ## Glossário como Fonte Única de Verdade
 
@@ -218,7 +241,7 @@ Todos os termos de domínio são definidos em `.ai/glossario/*.md`:
 
 ### Claude (Agente de Documentação)
 
-**Foco:** Gestão de `docs/` e `.ai/glossario/*`
+**Foco:** Gestão de `docs/features/*/FLUXO.md` e `.ai/glossario/*`
 
 **Responsabilidades:**
 1. Criar/atualizar FLUXO.md de features
@@ -272,7 +295,9 @@ Cada feature possui:
 
 ## Formato dos Arquivos
 
-[Incluir exemplos dos templates FLUXO.md e TECNICO.md aqui]
+Ver templates em:
+- `docs/templates/FLUXO.md`
+- `docs/templates/TECNICO.md`
 
 ## Quando Criar Entradas em TECNICO.md
 
@@ -298,9 +323,9 @@ Cada feature possui:
 
 **Removido:**
 - ❌ Checkpoints (CP1.2.3)
-- ❌ Estrutura docs/dry/
 - ❌ Prefixos [DRY.*], [FEAT:*_TEC*]
 - ❌ MAPEAMENTO.md por feature
+- ❌ Estrutura docs/dry/
 
 **Simplificado:**
 - ✅ Apenas FLUXO.md + TECNICO.md por feature
@@ -310,7 +335,6 @@ Cada feature possui:
 **Preservado:**
 - ✅ Separação Claude/Codex
 - ✅ Glossário como SSOT
-- ✅ Desenvolvimento incremental em sessões
 - ✅ Rastreabilidade documentação ↔ código
 ```
 
@@ -318,24 +342,20 @@ Cada feature possui:
 - Use o conteúdo acima como base
 - Adapte/expanda conforme necessário
 - Mantenha tom direto e objetivo
-- Use exemplos práticos
+- Deixe claro que esta é metodologia para novas features
 
 ---
 
-## FASE 3: MIGRAÇÃO DAS FEATURES
+## FASE 3: MIGRAR APENAS pagina-emissao-documentos
 
-### 3.1 Feature: pagina-emissao-documentos
+### 3.1 Criar docs/features/pagina-emissao-documentos/FLUXO.md
 
 **Referência em docs_deprecated:**
 - `docs_deprecated/features/pagina-emissao-documentos/FLUXO.md`
-- `docs_deprecated/features/pagina-emissao-documentos/TECNICO.md`
 - `docs_deprecated/features/pagina-emissao-documentos/CHECKPOINT.md`
 
 **Código implementado:**
 - `src/app/emissao-documentos/page.tsx`
-- `src/app/api/alunos-concluintes/route.ts` (se existir)
-
-#### 3.1.1 Criar docs/features/pagina-emissao-documentos/FLUXO.md
 
 **Instruções:**
 1. LER `docs_deprecated/features/pagina-emissao-documentos/FLUXO.md`
@@ -399,7 +419,7 @@ Usuário marca checkboxes dos alunos desejados na lista lateral. O sistema mant�
 Usuário escolhe tipo de documento (Certificado, Histórico, Declaração) e confirma emissão para alunos selecionados.
 ```
 
-#### 3.1.2 Criar docs/features/pagina-emissao-documentos/TECNICO.md
+### 3.2 Criar docs/features/pagina-emissao-documentos/TECNICO.md
 
 **Instruções:**
 1. LER `docs_deprecated/features/pagina-emissao-documentos/TECNICO.md`
@@ -517,238 +537,194 @@ Usuário pode filtrar por turmas diferentes para revisar seleção, mas não dev
 
 ---
 
-### 3.2 Feature: importacao-por-colagem
+## FASE 4: ATUALIZAR ARQUIVOS DE CONFIGURAÇÃO
 
-**Referência em docs_deprecated:**
-- `docs_deprecated/features/importacao-por-colagem/FLUXO.md`
-- `docs_deprecated/features/importacao-por-colagem/TECNICO.md`
-- `docs_deprecated/features/importacao-por-colagem/CHECKPOINT.md`
-
-#### 3.2.1 Criar docs/features/importacao-por-colagem/FLUXO.md
-
-**Instruções:**
-1. LER arquivos de referência em `docs_deprecated`
-2. Reescrever seguindo template de FLUXO.md
-3. Consolidar informações de FLUXO + CHECKPOINT + TECNICO antigos
-4. Usar `Termos` do glossário quando aplicável
-5. Escrever em prosa natural, focando em "o quê" e "por quê"
-
-#### 3.2.2 Criar docs/features/importacao-por-colagem/TECNICO.md
-
-**Instruções:**
-1. LER código implementado relacionado a esta feature
-2. Identificar decisões técnicas não-óbvias
-3. Documentar seguindo template de TECNICO.md
-4. Incluir referências específicas ao código (arquivo:linha)
-5. Justificar escolhas quando houver alternativas
-
----
-
-### 3.3 Feature: sistema-fases-gestao-alunos
-
-**Referência em docs_deprecated:**
-- `docs_deprecated/features/sistema-fases-gestao-alunos/FLUXO.md`
-- `docs_deprecated/features/sistema-fases-gestao-alunos/CHECKPOINT.md`
-
-#### 3.3.1 Criar docs/features/sistema-fases-gestao-alunos/FLUXO.md
-
-**Instruções:**
-1. LER arquivos de referência
-2. Reescrever seguindo template
-3. Usar `Termos` do glossário
-4. Descrever sistema de fases de forma clara
-
-#### 3.3.2 Criar docs/features/sistema-fases-gestao-alunos/TECNICO.md
-
-**Instruções:**
-1. LER código implementado
-2. Documentar decisões técnicas reais
-3. Seguir template de TECNICO.md
-
----
-
-### 3.4 Feature: importacao-ficha-individual-historico
-
-**Referência em docs_deprecated:**
-- `docs_deprecated/features/importacao-ficha-individual-historico/FLUXO.md`
-- `docs_deprecated/features/importacao-ficha-individual-historico/CHECKPOINT.md`
-
-#### 3.4.1 Criar docs/features/importacao-ficha-individual-historico/FLUXO.md
-
-**Instruções:**
-1. LER arquivos de referência
-2. Reescrever seguindo template
-3. Usar `Termos` do glossário
-
-#### 3.4.2 Criar docs/features/importacao-ficha-individual-historico/TECNICO.md
-
-**Instruções:**
-1. LER código implementado
-2. Documentar decisões técnicas
-3. Seguir template
-
----
-
-### 3.5 Feature: emissao-documentos
-
-**Referência em docs_deprecated:**
-- `docs_deprecated/features/emissao-documentos/PRE-FLUXO.md` ou `FLUXO.md`
-- `docs_deprecated/features/emissao-documentos/TECNICO.md`
-- `docs_deprecated/features/emissao-documentos/CHECKPOINT.md`
-
-#### 3.5.1 Criar docs/features/emissao-documentos/FLUXO.md
-
-**Instruções:**
-1. LER arquivos de referência (incluir PRE-FLUXO.md se existir)
-2. Reescrever seguindo template
-3. Usar `Termos` do glossário
-
-#### 3.5.2 Criar docs/features/emissao-documentos/TECNICO.md
-
-**Instruções:**
-1. LER código implementado
-2. Documentar decisões técnicas
-3. Seguir template
-
----
-
-## FASE 4: ESTRUTURAS COMPARTILHADAS
-
-### 4.1 Avaliar docs_deprecated/structures/
-
-**Instruções:**
-1. LER `docs_deprecated/structures/structures.md`
-2. Avaliar se conteúdo ainda é relevante
-3. Decidir:
-   - Se irrelevante: não migrar
-   - Se relevante e específico de domínio: incorporar ao glossário `.ai/glossario/`
-   - Se relevante e técnico: criar `docs/structures/` e migrar adaptando formato
-
-**Não criar estrutura `docs/structures/` se não houver conteúdo relevante a migrar.**
-
----
-
-## FASE 5: ATUALIZAÇÃO DE ARQUIVOS DE CONFIGURAÇÃO
-
-### 5.1 Atualizar CLAUDE.md
+### 4.1 Atualizar CLAUDE.md
 
 **Arquivo:** `/home/rmprado/projetos/next/escola-draft-2/CLAUDE.md`
 
+**Objetivo:** Adicionar seção sobre metodologia híbrida (coexistência de IDD/DRY e IDD Simplificado)
+
 **Mudanças necessárias:**
 
-1. **Remover seção sobre docs/dry:**
+1. **Adicionar nova seção após "SEPARAÇÃO DE RESPONSABILIDADES":**
+
 ```markdown
-- **Documentação DRY:**
-  - Criação e manutenção de toda estrutura em `docs/dry/`
-  - Validação de documentação (scripts validate-dry, validate-tec, validate-summary-dry)
-  - Gestão do `docs/dry/summary.md` e arquivos relacionados
+## METODOLOGIAS DE DOCUMENTAÇÃO (COEXISTÊNCIA)
+
+Este projeto usa **duas metodologias** de documentação que coexistem:
+
+### Metodologia IDD/DRY (Features Antigas)
+
+**Localização:** `docs_deprecated/`
+
+**Features que usam:**
+- importacao-por-colagem
+- sistema-fases-gestao-alunos
+- importacao-ficha-individual-historico
+- emissao-documentos
+
+**Características:**
+- Estrutura `docs_deprecated/dry/` com prefixos [DRY.*]
+- Arquivos CHECKPOINT.md com prefixos CP1.2.3, TEC*
+- Tags [FEAT:*_TEC*] no código
+- Referência: `docs_deprecated/IDD.md`
+
+### Metodologia IDD Simplificada (Novas Features)
+
+**Localização:** `docs/`
+
+**Features que usam:**
+- pagina-emissao-documentos
+- [todas as novas features a partir daqui]
+
+**Características:**
+- Apenas FLUXO.md + TECNICO.md por feature
+- `Termos` do glossário entre crases
+- Sem checkpoints, sem prefixos
+- Prosa natural
+- Referência: `docs/IDD.md`
+
+### Glossário (Compartilhado)
+
+**Localização:** `.ai/glossario/*.md`
+
+O glossário é **compartilhado** por ambas metodologias e serve como SSOT (Single Source of Truth) para todos os termos de domínio.
+
+**Convenção:**
+- Na metodologia simplificada: usar `Termos` entre crases
+- Na metodologia antiga: usar Termos com Maiúscula
 ```
 
-2. **Remover referência a CHECKPOINT.md:**
+2. **Atualizar seção "Claude (Especialista em Documentação)":**
+
+Adicionar ao final das Atribuições Específicas:
+
 ```markdown
-- **Documentação de Features:**
-  - `FLUXO.md` - Fluxos de uso (perspectiva do usuário) e mecanismos internos
-  - `CHECKPOINT.md` - Estados de sessão, checkpoints para orientar implementações
-  - `TECNICO.md` - Ocasionalmente, quando relacionado a decisões arquiteturais documentais (embora seja mais responsabilidade do Codex)
+- **Escolha de Metodologia:**
+  - Features novas: usar metodologia simplificada (`docs/`)
+  - Features antigas: manter metodologia IDD/DRY (`docs_deprecated/`)
+  - Sempre consultar qual metodologia usar antes de iniciar documentação
 ```
 
-3. **Substituir por:**
-```markdown
-- **Documentação de Features:**
-  - `FLUXO.md` - Fluxos de uso (perspectiva do usuário) e mecanismos internos
-  - Manutenção do glossário `.ai/glossario/*` com `Termos` de domínio
-```
+3. **Atualizar Workflow do Claude:**
 
-4. **Atualizar Workflow do Claude:**
 ```markdown
 ### Workflow do Claude:
 1. Recebe solicitação de documentação de feature/conceito
-2. Cria/atualiza FLUXO.md usando `Termos` do glossário em crases
-3. Atualiza glossário `.ai/glossario/*` se novos termos aparecem
-4. Entrega FLUXO.md ao Codex para implementação
+2. **Identifica qual metodologia usar:**
+   - Feature nova → metodologia simplificada (`docs/`)
+   - Feature existente → metodologia correspondente
+3. Para metodologia simplificada:
+   - Cria/atualiza FLUXO.md usando `Termos` do glossário em crases
+   - Atualiza glossário `.ai/glossario/*` se novos termos aparecem
+   - Entrega FLUXO.md ao Codex
+4. Para metodologia IDD/DRY:
+   - Segue workflow original em `docs_deprecated/IDD.md`
 ```
 
-5. **Atualizar seção COMUNICAÇÃO E COLABORAÇÃO item 5:**
-```markdown
-5. **Sempre usar `Termos` do glossário**, seguindo as práticas documentadas em /docs/IDD.md
-```
+4. **Atualizar protocolo de início de sessão:**
 
-6. **Atualizar protocolo de início de sessão:**
 ```markdown
 # ⚠️ PROTOCOLO OBRIGATÓRIO DE INÍCIO DE SESSÃO ⚠️
 
-**ANTES de responder a PRIMEIRA mensagem do usuário em QUALQUER sessão, você DEVE executar a leitura de `docs/IDD.md`**
+**ANTES de responder a PRIMEIRA mensagem do usuário em QUALQUER sessão:**
+
+1. Se trabalhar com **features novas** (pagina-emissao-documentos em diante):
+   - Ler `docs/IDD.md` (metodologia simplificada)
+
+2. Se trabalhar com **features antigas** (importacao-por-colagem, etc):
+   - Ler `docs_deprecated/IDD.md` (metodologia IDD/DRY)
+
+3. **SEMPRE** ter acesso ao glossário `.ai/glossario/*` (compartilhado)
 
 **NÃO pule esta etapa. NÃO assuma que já leu. SEMPRE leia no início de CADA sessão nova.**
 ```
 
 ---
 
-### 5.2 Atualizar AGENTS.md
+### 4.2 Atualizar AGENTS.md
 
 **Arquivo:** `/home/rmprado/projetos/next/escola-draft-2/AGENTS.md`
 
+**Objetivo:** Adicionar seção sobre metodologias coexistentes para o Codex
+
 **Mudanças necessárias:**
 
-1. **Remover seção sobre DRY:**
-```markdown
-## METODOLOGIA DE DESENVOLVIMENTO
+1. **Adicionar nova seção após "ARQUIVOS INCLUÍDOS":**
 
-**DRY - Don't Repeat Yourself**
-- Use o /docs/dry/* para referenciações DRY documentadas.
+```markdown
+## METODOLOGIAS DE DOCUMENTAÇÃO (COEXISTÊNCIA)
+
+Este projeto usa **duas metodologias** de documentação:
+
+### Metodologia IDD/DRY (Features Antigas)
+- Localização: `docs_deprecated/`
+- Features: importacao-por-colagem, sistema-fases-gestao-alunos, importacao-ficha-individual-historico, emissao-documentos
+- Usa: CHECKPOINT.md, TECNICO.md com prefixos TEC*, tags [FEAT:*_TEC*] no código
+- Referência: `docs_deprecated/IDD.md`
+
+### Metodologia IDD Simplificada (Novas Features)
+- Localização: `docs/`
+- Features: pagina-emissao-documentos + todas as novas
+- Usa: FLUXO.md + TECNICO.md, `Termos` em crases, sem checkpoints
+- Referência: `docs/IDD.md`
+
+### Glossário (Compartilhado)
+- Localização: `.ai/glossario/*.md`
+- SSOT para termos de domínio
+- Usar `Termos` entre crases na metodologia simplificada
 ```
 
-2. **Substituir por:**
+2. **Atualizar seção "METODOLOGIA DE DESENVOLVIMENTO":**
+
 ```markdown
 ## METODOLOGIA DE DESENVOLVIMENTO
 
-**Glossário como SSOT (Single Source of Truth)**
-- Todos os `Termos` de domínio são definidos em `.ai/glossario/*.md`
-- Use `Termos` entre crases na documentação para referenciar glossário
-- Consulte `docs/IDD.md` para entender a metodologia completa
+**Para features novas (pagina-emissao-documentos em diante):**
+- Glossário como SSOT: `.ai/glossario/*.md`
+- Usar `Termos` entre crases na documentação
+- Consultar `docs/IDD.md` para metodologia completa
+
+**Para features antigas:**
+- Continuar usando estrutura DRY em `docs_deprecated/dry/*`
+- Consultar `docs_deprecated/IDD.md` para metodologia completa
 ```
 
 3. **Atualizar Workflow do Codex:**
+
 ```markdown
 ### Workflow do Codex:
+
+**Para features novas (metodologia simplificada):**
 1. Recebe FLUXO.md do Claude
 2. Consulta glossário `.ai/glossario/*` para entender `Termos` usados
 3. Implementa features baseado em FLUXO.md
 4. Cria/atualiza TECNICO.md com decisões de implementação real
 5. Usa `Termos` do glossário quando apropriado (via comentários ou código)
 6. Reporta ao Claude para validação documental
+
+**Para features antigas (metodologia IDD/DRY):**
+1. Recebe CHECKPOINT.md do Claude
+2. Implementa baseado nos checkpoints
+3. Atualiza TECNICO.md com decisões, usando prefixos TEC*
+4. Adiciona tags [FEAT:nome-feature_TEC*] no código
+5. Marca checkpoints como concluídos
+6. Reporta ao Claude para atualização documental
 ```
 
-4. **Remover seção problemática:**
-```markdown
-### Refatorações com base em TECNICO.md
-Sempre que for pedida uma refatoração baseada em TECNICO.md:
-1. Reanalise todo o conjunto
-2. Refatore apenas as diferenças
-3. Não escreva nada mais em TECNICO.md.
-```
+4. **Atualizar Atribuições Específicas do Codex:**
 
-5. **Substituir por:**
-```markdown
-### Refatorações
-Em refatorações:
-1. Ler FLUXO.md + TECNICO.md da feature
-2. Consultar glossário para `Termos` usados
-3. Implementar mudanças solicitadas
-4. Atualizar TECNICO.md com novas decisões (se houver)
-```
-
-6. **Atualizar Atribuições Específicas do Codex:**
 ```markdown
 - **Documentação Técnica:**
-  - `TECNICO.md` - Documenta decisões de implementação real
-  - Usar `Termos` do glossário quando apropriado
+  - **Features novas:** TECNICO.md com `Termos` em crases, sem prefixos
+  - **Features antigas:** TECNICO.md com prefixos TEC* e tags [FEAT:*_TEC*] no código
   - Manter rastreabilidade código ↔ documentação técnica via referências (arquivo:linha)
 ```
 
 ---
 
-### 5.3 Atualizar .ai/CORE.md
+### 4.3 Atualizar .ai/CORE.md
 
 **Arquivo:** `/home/rmprado/projetos/next/escola-draft-2/.ai/CORE.md`
 
@@ -756,86 +732,75 @@ Em refatorações:
 
 1. **Atualizar instrução sobre glossário (linha ~21):**
 
-Trocar:
 ```markdown
-- sempre que encontrar palavras começando com maiúscula (e.g., Aluno, Turma), considerar como entidades do domínio e se certificar de já conhecer suas definições, dadas em [./.ai/glossario/principal.md](./glossario/*), através do glossário;
-```
-
-Por:
-```markdown
-- sempre que encontrar `Termos entre crases` (ex: `Aluno Concluinte`, `Turma`), consultar suas definições no glossário `.ai/glossario/*.md`;
+- sempre que encontrar `Termos entre crases` (ex: `Aluno Concluinte`, `Turma`) em documentação de features novas, consultar suas definições no glossário `.ai/glossario/*.md`;
+- sempre que encontrar Termos com Maiúscula (ex: Aluno Concluinte, Turma) em documentação de features antigas, consultar suas definições no glossário `.ai/glossario/*.md`;
 ```
 
 2. **Atualizar seção IDD:**
 
-Trocar referência:
 ```markdown
-Referência do IDD: [docs/IDD.md](./docs/IDD.md)
-```
+## 🎯 METODOLOGIAS IDD
 
-Por:
-```markdown
-Referência do IDD: [docs/IDD.md](../docs/IDD.md)
+Este projeto usa duas metodologias IDD que coexistem:
+
+### IDD Simplificado (Features Novas)
+- Referência: [docs/IDD.md](../docs/IDD.md)
+- Features: pagina-emissao-documentos + novas
+- Estrutura: FLUXO.md + TECNICO.md
+- Termos: `Entre crases`
+
+### IDD/DRY (Features Antigas)
+- Referência: [docs_deprecated/IDD.md](../docs_deprecated/IDD.md)
+- Features: importacao-por-colagem, sistema-fases-gestao-alunos, etc
+- Estrutura: CHECKPOINT.md + TECNICO.md + docs_deprecated/dry/*
+- Termos: Com Maiúscula
 ```
 
 3. **Atualizar seção "Estrutura de Documentação":**
 
-Trocar:
 ```markdown
 ## Estrutura de Documentação
 
-Cada feature possui:
-- **FLUXO.md** - Fluxos de uso (perspectiva do usuário ) e dos mecanismos internos;
-- **TECNICO.md** - Decisões técnicas + checkpoints de sessões
-```
-
-Por:
-```markdown
-## Estrutura de Documentação
-
-Cada feature possui:
+**Features novas (metodologia simplificada):**
 - **FLUXO.md** - Fluxos de uso (perspectiva do usuário) e mecanismos internos
 - **TECNICO.md** - Decisões técnicas de implementação real
-```
 
-4. **Atualizar seção "BOAS PRÁTICAS":**
-
-Adicionar após linha sobre DRY:
-```markdown
-- Usar `Termos` do glossário entre crases na documentação
-- Manter glossário `.ai/glossario/*` como fonte única de verdade para termos de domínio
+**Features antigas (metodologia IDD/DRY):**
+- **FLUXO.md** - Fluxos de uso
+- **CHECKPOINT.md** - Estados de sessão e checkpoints
+- **TECNICO.md** - Decisões técnicas com prefixos TEC*
 ```
 
 ---
 
-## FASE 6: VALIDAÇÃO E LIMPEZA
+## FASE 5: VALIDAÇÃO E LIMPEZA
 
-### 6.1 Checklist de Validação
+### 5.1 Checklist de Validação
 
 Após concluir migração, verificar:
 
-- [ ] Todos os arquivos em `docs/features/*/FLUXO.md` existem e seguem template
-- [ ] Todos os arquivos em `docs/features/*/TECNICO.md` existem e seguem template
-- [ ] `docs/IDD.md` está completo e explica nova metodologia
+- [ ] `docs/features/pagina-emissao-documentos/FLUXO.md` existe e segue template
+- [ ] `docs/features/pagina-emissao-documentos/TECNICO.md` existe e segue template
+- [ ] `docs/IDD.md` está completo e explica metodologia simplificada
 - [ ] `docs/templates/FLUXO.md` e `docs/templates/TECNICO.md` existem
-- [ ] CLAUDE.md foi atualizado corretamente
-- [ ] AGENTS.md foi atualizado corretamente
-- [ ] .ai/CORE.md foi atualizado corretamente
+- [ ] CLAUDE.md foi atualizado com seção de coexistência
+- [ ] AGENTS.md foi atualizado com seção de coexistência
+- [ ] .ai/CORE.md foi atualizado
 - [ ] Nenhum arquivo em `docs_deprecated/` foi modificado
 - [ ] Não foi criada pasta `docs/dry/`
-- [ ] Não foram criados arquivos `CHECKPOINT.md`
+- [ ] Não foram migradas outras features além de pagina-emissao-documentos
 - [ ] `Termos` usados na documentação existem no glossário `.ai/glossario/*.md`
 
-### 6.2 Teste de Leitura
+### 5.2 Teste de Leitura
 
 Após migração, fazer teste:
 
-1. Escolher uma feature (ex: pagina-emissao-documentos)
-2. Ler apenas FLUXO.md + glossário
-3. Verificar se contexto é suficiente para entender "o quê" a feature faz
-4. Ler TECNICO.md
-5. Verificar se decisões técnicas estão claras e justificadas
-6. Verificar se referências ao código (arquivo:linha) estão corretas
+1. Ler apenas `docs/features/pagina-emissao-documentos/FLUXO.md` + glossário
+2. Verificar se contexto é suficiente para entender "o quê" a feature faz
+3. Ler `docs/features/pagina-emissao-documentos/TECNICO.md`
+4. Verificar se decisões técnicas estão claras e justificadas
+5. Verificar se referências ao código (arquivo:linha) estão corretas
 
 ---
 
@@ -843,16 +808,22 @@ Após migração, fazer teste:
 
 ### Prioridades na Execução
 
-1. **Fase 1 (estrutura + templates):** Executar completamente primeiro
-2. **Fase 2 (IDD.md):** Executar antes de migrar features
-3. **Fase 3 (features):** Começar por `pagina-emissao-documentos` (mais recente/completa)
-4. **Fase 4 (structures):** Avaliar após completar features
-5. **Fase 5 (configs):** Executar após tudo acima estar pronto
-6. **Fase 6 (validação):** Executar ao final
+1. **Fase 1:** Criar estrutura + templates
+2. **Fase 2:** Criar docs/IDD.md
+3. **Fase 3:** Migrar APENAS pagina-emissao-documentos
+4. **Fase 4:** Atualizar arquivos de configuração (CLAUDE.md, AGENTS.md, CORE.md)
+5. **Fase 5:** Validação
+
+### O que NÃO fazer
+
+- ❌ **NUNCA** migrar outras features além de pagina-emissao-documentos
+- ❌ **NUNCA** modificar `docs_deprecated/`
+- ❌ **NUNCA** criar `docs/dry/`
+- ❌ **NUNCA** usar prefixos [DRY.*], [FEAT:*], CP1.2.3 em `docs/`
 
 ### Qualidade sobre Velocidade
 
-- Não copiar/colar conteúdo de `docs_deprecated/`
+- Não copiar/colar de `docs_deprecated/`
 - Adaptar e reescrever em novo formato
 - Garantir que `Termos` em crases correspondem ao glossário
 - Incluir referências específicas a código em TECNICO.md
@@ -862,25 +833,27 @@ Após migração, fazer teste:
 
 - Reportar progresso após cada fase
 - Avisar se encontrar ambiguidades ou dúvidas
-- Solicitar validação de exemplos antes de migrar todas as features
 
 ---
 
 ## RESUMO EXECUTIVO
 
 **O que está sendo feito:**
-Migração de metodologia baseada em DRY/Checkpoints para metodologia simplificada baseada em Glossário + Fluxos + Decisões Técnicas.
+Implementação de metodologia simplificada que coexiste com IDD/DRY existente.
+
+**Escopo:**
+- Criar nova estrutura `docs/` para metodologia simplificada
+- Migrar APENAS `pagina-emissao-documentos` para novo formato
+- Atualizar configs para reconhecer duas metodologias
+- Features antigas permanecem em `docs_deprecated/` intocadas
 
 **Por quê:**
-- Checkpoints são voláteis (cada refatoração = novos checkpoints)
-- DRY é burocrático (prefixos, tags, formatação excessiva)
-- Codex se perde em refatorações por contexto fragmentado
-
-**Como:**
-- Glossário `.ai/glossario/*` = SSOT para `Termos` de domínio
-- FLUXO.md = O que a feature faz (prosa natural com `Termos`)
-- TECNICO.md = Como foi implementada (decisões técnicas com referências a código)
-- Sem checkpoints, sem DRY, sem prefixos
+- Reduzir fricção de escrita em novas features
+- Preservar investimento em documentação existente
+- Permitir transição gradual
 
 **Resultado esperado:**
-Documentação fluida de escrever, fácil de ler, e que fornece contexto suficiente para implementação e refatoração sem fragmentação.
+- `docs_deprecated/` preservado e funcional
+- `docs/` com nova metodologia para pagina-emissao-documentos
+- Configs atualizados explicando coexistência
+- Features futuras usarão metodologia simplificada

@@ -1,0 +1,2 @@
+*Para uso da IA*
+Para quaisquer termos começando com letra maiúscula, certifique-se de conhecer seu significado exato consultando os glossários em [glossários](./../../../.ai/glossario/*) e outros arquivos de glossário relacionados.
